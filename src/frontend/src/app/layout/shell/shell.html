@@ -1,0 +1,81 @@
+<a class="hc-skip-link" href="#hc-main">{{ 'nav.skipToContent' | translate }}</a>
+
+<div class="min-h-dvh bg-paper lg:flex">
+  <!-- Masaustu kenar cubugu (>= 1024px) -->
+  <div class="hidden w-sidebar shrink-0 border-r border-rule lg:block">
+    <div class="sticky top-0 h-dvh">
+      <hc-sidebar />
+    </div>
+  </div>
+
+  <!-- Mobil cekmece -->
+  @if (drawerOpen()) {
+    <div class="fixed inset-0 z-40 lg:hidden">
+      <button
+        type="button"
+        class="absolute inset-0 h-full w-full bg-ink/40"
+        [attr.aria-label]="'nav.closeMenu' | translate"
+        (click)="closeDrawer()"
+      ></button>
+      <div
+        id="hc-mobile-drawer"
+        class="relative h-full w-[17rem] max-w-[85vw] border-r border-rule bg-paper"
+      >
+        <hc-sidebar (navigated)="closeDrawer()" />
+      </div>
+    </div>
+  }
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    <hc-topbar [menuOpen]="drawerOpen()" (menuToggled)="toggleDrawer()" />
+
+    @if (notifications.hasItems()) {
+      <div class="border-b border-rule bg-paper-raised" role="status" aria-live="polite">
+        <ul class="divide-y divide-rule">
+          @for (item of notifications.items(); track item.id) {
+            <li class="flex items-start gap-3 px-3 py-2 sm:px-6">
+              <span
+                class="mt-0.5 shrink-0 label-mono"
+                [class.text-danger]="item.tone === 'danger'"
+                [class.text-copper]="item.tone === 'warning'"
+                [class.text-success]="item.tone === 'success'"
+                [class.text-navy]="item.tone === 'info'"
+              >
+                {{ 'errors.title' | translate }}
+              </span>
+              <span class="min-w-0 flex-1 text-sm text-ink">
+                {{ item.messageKey | translate }}
+                @if (item.detail) {
+                  <span class="block font-mono text-xs text-ink-muted">{{ item.detail }}</span>
+                }
+              </span>
+              <button
+                type="button"
+                class="shrink-0 label-mono text-ink-muted hover:text-ink"
+                [attr.aria-label]="'common.close' | translate"
+                (click)="notifications.dismiss(item.id)"
+              >
+                <span aria-hidden="true">✕</span>
+              </button>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <main id="hc-main" class="flex-1 px-3 py-6 sm:px-6 sm:py-8" tabindex="-1">
+      <router-outlet />
+    </main>
+
+    <footer class="border-t border-rule px-3 py-4 sm:px-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="eyebrow">
+          {{ 'common.appName' | translate }} · {{ 'common.tagline' | translate }}
+        </p>
+        <div class="sm:hidden">
+          <hc-language-picker />
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>

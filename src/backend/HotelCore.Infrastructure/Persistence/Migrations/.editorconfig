@@ -1,0 +1,5 @@
+# EF Core tarafindan uretilen migration dosyalari.
+# Uretilmis kod olarak isaretlenir: stil/analiz kurallari (orn. CA1861) bu klasorde uygulanmaz,
+# boylece "dotnet ef migrations add" ciktisi elle duzeltilmeden derleme uyarisiz kalir.
+[*.cs]
+generated_code = true

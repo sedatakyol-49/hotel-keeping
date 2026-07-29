@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Domain: entity'ler, value object'ler, enum'lar, domain kuralları.
+    Dependency Rule gereği HİÇBİR projeye veya üçüncü parti pakete bağımlı DEĞİLDİR.
+    Ortak derleme ayarları: ../Directory.Build.props
+  -->
+
+</Project>

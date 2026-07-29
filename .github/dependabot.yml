@@ -1,0 +1,78 @@
+# Dependabot — haftalik bagimlilik guncellemeleri.
+# NuGet surumleri merkezi olarak src/backend/Directory.Packages.props icinde yonetilir (CPM);
+# Dependabot bu dosyayi otomatik olarak gunceller.
+
+version: 2
+
+updates:
+  # Backend (.NET / NuGet)
+  - package-ecosystem: nuget
+    directory: /src/backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+    labels:
+      - dependencies
+      - backend
+    groups:
+      # Gurultuyu azaltmak icin ilgili paketler tek PR'da toplanir.
+      microsoft:
+        patterns:
+          - 'Microsoft.*'
+          - 'System.*'
+      test-stack:
+        patterns:
+          - 'xunit*'
+          - 'AwesomeAssertions'
+          - 'NSubstitute'
+          - 'coverlet.*'
+          - 'Testcontainers.*'
+
+  # Frontend (Angular / npm)
+  - package-ecosystem: npm
+    directory: /src/frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+    labels:
+      - dependencies
+      - frontend
+    groups:
+      angular:
+        patterns:
+          - '@angular/*'
+          - '@angular-devkit/*'
+          - 'angular-eslint'
+      lint-and-test:
+        patterns:
+          - 'eslint*'
+          - '@eslint/*'
+          - 'typescript-eslint'
+          - 'prettier*'
+          - 'vitest'
+          - 'jsdom'
+
+  # GitHub Actions'in kendi surumleri
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(ci)'
+    labels:
+      - dependencies
+      - ci

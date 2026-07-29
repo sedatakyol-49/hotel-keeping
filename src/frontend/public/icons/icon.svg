@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="HotelCore">
+  <rect width="512" height="512" fill="#f4f1ea"/>
+  <rect x="24.5" y="24.5" width="463" height="463" fill="none" stroke="#16150f" stroke-width="1"/>
+  <line x1="24.5" y1="120.5" x2="487.5" y2="120.5" stroke="#d9d3c3" stroke-width="1"/>
+  <line x1="24.5" y1="391.5" x2="487.5" y2="391.5" stroke="#d9d3c3" stroke-width="1"/>
+  <text x="256" y="330" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="230" fill="#16150f">HC</text>
+  <rect x="24.5" y="391.5" width="463" height="4" fill="#a9662f"/>
+</svg>

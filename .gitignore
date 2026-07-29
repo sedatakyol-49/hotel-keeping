@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+# HotelCore .gitignore
+# ---------------------------------------------------------------------------
+
+# ---------- .NET ----------
+bin/
+obj/
+out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+project.lock.json
+*.nupkg
+.vs/
+
+# EF Core
+*.db
+*.db-shm
+*.db-wal
+
+# ---------- Secrets ----------
+# Never commit real secrets. Use user-secrets / environment variables.
+appsettings.*.local.json
+*.pfx
+*.key
+.env
+.env.*
+!.env.example
+secrets.json
+
+# ---------- Node / Angular ----------
+node_modules/
+dist/
+.angular/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+.nyc_output/
+.vitest/
+playwright-report/
+test-results/
+
+# ---------- IDE / OS ----------
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+*.tmp

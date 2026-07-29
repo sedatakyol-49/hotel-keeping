@@ -1,0 +1,74 @@
+# Frontend CI — Angular 22 / Vitest
+#
+# Akis: npm ci -> lint -> test (headless, watch kapali) -> production build.
+# Node surumu src/frontend/.nvmrc'den okunur (package.json > engines ile uyumlu).
+
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'src/frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    paths:
+      - 'src/frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Angular CLI'nin CI'da analytics/prompt sormasini engelle.
+  NG_CLI_ANALYTICS: 'false'
+  CI: 'true'
+
+jobs:
+  build-and-test:
+    name: Lint, Test & Build (Angular 22)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: src/frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: src/frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
+
+      # package-lock.json'a birebir sadik, tekrarlanabilir kurulum.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # scripts/run-tests.mjs sarmalayicisi `--run` bayragini `ng test --watch=false`a cevirir.
+      - name: Unit tests (Vitest)
+        run: npm run test -- --run
+
+      - name: Build (production)
+        run: npm run build
+
+      - name: Upload build output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: src/frontend/dist/**
+          if-no-files-found: warn
+          retention-days: 14

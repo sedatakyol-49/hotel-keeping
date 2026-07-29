@@ -1,0 +1,23 @@
+# Test projeleri icin analyzer gevsetmeleri.
+# Kok .editorconfig (root = true) devraliniyor; burada YALNIZCA testlere ozgu
+# kurallar ezilir. Uretim kodunda bu kurallar tam siddetiyle gecerli kalir.
+# CI `-warnaserror` ile kostugu icin bu ezmeler olmadan testler derlenmez.
+
+[*.cs]
+
+# CA1707: Test adlari okunabilirlik icin snake_case yazilir
+#         (orn. MarkPaid_is_rejected_for_a_draft_invoice) — xUnit'te yaygin konvansiyon.
+dotnet_diagnostic.CA1707.severity = none
+
+# CA1861: Testlerdeki tek seferlik sabit dizi argumanlari icin 'static readonly' alan zorunlulugu
+#         okunabilirligi dusurur ve performans kazanci yoktur.
+dotnet_diagnostic.CA1861.severity = none
+
+# CA1711: xUnit'in [CollectionDefinition] siniflari dogal olarak 'Collection' ile biter.
+dotnet_diagnostic.CA1711.severity = none
+
+# CA1034: Test sinifi icindeki yardimci ic tipler (test verisi, sahte implementasyonlar) serbesttir.
+dotnet_diagnostic.CA1034.severity = none
+
+# CA1515: Test siniflari xUnit tarafindan kesfedilebilmek icin public olmalidir.
+dotnet_diagnostic.CA1515.severity = none

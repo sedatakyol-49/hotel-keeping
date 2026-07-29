@@ -1,0 +1,174 @@
+# Backend CI — .NET 10 / HotelCore.slnx
+#
+# Akis: tool restore -> restore -> build (-warnaserror) -> unit testler ->
+#       migration dogrulamasi (PostgreSQL service container) -> integration testler.
+#
+# GUVENLIK NOTU: Asagidaki PostgreSQL kullanici adi/sifresi GERCEK BIR SECRET DEGILDIR.
+# Yalnizca is akisinin omru boyunca yasayan, disari acilmayan yerel bir service container
+# icin kullanilir. Gercek connection string / JWT secret repoya YAZILMAZ; uretimde
+# ConnectionStrings__Default ve Jwt__Secret ortam degiskenleri (veya GitHub Secrets) kullanilir.
+
+name: Backend CI
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/backend-ci.yml'
+  workflow_dispatch:
+
+# Ayni dal icin yeni push gelirse eski kosuyu iptal et.
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+  BUILD_CONFIGURATION: Release
+  # CI veritabani baglanti dizesi — bkz. yukaridaki guvenlik notu (gercek secret degil).
+  CI_CONNECTION_STRING: 'Host=localhost;Port=5432;Database=hotelcore_ci;Username=postgres;Password=ci_local_only'
+
+jobs:
+  build-and-test:
+    name: Build & Test (.NET 10)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # Integration testler ve `dotnet ef database update` bu servise karsi kosar.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          # Literal — yalnizca CI service container icin (gercek secret degil).
+          POSTGRES_PASSWORD: ci_local_only
+          POSTGRES_DB: hotelcore_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d hotelcore_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 10s
+
+    defaults:
+      run:
+        working-directory: src/backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          # SDK surumu src/backend/global.json ile sabitlenmistir.
+          global-json-file: src/backend/global.json
+
+      # NuGet paket cache'i. setup-dotnet'in dahili cache'i packages.lock.json ister;
+      # projede lock dosyasi olmadigi icin cache anahtari CPM + csproj hash'lerinden uretilir.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('src/backend/Directory.Packages.props', 'src/backend/**/*.csproj', 'src/backend/dotnet-tools.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # dotnet-ef proje-yerel tool olarak kurulu (src/backend/dotnet-tools.json).
+      - name: Restore .NET tools (dotnet-ef)
+        run: dotnet tool restore
+
+      - name: Restore
+        run: dotnet restore HotelCore.slnx
+
+      # -warnaserror: analyzer/derleyici uyarilari CI'da hata sayilir.
+      - name: Build
+        run: dotnet build HotelCore.slnx --configuration $BUILD_CONFIGURATION --no-restore -warnaserror
+
+      - name: Unit tests — Domain
+        run: |
+          dotnet test tests/HotelCore.Domain.Tests/HotelCore.Domain.Tests.csproj \
+            --configuration $BUILD_CONFIGURATION --no-build \
+            --results-directory "$GITHUB_WORKSPACE/artifacts/test-results" \
+            --logger "trx;LogFileName=domain-tests.trx" \
+            --logger "console;verbosity=normal" \
+            --collect:"XPlat Code Coverage"
+
+      - name: Unit tests — Application
+        run: |
+          dotnet test tests/HotelCore.Application.Tests/HotelCore.Application.Tests.csproj \
+            --configuration $BUILD_CONFIGURATION --no-build \
+            --results-directory "$GITHUB_WORKSPACE/artifacts/test-results" \
+            --logger "trx;LogFileName=application-tests.trx" \
+            --logger "console;verbosity=normal" \
+            --collect:"XPlat Code Coverage"
+
+      # Migration DOGRULAMASI: migration'lar bos bir PostgreSQL 16 uzerine gercekten
+      # uygulanabiliyor mu? Basarisiz olursa is akisi burada kirilir.
+      - name: Verify EF Core migrations apply to a clean database
+        env:
+          ConnectionStrings__Default: ${{ env.CI_CONNECTION_STRING }}
+        run: |
+          dotnet ef database update \
+            --project HotelCore.Infrastructure \
+            --startup-project HotelCore.Api \
+            --configuration $BUILD_CONFIGURATION \
+            --no-build
+
+      # Ek kanit/artifact: idempotent SQL script uretilebiliyor mu (model <-> migration tutarli mi).
+      - name: Generate idempotent migration script
+        env:
+          ConnectionStrings__Default: ${{ env.CI_CONNECTION_STRING }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/artifacts/migrations"
+          dotnet ef migrations script \
+            --idempotent \
+            --project HotelCore.Infrastructure \
+            --startup-project HotelCore.Api \
+            --configuration $BUILD_CONFIGURATION \
+            --no-build \
+            --output "$GITHUB_WORKSPACE/artifacts/migrations/hotelcore-idempotent.sql"
+
+      # Integration testler: ConnectionStrings__Default tanimliysa test fixture'i service
+      # container'i kullanir (Testcontainers'a dusmez). Yerelde bu degisken yoksa
+      # Testcontainers ile Docker'da PostgreSQL ayaga kalkar; Docker da yoksa testler SKIP edilir.
+      - name: Integration tests — API
+        env:
+          ConnectionStrings__Default: ${{ env.CI_CONNECTION_STRING }}
+        run: |
+          dotnet test tests/HotelCore.Api.IntegrationTests/HotelCore.Api.IntegrationTests.csproj \
+            --configuration $BUILD_CONFIGURATION --no-build \
+            --results-directory "$GITHUB_WORKSPACE/artifacts/test-results" \
+            --logger "trx;LogFileName=api-integration-tests.trx" \
+            --logger "console;verbosity=normal" \
+            --collect:"XPlat Code Coverage"
+
+      - name: Upload test results & coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: artifacts/test-results/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload migration script
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-migration-script
+          path: artifacts/migrations/*.sql
+          if-no-files-found: warn
+          retention-days: 14

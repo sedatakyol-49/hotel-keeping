@@ -1,0 +1,230 @@
+{
+  "common": {
+    "appName": "HotelCore",
+    "tagline": "Hotel management",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading …",
+    "retry": "Try again",
+    "refresh": "Refresh",
+    "noData": "No data available",
+    "actions": "Actions",
+    "status": "Status",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "today": "Today",
+    "from": "From",
+    "to": "To",
+    "date": "Date",
+    "time": "Time",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "notes": "Notes",
+    "total": "Total",
+    "details": "Details",
+    "optional": "Optional",
+    "menu": "Menu",
+    "page": "Page",
+    "rowsPerPage": "Rows per page",
+    "entries": "entries",
+    "version": "Version",
+    "underDevelopment": "In preparation",
+    "apiPending": "Data will appear as soon as the API is connected."
+  },
+  "nav": {
+    "mainNavigation": "Main navigation",
+    "skipToContent": "Skip to content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "userMenu": "User menu",
+    "section": {
+      "overview": "Overview",
+      "operations": "Operations",
+      "staff": "Staff",
+      "finance": "Finance",
+      "system": "System"
+    },
+    "dashboard": "Dashboard",
+    "rooms": "Rooms",
+    "reservations": "Reservations",
+    "housekeeping": "Housekeeping",
+    "invoices": "Invoices",
+    "employees": "Employees",
+    "vacations": "Vacations",
+    "timeTracking": "Time tracking",
+    "shifts": "Shifts",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "Please sign in with your account.",
+    "email": "Email address",
+    "emailPlaceholder": "name@hotel.com",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "submit": "Sign in",
+    "submitting": "Signing in …",
+    "logout": "Sign out",
+    "signedInAs": "Signed in as",
+    "roles": "Roles",
+    "invalidCredentials": "Email address or password is incorrect.",
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "noHotelAccess": "No hotel is assigned to your account. Please contact your administrator.",
+    "validation": {
+      "emailRequired": "Please enter your email address.",
+      "emailInvalid": "Please enter a valid email address.",
+      "passwordRequired": "Please enter your password.",
+      "passwordMinLength": "The password must be at least 8 characters long."
+    }
+  },
+  "hotel": {
+    "label": "Hotel",
+    "select": "Select hotel",
+    "allHotels": "All hotels",
+    "consolidated": "Consolidated view",
+    "none": "No hotel assigned",
+    "switcherLabel": "Change active hotel"
+  },
+  "language": {
+    "label": "Language",
+    "switcherLabel": "Change language",
+    "de": "Deutsch",
+    "en": "English",
+    "tr": "Türkçe"
+  },
+  "errors": {
+    "title": "Error",
+    "unknown": "An unexpected error occurred.",
+    "network": "The server cannot be reached. Please check your connection.",
+    "offline": "No internet connection.",
+    "timeout": "The request timed out.",
+    "badRequest": "The request was invalid.",
+    "unauthorized": "You are not signed in.",
+    "forbidden": "You do not have permission to access this area.",
+    "notFound": "The requested record was not found.",
+    "conflict": "The operation conflicts with the current state of the data.",
+    "validation": "Please check your input.",
+    "server": "A server error occurred.",
+    "pageNotFound": {
+      "title": "Page not found",
+      "description": "The address you requested does not exist or has been moved."
+    },
+    "accessDenied": {
+      "title": "Access denied",
+      "description": "Your account lacks the permission required for this area."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Daily key figures and open tasks for the active hotel.",
+    "kpi": {
+      "occupancy": "Occupancy",
+      "arrivals": "Arrivals",
+      "departures": "Departures",
+      "revenue": "Daily revenue",
+      "roomsToClean": "Rooms to clean",
+      "openInvoices": "Open invoices"
+    },
+    "empty": {
+      "title": "No key figures yet",
+      "description": "Occupancy, revenue and open tasks will appear here once the reporting endpoints are available."
+    }
+  },
+  "rooms": {
+    "title": "Rooms",
+    "subtitle": "Manage rooms, room types and amenities of the active hotel.",
+    "empty": {
+      "title": "No rooms recorded yet",
+      "description": "All rooms with number, floor, type and housekeeping status will be listed here."
+    }
+  },
+  "reservations": {
+    "title": "Reservations",
+    "subtitle": "Keep the occupancy grid, arrivals and departures in view.",
+    "empty": {
+      "title": "No reservations in the selected period",
+      "description": "The occupancy grid shows option, confirmation, check-in and check-out per room and day."
+    }
+  },
+  "housekeeping": {
+    "title": "Housekeeping",
+    "subtitle": "Maintain cleaning status per floor — without financial data.",
+    "empty": {
+      "title": "No open cleaning tasks",
+      "description": "Rooms switch to “dirty” automatically on check-out and then appear in this list."
+    }
+  },
+  "invoices": {
+    "title": "Invoices",
+    "subtitle": "GoBD-compliant invoices: draft, finalisation and cancellation.",
+    "empty": {
+      "title": "No invoices yet",
+      "description": "Finalised invoices are immutable; corrections are made exclusively via a cancellation invoice."
+    }
+  },
+  "employees": {
+    "title": "Employees",
+    "subtitle": "Master data, departments and employment types of your staff.",
+    "empty": {
+      "title": "No employees recorded yet",
+      "description": "Name, department, employment type and leave entitlement will be listed here."
+    }
+  },
+  "vacations": {
+    "title": "Vacations",
+    "subtitle": "Submit and review leave requests and check remaining entitlements.",
+    "empty": {
+      "title": "No leave requests",
+      "description": "Approved requests are booked automatically against the leave balance of the respective year."
+    }
+  },
+  "timeTracking": {
+    "title": "Time tracking",
+    "subtitle": "Manual recording of clock-in, clock-out and breaks.",
+    "empty": {
+      "title": "No time entries",
+      "description": "Recorded times are compared against the shift plan (planned vs. actual)."
+    }
+  },
+  "shifts": {
+    "title": "Shifts",
+    "subtitle": "Weekly shift planning per department.",
+    "empty": {
+      "title": "No shifts planned",
+      "description": "Morning, evening and night shifts are planned per employee and day."
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Revenue, occupancy, ADR and RevPAR over time.",
+    "empty": {
+      "title": "No reports yet",
+      "description": "Reports can be retrieved per hotel or consolidated across all properties."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Hotel profile, tax profile, roles and permissions.",
+    "empty": {
+      "title": "No settings available yet",
+      "description": "VAT rates and city tax are maintained per hotel and are never hardcoded."
+    },
+    "appearance": "Appearance",
+    "languageHint": "The language selection applies immediately and is stored locally."
+  }
+}

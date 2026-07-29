@@ -1,0 +1,21 @@
+<Project>
+
+  <!-- Tüm backend projeleri için ortak derleme ayarları. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- de-DE para/tarih formatlaması gerektiği için invariant globalization KAPALI olmalı. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- Nullable ihlalleri hata; diğer uyarılar CI'da -warnaserror ile yükseltilir. -->
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,230 @@
+{
+  "common": {
+    "appName": "HotelCore",
+    "tagline": "Otel yönetimi",
+    "save": "Kaydet",
+    "cancel": "Vazgeç",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "create": "Oluştur",
+    "add": "Ekle",
+    "search": "Ara",
+    "filter": "Filtrele",
+    "reset": "Sıfırla",
+    "close": "Kapat",
+    "confirm": "Onayla",
+    "back": "Geri",
+    "next": "İleri",
+    "previous": "Önceki",
+    "loading": "Yükleniyor …",
+    "retry": "Yeniden dene",
+    "refresh": "Yenile",
+    "noData": "Veri bulunmuyor",
+    "actions": "İşlemler",
+    "status": "Durum",
+    "yes": "Evet",
+    "no": "Hayır",
+    "all": "Tümü",
+    "today": "Bugün",
+    "from": "Başlangıç",
+    "to": "Bitiş",
+    "date": "Tarih",
+    "time": "Saat",
+    "name": "Ad",
+    "email": "E-posta",
+    "phone": "Telefon",
+    "notes": "Notlar",
+    "total": "Toplam",
+    "details": "Ayrıntılar",
+    "optional": "İsteğe bağlı",
+    "menu": "Menü",
+    "page": "Sayfa",
+    "rowsPerPage": "Sayfa başına satır",
+    "entries": "kayıt",
+    "version": "Sürüm",
+    "underDevelopment": "Hazırlanıyor",
+    "apiPending": "Veriler, API bağlantısı tamamlandığında görünecek."
+  },
+  "nav": {
+    "mainNavigation": "Ana gezinme",
+    "skipToContent": "İçeriğe atla",
+    "openMenu": "Menüyü aç",
+    "closeMenu": "Menüyü kapat",
+    "userMenu": "Kullanıcı menüsü",
+    "section": {
+      "overview": "Genel",
+      "operations": "Operasyon",
+      "staff": "Personel",
+      "finance": "Finans",
+      "system": "Sistem"
+    },
+    "dashboard": "Genel Bakış",
+    "rooms": "Odalar",
+    "reservations": "Rezervasyonlar",
+    "housekeeping": "Kat Hizmetleri",
+    "invoices": "Faturalar",
+    "employees": "Personel",
+    "vacations": "İzinler",
+    "timeTracking": "Zaman Takibi",
+    "shifts": "Vardiyalar",
+    "reports": "Raporlar",
+    "settings": "Ayarlar"
+  },
+  "auth": {
+    "title": "Oturum aç",
+    "subtitle": "Lütfen hesabınızla oturum açın.",
+    "email": "E-posta adresi",
+    "emailPlaceholder": "ad@otel.com",
+    "password": "Parola",
+    "passwordPlaceholder": "Parolanız",
+    "submit": "Giriş yap",
+    "submitting": "Giriş yapılıyor …",
+    "logout": "Çıkış yap",
+    "signedInAs": "Oturum açan",
+    "roles": "Roller",
+    "invalidCredentials": "E-posta adresi veya parola hatalı.",
+    "sessionExpired": "Oturumunuzun süresi doldu. Lütfen yeniden giriş yapın.",
+    "noHotelAccess": "Hesabınıza tanımlı otel bulunmuyor. Lütfen yöneticinizle görüşün.",
+    "validation": {
+      "emailRequired": "Lütfen e-posta adresinizi girin.",
+      "emailInvalid": "Lütfen geçerli bir e-posta adresi girin.",
+      "passwordRequired": "Lütfen parolanızı girin.",
+      "passwordMinLength": "Parola en az 8 karakter olmalıdır."
+    }
+  },
+  "hotel": {
+    "label": "Otel",
+    "select": "Otel seçin",
+    "allHotels": "Tüm oteller",
+    "consolidated": "Konsolide görünüm",
+    "none": "Tanımlı otel yok",
+    "switcherLabel": "Aktif oteli değiştir"
+  },
+  "language": {
+    "label": "Dil",
+    "switcherLabel": "Dili değiştir",
+    "de": "Deutsch",
+    "en": "English",
+    "tr": "Türkçe"
+  },
+  "errors": {
+    "title": "Hata",
+    "unknown": "Beklenmeyen bir hata oluştu.",
+    "network": "Sunucuya ulaşılamıyor. Lütfen bağlantınızı kontrol edin.",
+    "offline": "İnternet bağlantısı yok.",
+    "timeout": "İstek zaman aşımına uğradı.",
+    "badRequest": "İstek geçersizdi.",
+    "unauthorized": "Oturumunuz açık değil.",
+    "forbidden": "Bu alana erişim yetkiniz yok.",
+    "notFound": "İstenen kayıt bulunamadı.",
+    "conflict": "İşlem, verinin güncel durumuyla çakışıyor.",
+    "validation": "Lütfen girdiğiniz bilgileri kontrol edin.",
+    "server": "Sunucuda bir hata oluştu.",
+    "pageNotFound": {
+      "title": "Sayfa bulunamadı",
+      "description": "İstediğiniz adres mevcut değil veya taşınmış."
+    },
+    "accessDenied": {
+      "title": "Erişim yok",
+      "description": "Hesabınızın bu alan için gerekli yetkisi bulunmuyor."
+    }
+  },
+  "dashboard": {
+    "title": "Genel Bakış",
+    "subtitle": "Aktif otelin günlük göstergeleri ve açık görevleri.",
+    "kpi": {
+      "occupancy": "Doluluk",
+      "arrivals": "Girişler",
+      "departures": "Çıkışlar",
+      "revenue": "Günlük ciro",
+      "roomsToClean": "Temizlenecek oda",
+      "openInvoices": "Açık faturalar"
+    },
+    "empty": {
+      "title": "Henüz gösterge yok",
+      "description": "Raporlama uç noktaları hazır olduğunda doluluk, ciro ve açık görevler burada görünecek."
+    }
+  },
+  "rooms": {
+    "title": "Odalar",
+    "subtitle": "Aktif otelin odalarını, oda tiplerini ve donanımlarını yönetin.",
+    "empty": {
+      "title": "Henüz oda kaydı yok",
+      "description": "Tüm odalar numara, kat, tip ve temizlik durumu ile burada listelenecek."
+    }
+  },
+  "reservations": {
+    "title": "Rezervasyonlar",
+    "subtitle": "Doluluk ızgarasını, girişleri ve çıkışları tek ekranda izleyin.",
+    "empty": {
+      "title": "Seçilen dönemde rezervasyon yok",
+      "description": "Doluluk ızgarası oda ve gün bazında opsiyon, onay, giriş ve çıkış durumlarını gösterir."
+    }
+  },
+  "housekeeping": {
+    "title": "Kat Hizmetleri",
+    "subtitle": "Kat bazında temizlik durumunu yönetin — finansal veri gösterilmez.",
+    "empty": {
+      "title": "Açık temizlik görevi yok",
+      "description": "Odalar çıkış işleminde otomatik olarak “kirli” durumuna geçer ve bu listede görünür."
+    }
+  },
+  "invoices": {
+    "title": "Faturalar",
+    "subtitle": "GoBD uyumlu faturalar: taslak, kesinleştirme ve iptal.",
+    "empty": {
+      "title": "Henüz fatura yok",
+      "description": "Kesinleşen faturalar değiştirilemez; düzeltmeler yalnızca iptal faturasıyla yapılır."
+    }
+  },
+  "employees": {
+    "title": "Personel",
+    "subtitle": "Çalışanların künye bilgileri, departmanları ve çalışma türleri.",
+    "empty": {
+      "title": "Henüz personel kaydı yok",
+      "description": "Ad, departman, çalışma türü ve yıllık izin hakkı burada listelenecek."
+    }
+  },
+  "vacations": {
+    "title": "İzinler",
+    "subtitle": "İzin taleplerini oluşturun, değerlendirin ve kalan hakları görüntüleyin.",
+    "empty": {
+      "title": "İzin talebi yok",
+      "description": "Onaylanan talepler ilgili yılın izin bakiyesine otomatik işlenir."
+    }
+  },
+  "timeTracking": {
+    "title": "Zaman Takibi",
+    "subtitle": "Giriş, çıkış ve molaların manuel kaydı.",
+    "empty": {
+      "title": "Zaman kaydı yok",
+      "description": "Kaydedilen süreler vardiya planıyla karşılaştırılır (planlanan / gerçekleşen)."
+    }
+  },
+  "shifts": {
+    "title": "Vardiyalar",
+    "subtitle": "Departman bazında haftalık vardiya planlaması.",
+    "empty": {
+      "title": "Planlanmış vardiya yok",
+      "description": "Sabah, akşam ve gece vardiyaları çalışan ve gün bazında planlanır."
+    }
+  },
+  "reports": {
+    "title": "Raporlar",
+    "subtitle": "Zaman içinde ciro, doluluk, ADR ve RevPAR.",
+    "empty": {
+      "title": "Henüz rapor yok",
+      "description": "Raporlar otel bazında veya tüm oteller için konsolide alınabilir."
+    }
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "subtitle": "Otel profili, vergi profili, roller ve yetkiler.",
+    "empty": {
+      "title": "Henüz ayar bulunmuyor",
+      "description": "KDV oranları ve konaklama vergisi otel bazında yönetilir, koda gömülmez."
+    },
+    "appearance": "Görünüm",
+    "languageHint": "Dil seçimi anında uygulanır ve yerel olarak saklanır."
+  }
+}

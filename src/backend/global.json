@@ -1,0 +1,9 @@
+{
+  "//": "SDK surumunu sabitler: CI ile yerel gelistirme ayni .NET SDK'yi kullanir.",
+  "//rollForward": "latestFeature -> 10.0.3xx icindeki daha yeni patch/feature band'lerine izin verir, major/minor atlamaz.",
+  "sdk": {
+    "version": "10.0.301",
+    "rollForward": "latestFeature",
+    "allowPrerelease": false
+  }
+}

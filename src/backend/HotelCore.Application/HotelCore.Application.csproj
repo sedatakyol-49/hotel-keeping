@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Application: use-case handler'ları, DTO'lar, validation, mapping, port arayüzleri. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\HotelCore.Domain\HotelCore.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Mapster" />
+    <PackageReference Include="Mapster.DependencyInjection" />
+    <!-- IAppDbContext portu DbSet<T> döndürdüğü için EF Core Application'da da gereklidir
+         (sağlayıcı/Npgsql DEĞİL, yalnızca çekirdek soyutlamalar). -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+</Project>

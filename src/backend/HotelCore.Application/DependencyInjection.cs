@@ -1,0 +1,85 @@
+using System.Reflection;
+using FluentValidation;
+using HotelCore.Application.Common.Messaging;
+using HotelCore.Application.Common.Messaging.Behaviors;
+using HotelCore.Application.Features.Auth.Common;
+using Mapster;
+using MapsterMapper;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace HotelCore.Application;
+
+/// <summary>Application katmanının DI kaydı (dispatcher, boru hattı, validator'lar, Mapster).</summary>
+public static class DependencyInjection
+{
+    /// <summary>
+    /// Use-case altyapısını kaydeder:
+    /// <list type="bullet">
+    ///   <item><see cref="IDispatcher"/> ve assembly'deki tüm <see cref="IRequestHandler{TRequest,TResponse}"/>'lar,</item>
+    ///   <item>boru hattı davranışları (logging → validation → handler),</item>
+    ///   <item>FluentValidation validator'ları,</item>
+    ///   <item>Mapster konfigürasyonu (<c>IRegister</c> taraması) ve DI-farkında <see cref="IMapper"/>.</item>
+    /// </list>
+    /// </summary>
+    public static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        var assembly = typeof(DependencyInjection).Assembly;
+
+        services.AddScoped<IDispatcher, Dispatcher>();
+
+        // Kayıt sırası = çalışma sırası (dıştan içe): önce logging, sonra validation.
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+        AddRequestHandlers(services, assembly);
+
+        services.AddValidatorsFromAssembly(assembly, ServiceLifetime.Scoped, includeInternalTypes: true);
+
+        AddMapster(services, assembly);
+
+        // Auth slice'ının paylaşılan gövdesi (login + refresh + me).
+        services.AddScoped<AuthSessionService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// <c>IRequestHandler&lt;,&gt;</c> implementasyonlarını tarayıp kaydeder. Handler'lar
+    /// scoped'dır: DbContext ile aynı yaşam süresini paylaşırlar.
+    /// </summary>
+    private static void AddRequestHandlers(IServiceCollection services, Assembly assembly)
+    {
+        foreach (var type in assembly.GetTypes())
+        {
+            if (type.IsAbstract || type.IsInterface || type.IsGenericTypeDefinition)
+            {
+                continue;
+            }
+
+            foreach (var handlerInterface in type.GetInterfaces())
+            {
+                if (handlerInterface.IsGenericType
+                    && handlerInterface.GetGenericTypeDefinition() == typeof(IRequestHandler<,>))
+                {
+                    services.AddScoped(handlerInterface, type);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Mapster: global statik ayar yerine izole bir <see cref="TypeAdapterConfig"/> kullanılır
+    /// (aynı süreçte birden çok host ayağa kalkabilen testler için önemli).
+    /// <see cref="ServiceMapper"/>, mapping sırasında DI'dan servis çözebilmeyi sağlar.
+    /// </summary>
+    private static void AddMapster(IServiceCollection services, Assembly assembly)
+    {
+        var config = new TypeAdapterConfig();
+        config.Scan(assembly);
+
+        services.AddSingleton(config);
+        services.AddScoped<IMapper, ServiceMapper>();
+    }
+}
