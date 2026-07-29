@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+# HotelCore .gitattributes
+# Depoda satır sonu HER ZAMAN LF'tir. CI Linux üzerinde koştuğu için Windows
+# geliştiricilerinin CRLF'i depoya sızarsa gereksiz diff ve script hataları olur.
+# ---------------------------------------------------------------------------
+
+# Varsayılan: metin dosyalarını otomatik algıla, depoda LF olarak sakla.
+* text=auto eol=lf
+
+# ---------- Windows'ta CRLF gerektirenler ----------
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+*.psm1  text eol=crlf
+*.sln   text eol=crlf
+
+# ---------- Çalıştırılabilir script'ler: kesinlikle LF ----------
+*.sh    text eol=lf
+*.bash  text eol=lf
+*.mjs   text eol=lf
+
+# ---------- İkili dosyalar (asla dönüştürülmez) ----------
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.otf   binary
+*.snk   binary
+*.pfx   binary
+*.dll   binary
+*.exe   binary
+
+# ---------- Diff/merge davranışı ----------
+*.cs        text diff=csharp
+*.csproj    text merge=union
+*.slnx      text
+*.md        text diff=markdown
+*.json      text
+*.yml       text
+*.yaml      text
+
+# Üretilmiş dosyalar: GitHub'da diff'te katlanır, dil istatistiklerine girmez.
+src/backend/HotelCore.Infrastructure/Persistence/Migrations/** linguist-generated=true
+src/frontend/package-lock.json                                 linguist-generated=true
+src/frontend/src/app/core/api/generated/**                     linguist-generated=true
