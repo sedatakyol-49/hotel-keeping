@@ -47,6 +47,18 @@ updates:
     labels:
       - dependencies
       - frontend
+    ignore:
+      # TypeScript surumunu Angular belirler: @angular/compiler-cli 22.x
+      # "typescript >=6.0 <6.1" peer araligini dayatir. Major bir TS yukseltmesi
+      # Angular yukseltilmeden ASLA derlenmez (bkz. kapatilan TS 7.0.2 PR'i).
+      # Angular major'i yukselince bu kural gozden gecirilmeli.
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
+      # Zone.js Angular tarafindan yonetilir (zoneless olsak da devkit'e bagli gelir).
+      - dependency-name: zone.js
+        update-types:
+          - version-update:semver-major
     groups:
       angular:
         patterns:
