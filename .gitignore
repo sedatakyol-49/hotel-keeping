@@ -52,3 +52,7 @@ test-results/
 .DS_Store
 Thumbs.db
 *.tmp
+
+# ---------- Claude Code ----------
+# Ajan izole calisma kopyalari (git worktree) — depoya girmez.
+.claude/worktrees/
