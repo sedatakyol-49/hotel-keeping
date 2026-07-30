@@ -267,7 +267,96 @@ alanında birlikte döner; liste yanıtında dönmez.
 `annualLeaveDays` 0–60 · `hiredOn` zorunlu · `terminatedOn` ≥ `hiredOn` ·
 departman `name` zorunlu ≤ 100, `description` ≤ 500.
 
-### HR (Vacation / TimeTracking / Shifts) — henüz uygulanmadı
+### İzin (Urlaub) — **uygulandı**
+
+| Method | Path | İzin | Not |
+|---|---|---|---|
+| GET | `/vacations` | `Vacations.View` | Sayfalı + filtreli |
+| GET | `/vacations/{id}` | `Vacations.View` | |
+| POST | `/vacations` | `Vacations.Request` | Talep `Pending` olarak açılır |
+| POST | `/vacations/{id}/approve` | `Vacations.Approve` | Bakiyeden **düşer** |
+| POST | `/vacations/{id}/reject` | `Vacations.Approve` | Bakiyeyi **etkilemez** |
+| POST | `/vacations/{id}/cancel` | `Vacations.Request` | Onaylıysa bakiyeyi **geri verir** |
+| GET | `/vacations/balances?employeeId=&year=` | `Vacations.View` | |
+
+```jsonc
+// VacationRequestResponse
+{ "id":"guid", "employeeId":"guid", "employeeName":"Anna Becker",
+  "from":"2026-08-10", "to":"2026-08-14",
+  "requestedDays":5.00,                  // takvim günü (bkz. not)
+  "status":"Pending",                    // Pending | Approved | Rejected | Cancelled
+  "reason":null, "decidedByUserId":null, "decidedAt":null, "decisionNote":null }
+
+// VacationBalanceResponse — kayıt yoksa çalışanın annualLeaveDays'inden türetilir
+{ "id":null,                             // henüz kalıcı satır yoksa null
+  "employeeId":"guid", "employeeName":"Anna Becker", "year":2026,
+  "entitledDays":28.00, "usedDays":0, "carriedOverDays":0, "remainingDays":28.00 }
+
+// POST /vacations           { "employeeId":"guid", "from":"2026-08-10", "to":"2026-08-14", "reason":null }
+// POST /vacations/{id}/reject { "decisionNote":"..." }   // gövde opsiyonel
+// GET  /vacations filtreleri: ?page&pageSize&employeeId=&status=&year=&from=&to=
+```
+
+> **`requestedDays` takvim günüdür** — hafta sonu ve resmî tatil mantığı bu fazda **yoktur**.
+> Bordroya bağlanacaksa iş günü hesabı ayrı bir karar olarak eklenmelidir.
+
+**İş kuralları:** `to >= from` · aynı çalışan için tarih aralığı çakışan `Pending`/`Approved`
+talep varsa **409** · yalnızca `Pending` onaylanıp reddedilebilir, karara bağlanmış talebe tekrar
+karar **409** · onay ve bakiye güncellemesi **tek transaction** · `CheckedIn` benzeri ara durum
+yoktur.
+
+### Zeiterfassung (TimeEntry) — **uygulandı**
+
+| Method | Path | İzin |
+|---|---|---|
+| GET | `/time-entries` | `TimeTracking.View` |
+| POST | `/time-entries/clock-in` | `TimeTracking.Record` |
+| POST | `/time-entries/clock-out` | `TimeTracking.Record` |
+| PUT | `/time-entries/{id}` | `TimeTracking.Record` |
+| DELETE | `/time-entries/{id}` | `TimeTracking.Record` |
+
+```jsonc
+// TimeEntryResponse
+{ "id":"guid", "employeeId":"guid", "employeeName":"Anna Becker",
+  "clockIn":"2026-07-29T06:00:00+00:00", "clockOut":"2026-07-29T14:30:00+00:00",
+  "breakMinutes":30,
+  "workedMinutes":480,                   // (clockOut - clockIn) - mola; acik kayitta null
+  "source":"Manual", "note":null, "isOpen":false }
+
+// POST /time-entries/clock-in  { "employeeId":"guid", "note":null }
+// POST /time-entries/clock-out { "employeeId":"guid", "breakMinutes":30 }
+// PUT  /time-entries/{id}      { "clockIn":"...", "clockOut":"...", "breakMinutes":30, "note":"..." }
+// GET  filtreleri: ?page&pageSize&employeeId=&from=&to=
+```
+
+**İş kuralları:** açık kayıt varken ikinci clock-in **409** · açık kayıt yokken clock-out **409** ·
+`clockOut > clockIn` · `breakMinutes` 0–1440 **ve çalışma süresini aşamaz** (aşarsa 400, mesaj
+mevcut süreyi söyler) · gelecek tarihli clock-in reddedilir.
+
+### Vardiya (Shift) — **uygulandı**
+
+| Method | Path | İzin |
+|---|---|---|
+| GET | `/shifts?week=YYYY-Www` veya `?from=&to=` | `Shifts.View` |
+| POST | `/shifts` | `Shifts.Edit` |
+| PUT | `/shifts/{id}` | `Shifts.Edit` |
+| DELETE | `/shifts/{id}` | `Shifts.Edit` |
+
+```jsonc
+// GET /shifts?week=2026-W32 → gun bazli plan
+{ "from":"2026-08-03", "to":"2026-08-09", "week":"2026-W32",
+  "days":[ { "date":"2026-08-03",
+             "shifts":[ { "id":"guid", "employeeId":"guid", "employeeName":"Anna Becker",
+                          "date":"2026-08-03", "shiftType":"Morning", "note":null } ] } ] }
+
+// POST/PUT /shifts { "employeeId":"guid", "date":"2026-08-03", "shiftType":"Morning", "note":null }
+// shiftType: Morning | Evening | Night | Off
+```
+
+**İş kuralları:** `(employeeId, date)` benzersiz — aynı güne ikinci vardiya **409** · çalışan aktif
+otelde olmalı, değilse **404** · ISO hafta (`YYYY-Www`) Pazartesi–Pazar aralığına çevrilir.
+
+### HR (kalan) — henüz uygulanmadı
 | Method | Path | İzin |
 |---|---|---|
 | GET/POST | `/vacations` | `Vacations.View` / `Vacations.Request` |

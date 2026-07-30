@@ -8,8 +8,12 @@ using HotelCore.Application.Features.Departments.Common;
 using HotelCore.Application.Features.Employees.Common;
 using HotelCore.Application.Features.HeadOffices.Common;
 using HotelCore.Application.Features.Hotels.Common;
+using HotelCore.Application.Features.Hr.Common;
 using HotelCore.Application.Features.Rooms.Common;
 using HotelCore.Application.Features.RoomTypes.Common;
+using HotelCore.Application.Features.Shifts.Common;
+using HotelCore.Application.Features.TimeEntries.Common;
+using HotelCore.Application.Features.Vacations.Common;
 using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +67,13 @@ public static class DependencyInjection
         // Personel slice'ları: okuma gövdeleri ve paylaşılan benzersizlik kontrolleri.
         services.AddScoped<DepartmentReader>();
         services.AddScoped<EmployeeReader>();
+
+        // İK slice'ları (izin / Zeiterfassung / vardiya): okuma gövdeleri + paylaşılan
+        // çalışan araması ("çalışan aktif otelde mi?" sorusu tek yerde yanıtlanır).
+        services.AddScoped<EmployeeLookup>();
+        services.AddScoped<VacationReader>();
+        services.AddScoped<TimeEntryReader>();
+        services.AddScoped<ShiftReader>();
 
         return services;
     }
