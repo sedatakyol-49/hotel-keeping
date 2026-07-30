@@ -22,12 +22,28 @@ GoBD-uyumlu faturalama içeren, **agentic (multi-agent)** mimariyle organize edi
 Detaylar: [docs/architecture.md](docs/architecture.md).
 
 ## Modüller
-- **Personel (Mitarbeiter)** — çalışan, departman, rol
-- **İzin (Urlaub)** — talep/onay akışı, bakiye, takvim
-- **Zeiterfassung** — manuel web giriş/çıkış, vardiya, mesai
-- **Oda Yönetimi** — RoomType/Room, rezervasyon, check-in/out, housekeeping, doluluk planı
-- **Rechnung (Faturalama)** — GoBD-uyumlu fatura, KDV/Kurtaxe, PDF, denetim izi
-- **Raporlama** — doluluk, ciro, kanal dağılımı, ADR/RevPAR
+
+| Modül | API | Ekran | Kapsam |
+|---|:--:|:--:|---|
+| **Oda Yönetimi** | ✅ | ✅ | RoomType/Room CRUD, çok dilli oda tipi, housekeeping panosu |
+| **Ayarlar** | ✅ | ✅ | Otel künyesi, **vergi profili** (KDV + Kurtaxe), marka adı |
+| **Personel (Mitarbeiter)** | ✅ | ✅ | Çalışan + departman, çalışma şekli, personel numarası |
+| **İzin (Urlaub)** | ✅ | 🔄 | Talep/onay/ret/iptal, yıllık bakiye (onayda düşer, iptalde geri gelir) |
+| **Zeiterfassung** | ✅ | 🔄 | Manuel giriş/çıkış, mola, çalışılan süre, manuel düzeltme |
+| **Vardiya (Schichtplan)** | ✅ | 🔄 | ISO hafta bazlı plan, gün başına tek vardiya |
+| **Rezervasyon** | 🔄 | ⏳ | Misafir, fiyat planı, müsaitlik, check-in/out, doluluk planı |
+| **Rechnung (Faturalama)** | 🔄 | ⏳ | GoBD: kesintisiz numara, değiştirilemezlik, Stornorechnung, denetim izi |
+| **Raporlama** | ⏳ | ⏳ | Doluluk, ciro, kanal dağılımı, ADR/RevPAR |
+
+✅ bitti · 🔄 geliştiriliyor · ⏳ planlı
+
+Sözleşmelerin tamamı [docs/api-contracts.md](docs/api-contracts.md)'de; mimari kararlar ve
+gerekçeleri [docs/architecture.md](docs/architecture.md) §10 karar günlüğünde.
+
+### Bilinen sınırlar
+- İzin günü hesabı **takvim günüdür**; hafta sonu ve resmî tatil mantığı bu fazda yoktur.
+- Fatura **PDF çıktısı** henüz üretilmez (`GET /invoices/{id}/pdf` → 501); ZUGFeRD/XRechnung için
+  `IInvoiceExporter` zemini hazırdır.
 
 ## Multi-Agent Yapı
 Proje `.claude/` altında ajan ve skill tanımlarıyla organize edilmiştir:
