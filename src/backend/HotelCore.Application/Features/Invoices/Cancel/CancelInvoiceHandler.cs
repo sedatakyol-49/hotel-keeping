@@ -160,8 +160,11 @@ internal sealed class CancelInvoiceHandler(
 
         storno.MarkFinalized(stornoNumber, issuedAt);
 
-        // Domain guard: kesinlesmis fatura ancak iptal faturasi kimligi verilerek iptal edilebilir.
-        invoice.MarkCancelled(storno.Id);
+        // Storno CIFTI tek cagrida kurulur: orijinal.CancelledByInvoiceId = storno.Id VE
+        // storno.CancelsInvoiceId = orijinal.Id. Nesne elimizde oldugu icin kimlik alan asiri
+        // yukleme kullanilmaz; boylece geri referans domain'de dogar ve persistence katmanindaki
+        // uzlastirma guvenlik agina (AppDbContext.ReconcileStornoBackReferences) ihtiyac kalmaz.
+        invoice.MarkCancelled(storno);
 
         audit.Append(storno, InvoiceAuditAction.Finalized, new
         {

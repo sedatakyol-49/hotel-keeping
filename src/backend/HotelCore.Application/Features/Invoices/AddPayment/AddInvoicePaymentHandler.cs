@@ -27,7 +27,13 @@ namespace HotelCore.Application.Features.Invoices.AddPayment;
 ///   yok</b>, 409 döner.</item>
 /// </list></para>
 ///
-/// <para><b>Atomiklik:</b> ödeme kaydı + durum geçişi + <c>InvoiceAuditEntry</c> tek
+/// <para><b>Denetim izi:</b> her ödeme <see cref="InvoiceAuditAction.PaymentRecorded"/> olarak
+/// yazılır (tahsilat <i>olayı</i>: tutar, toplam ödenen, kalan bakiye). Bakiye kapandığında buna
+/// <b>ek olarak</b> <see cref="InvoiceAuditAction.Paid"/> yazılır (durum <i>geçişi</i>). İki kayıt
+/// ayrı olduğu için "bakiye ne zaman kapandı?" sorusu JSON ayrıntısı ayrıştırılmadan
+/// yanıtlanabilir.</para>
+///
+/// <para><b>Atomiklik:</b> ödeme kaydı + durum geçişi + <c>InvoiceAuditEntry</c>'ler tek
 /// <c>SaveChanges</c> içinde yazılır.</para>
 /// </summary>
 internal sealed class AddInvoicePaymentHandler(
@@ -91,15 +97,11 @@ internal sealed class AddInvoicePaymentHandler(
         database.Payments.Add(payment);
 
         var totalPaid = alreadyPaid + amount;
+        var outstandingAfter = invoice.GrossAmount - totalPaid;
         var fullySettled = totalPaid >= invoice.GrossAmount;
 
-        if (fullySettled)
-        {
-            invoice.MarkPaid();
-        }
-
-        // Kismi odemeler de ize yazilir (enum'da PaymentRecorded yok; details ayrimi tasir).
-        audit.Append(invoice, InvoiceAuditAction.Paid, new
+        // 1) TAHSILAT OLAYI: her odeme (kismi ya da tam) ayni aksiyonla yazilir.
+        audit.Append(invoice, InvoiceAuditAction.PaymentRecorded, new
         {
             paymentId = payment.Id,
             method = payment.Method.ToString(),
@@ -108,9 +110,27 @@ internal sealed class AddInvoicePaymentHandler(
             reference = payment.Reference,
             totalPaid,
             grossAmount = invoice.GrossAmount,
-            outstandingAmount = invoice.GrossAmount - totalPaid,
-            fullySettled
+            outstandingAmount = outstandingAfter,
+            currency = invoice.Currency
         });
+
+        // 2) DURUM GECISI: yalnizca bakiye kapandiginda, ayri bir kayit olarak.
+        if (fullySettled)
+        {
+            var previousStatus = invoice.Status;
+
+            invoice.MarkPaid();
+
+            audit.Append(invoice, InvoiceAuditAction.Paid, new
+            {
+                previousStatus = previousStatus.ToString(),
+                status = invoice.Status.ToString(),
+                settledByPaymentId = payment.Id,
+                totalPaid,
+                grossAmount = invoice.GrossAmount,
+                currency = invoice.Currency
+            });
+        }
 
         await database.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 

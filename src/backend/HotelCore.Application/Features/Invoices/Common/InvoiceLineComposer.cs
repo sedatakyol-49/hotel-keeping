@@ -59,8 +59,10 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
     ///   <item><b>Ekstralar:</b> folio'nun henüz faturalanmamış satırları
     ///   (<c>FolioId = folio ve InvoiceId = null</c>) faturaya <b>taşınır</b> (Domain tasarımı:
     ///   satır hem folio'yu hem faturayı işaret eder). Böylece aynı masraf iki kez faturalanamaz.</item>
-    ///   <item><b>Kurtaxe:</b> otelde etkinse (kişi × gece) × <c>CityTaxPerPersonNight</c>,
-    ///   <c>Type = CityTax</c> ve <b>KDV'siz</b>.</item>
+    ///   <item><b>Kurtaxe:</b> otelde etkinse (vergiye tabi kişi × gece) ×
+    ///   <c>CityTaxPerPersonNight</c>, <c>Type = CityTax</c> ve <b>KDV'siz</b>. Vergiye tabi kişi
+    ///   sayısı <b>domain'de</b> hesaplanır (<see cref="TaxProfile.CountTaxablePersons"/>): otel
+    ///   çocuk muafiyetini açtıysa yalnızca yetişkinler sayılır, aksi hâlde yetişkin + çocuk.</item>
     /// </list>
     /// </summary>
     public async Task<ReservationCharges> BuildFromReservationAsync(
@@ -107,7 +109,11 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
 
         var nights = Math.Max(1, source.CheckOut.DayNumber - source.CheckIn.DayNumber);
         var nightlyPrice = source.RatePlanPrice ?? source.BasePrice;
-        var persons = Math.Max(1, source.Adults + source.Children);
+
+        // Kurtaxe'ye TABI kisi sayisi bir vergi profili kuralidir: Application katmani
+        // "adults + children" toplamini kendi basina YORUMLAMAZ, domain metoduna sorar.
+        // Muafiyet acikken sonuc yalnizca yetiskin sayisidir (cocuklar sayilmaz).
+        var taxablePersons = tax.ToTaxProfile().CountTaxablePersons(source.Adults, source.Children);
 
         var lines = new List<InvoiceLineItem>(2);
 
@@ -163,7 +169,9 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
         }
 
         // Kurtaxe (City Tax) — otelde etkinse. KDV'ye TABI DEGILDIR (bkz. InvoiceAmounts §3).
-        if (tax.CityTaxEnabled && tax.CityTaxPerPersonNight > 0m)
+        // Vergiye tabi kisi kalmadiysa (muafiyet acik + yalnizca cocuk) satir HIC uretilmez:
+        // sifir tutarli kalem faturayi kirletir.
+        if (tax.CityTaxEnabled && tax.CityTaxPerPersonNight > 0m && taxablePersons > 0)
         {
             var cityTax = new InvoiceLineItem
             {
@@ -171,10 +179,11 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
                 Type = InvoiceLineType.CityTax,
                 Description = string.Format(
                     CultureInfo.InvariantCulture,
-                    "City tax (Kurtaxe) {0} person(s) x {1} night(s)",
-                    persons,
-                    nights),
-                Quantity = persons * nights,
+                    "City tax (Kurtaxe) {0} person(s) x {1} night(s){2}",
+                    taxablePersons,
+                    nights,
+                    DescribeChildExemption(tax)),
+                Quantity = taxablePersons * nights,
                 UnitPrice = InvoiceAmounts.Round(tax.CityTaxPerPersonNight),
                 ServiceDate = source.CheckIn,
                 SortOrder = sortOrder
@@ -187,6 +196,23 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
 
         return new ReservationCharges(source, lines, folioLines);
     }
+
+    /// <summary>
+    /// Kurtaxe satır açıklamasına eklenen <b>muafiyet notu</b>. Muafiyetin hukuki dayanağı
+    /// belgede görünmelidir: aksi hâlde "2 kişi" yazan satırın neden 4 kişilik rezervasyonda
+    /// 2 kişi olduğu faturadan anlaşılmaz (Kurtaxe beyanı da bu açıklamayı bekler).
+    /// Yaş sınırı bilinmiyorsa (<c>null</c>) sınır belirtilmeden yazılır.
+    /// Açıklamalar bu fazda <b>dil-nötr ASCII</b>'dir; yerelleştirme PDF/exporter fazında.
+    /// </summary>
+    private static string DescribeChildExemption(InvoiceTaxContext tax) =>
+        tax.CityTaxExemptChildren
+            ? tax.CityTaxChildAgeLimit is int ageLimit
+                ? string.Format(
+                    CultureInfo.InvariantCulture,
+                    " - children under {0} exempt",
+                    ageLimit)
+                : " - children exempt"
+            : string.Empty;
 
     /// <summary>
     /// Folio kaynaklı satırları faturadan <b>koparır</b> (silmez): <c>InvoiceId = null</c> ile

@@ -38,5 +38,13 @@ public sealed record UpdateHotelSettingsRequest : IRequest<HotelResponse>
     /// <summary>ISO 4217 kodu; büyük harfe normalize edilerek saklanır.</summary>
     public string Currency { get; init; } = string.Empty;
 
+    /// <summary>
+    /// Vergi profili — yanıttaki <see cref="TaxProfileDto"/> ile <b>aynı şekildir</b> (oku-yaz
+    /// simetrisi: GET'ten alınan gövde doğrudan geri gönderilebilir).
+    /// <para>
+    /// <c>cityTaxExemptChildren</c> ve <c>cityTaxChildAgeLimit</c> gönderilmezse varsayılanlarına
+    /// (<c>false</c> / <c>null</c>) düşer — PUT tam değişim semantiğindedir, kısmi güncelleme yoktur.
+    /// </para>
+    /// </summary>
     public TaxProfileDto TaxProfile { get; init; } = new();
 }

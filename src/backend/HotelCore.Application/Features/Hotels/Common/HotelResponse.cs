@@ -19,6 +19,21 @@ public sealed record TaxProfileDto
     public decimal CityTaxPerPersonNight { get; init; }
 
     public bool CityTaxEnabled { get; init; }
+
+    /// <summary>
+    /// Kurtaxe hesabında <b>çocuklar muaf mı</b>. <c>true</c> ise faturada vergiye tabi kişi
+    /// sayısı yalnızca <c>adults</c>'tır (<c>adults + children</c> değil) — yani çocuklu
+    /// rezervasyonlarda Kurtaxe tutarı düşer. Varsayılan <c>false</c> (opt-in).
+    /// </summary>
+    public bool CityTaxExemptChildren { get; init; }
+
+    /// <summary>
+    /// Muafiyetin geçerli olduğu yaş sınırı (DE'de tipik 18; belediyeye göre 16/14/6).
+    /// <b>Hesaba girmez</b> — rezervasyonda misafir doğum tarihi tutulmadığı için yaşa göre
+    /// ayrıştırma yapılamaz; değer faturada muafiyetin dayanağı olarak yazdırılır ve "çocuk"
+    /// tanımını belgeler. Bilinmiyorsa <c>null</c>.
+    /// </summary>
+    public int? CityTaxChildAgeLimit { get; init; }
 }
 
 /// <summary>Otel listesi satırı — otel seçici ve ayarlar listesi için yeterli alanlar.</summary>

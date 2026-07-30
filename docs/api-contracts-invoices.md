@@ -12,10 +12,10 @@
 | GET | `/invoices` | `Invoices.View` | Sayfalı + filtreli |
 | GET | `/invoices/{id}` | `Invoices.View` | Satırlar + ödemeler + **denetim izi** |
 | POST | `/invoices` | `Invoices.Create` | **Draft** oluşturur (numara YOK), 201 + `Location` |
-| PUT | `/invoices/{id}` | `Invoices.Create` | **Yalnızca Draft**; Finalized/Paid/Cancelled → **409** |
+| PUT | `/invoices/{id}` | `Invoices.Create` | **Yalnızca Draft**; Finalized/Paid/Cancelled → **409**. İze `Updated` yazılır |
 | POST | `/invoices/{id}/finalize` | `Invoices.Approve` | Numara atanır, `issuedAt` damgalanır → `Finalized` |
 | POST | `/invoices/{id}/cancel` | `Invoices.Cancel` | Draft → doğrudan iptal; kesinleşmiş → **Stornorechnung** |
-| POST | `/invoices/{id}/payments` | `Invoices.Create` | Ödeme kaydı; toplam brüte ulaşınca `Paid` |
+| POST | `/invoices/{id}/payments` | `Invoices.Create` | Ödeme kaydı (`PaymentRecorded`); toplam brüte ulaşınca `Paid` |
 | GET | `/invoices/{id}/pdf` | `Invoices.View` | **501 Not Implemented** (bu fazda üretilmiyor) |
 
 > **DELETE uç noktası bilinçli olarak YOKTUR** (architecture.md §6.1/§6.4): fatura silinmez.
@@ -49,9 +49,9 @@ Draft ──finalize──► Finalized ──ödeme tamamlanınca──► Paid
   "culture":"de", "currency":"EUR",
   "netAmount":399.49,                // KDV'li satırların net toplamı (Kurtaxe HARİÇ)
   "vatAmount":32.51,
-  "cityTaxAmount":18.00,             // Kurtaxe — KDV matrahına dâhil DEĞİL
-  "grossAmount":450.00,              // net + KDV + Kurtaxe
-  "paidAmount":0.00, "outstandingAmount":450.00,
+  "cityTaxAmount":12.00,             // Kurtaxe — KDV matrahına dâhil DEĞİL
+  "grossAmount":444.00,              // net + KDV + Kurtaxe
+  "paidAmount":0.00, "outstandingAmount":444.00,
   "cancelledByInvoiceId":"guid|null",   // bu faturayı iptal eden Stornorechnung
   "cancelsInvoiceId":"guid|null",       // bu fatura bir storno ise iptal ettiği fatura
   "isCancellationInvoice":false,
@@ -67,15 +67,23 @@ Draft ──finalize──► Finalized ──ödeme tamamlanınca──► Paid
       "vatRate":7.00,                         // sunucu belirler, istemci GÖNDEREMEZ
       "lineNet":361.68, "lineVat":25.32, "lineGross":387.00,
       "serviceDate":"2026-08-01",             // Leistungsdatum (GoBD)
-      "sortOrder":0 } ],
+      "sortOrder":0 },
+    { "id":"guid", "type":"CityTax",
+      // Muafiyet açıkken açıklama muafiyeti ve (biliniyorsa) yaş sınırını belirtir:
+      "description":"City tax (Kurtaxe) 2 person(s) x 2 night(s) - children under 18 exempt",
+      "quantity":4.00,                        // vergiye tabi kişi × gece
+      "unitPrice":3.00, "vatRate":0.00,
+      "lineNet":12.00, "lineVat":0.00, "lineGross":12.00,
+      "serviceDate":"2026-08-01", "sortOrder":2 } ],
   "payments":[
     { "id":"guid", "method":"Card",           // Cash | Card | Transfer
       "amount":100.00, "paidAt":"2026-07-30T12:36:00+00:00", "reference":"TERM-4711" } ],
   "auditTrail":[                              // append-only, en eskiden yeniye (GoBD §6.3)
-    { "id":"guid", "action":"Created",         // Created | Finalized | Paid | Cancelled
+    { "id":"guid", "action":"Created",
+      // Created | Updated | Finalized | PaymentRecorded | Paid | Cancelled
       "performedByUserId":"guid|null",
       "performedAt":"2026-07-30T12:33:33.781674+00:00",
-      "details":"{\"source\":\"reservation\",\"grossAmount\":450.00, ...}" } ] }
+      "details":"{\"source\":\"reservation\",\"grossAmount\":444.00, ...}" } ] }
 ```
 
 #### Yazma gövdeleri
@@ -134,9 +142,24 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
    | `Extra` | `vatRate` (DE: %19) | Kahvaltı/minibar/otopark; kahvaltı indirimli orandan yararlanmaz (Aufteilungsgebot) |
    | `CityTax` | **%0** | Kurtaxe belediyenin misafirden aldığı vergidir; otel yalnızca tahsil eder (durchlaufender Posten) → KDV matrahına girmez |
 3. **Kurtaxe** otelde etkinse (`cityTaxEnabled`) rezervasyon yolunda otomatik eklenir:
-   `quantity = (adults + children) × gece`, `unitPrice = cityTaxPerPersonNight`,
+   `quantity = vergiye tabi kişi × gece`, `unitPrice = cityTaxPerPersonNight`,
    `type = CityTax`, `vatRate = 0`. `cityTaxAmount` ayrı toplam olarak döner ve
    **`netAmount`'a dâhil edilmez**.
+   **Vergiye tabi kişi sayısı otelin çocuk muafiyetine bağlıdır** (`Hotel.TaxProfile`):
+   | `cityTaxExemptChildren` | Vergiye tabi kişi | 2 yetişkin + 2 çocuk × 2 gece, 3,00 €/kişi/gece |
+   |---|---|---|
+   | `false` (varsayılan) | `adults + children` | `quantity = 8` → **24,00 €** |
+   | `true` | `adults` (çocuklar sayılmaz) | `quantity = 4` → **12,00 €** |
+   - **Yaş sınırı hesaba GİRMEZ:** rezervasyonda misafir doğum tarihi tutulmaz; muafiyet
+     "çocuk olarak girilen kişiler" kümesine uygulanır. `cityTaxChildAgeLimit` yalnızca
+     satır açıklamasına yazılır (muafiyetin dayanağı, Kurtaxe beyanı için):
+     `"City tax (Kurtaxe) 2 person(s) x 2 night(s) - children under 18 exempt"`.
+     Sınır `null` ise açıklama `"... - children exempt"` olur.
+   - Muafiyet açık ve vergiye tabi kişi kalmadıysa (yalnızca çocuk) **Kurtaxe satırı hiç
+     üretilmez** (sıfır tutarlı kalem yazılmaz).
+   - Muafiyet **opt-in**'dir: alan varsayılan `false` olduğu için mevcut oteller etkilenmez.
+     Otel muafiyeti açtığında **çocuklu rezervasyonların Kurtaxe tutarı düşer** — bu bilinçli
+     bir davranış değişikliğidir. Alanlar `PUT /hotels/{id}/settings` ile yönetilir.
 4. **Yuvarlama:** 2 ondalık, **kaufmännisch** (yarım yukarı) ve **satır bazında**. Fatura
    toplamları yuvarlanmış satır tutarlarının toplamıdır (yazdırılan satırlar toplamla birebir
    uyuşur). Negatif tutarlarda simetriktir → storno orijinali **tam olarak** sıfırlar.
@@ -166,8 +189,9 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
   kesilir: kendi numarasını alır, satırları orijinalin **aynası**dır (`"Storno: " + açıklama`,
   negatif birim fiyat, negatif `lineNet`/`lineVat`) ve tutarları orijinalin negatifidir.
   Böylece orijinal + storno = **0**.
-- İptal faturası, orijinali `cancelsInvoiceId` alanında gösterir (bu alan türetilmiştir; Domain'de
-  ters yön alanı yoktur).
+- İptal faturası, orijinali `cancelsInvoiceId` alanında gösterir. Çiftin **iki yönü de** saklanır
+  (`orijinal.cancelledByInvoiceId` ⇔ `storno.cancelsInvoiceId`) ve tek domain çağrısında birlikte
+  kurulur; yanıt türetilmiş bir alt sorgudan değil doğrudan kolondan gelir.
 - Zaten iptal edilmiş fatura → **409**.
 
 #### Ödeme ve `Paid`
@@ -175,7 +199,8 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
 - Ödeme **yalnızca `Finalized`** faturaya kaydedilir. `Draft` → **409** ("önce finalize"),
   `Cancelled` → 409, `Paid` (tamamen ödenmiş) → 409.
 - **Kısmi ödeme** serbesttir; durum brüt tutara ulaşana kadar `Finalized` kalır.
-  `paidAmount`/`outstandingAmount` her yanıtta güncel gelir.
+  `paidAmount`/`outstandingAmount` her yanıtta güncel gelir. Her ödeme denetim izine
+  `PaymentRecorded` olarak yazılır; bakiyeyi kapatan ödemede ayrıca `Paid` kaydı oluşur.
 - **Fazla ödeme → 409** (kuruş toleransı yoktur): fatura tutarını aşan tahsilat faturanın
   parçası değildir.
 - Brüt tutarı **≤ 0** olan belgeye (Stornorechnung) ödeme kaydedilemez → 409;
@@ -183,14 +208,25 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
 
 #### Denetim izi (GoBD §6.3)
 
-- Her işlem `Created / Finalized / Paid / Cancelled` olarak **append-only** yazılır: kim
-  (`performedByUserId`), ne zaman (`performedAt`, UTC), ne (`details`, JSON).
+- Her işlem **append-only** yazılır: kim (`performedByUserId`), ne zaman (`performedAt`, UTC),
+  ne (`details`, JSON).
 - Denetim kaydı, tetikleyen işlemle **aynı `SaveChanges`** (aynı transaction) içinde yazılır →
   "iz olmadan işlem" veya "işlem olmadan iz" oluşamaz.
-- **Bilinen sınırlar** (Domain'de karşılık gelen enum değeri yok):
-  - **Taslak güncellemesi** denetim izine yazılmaz (`Updated` aksiyonu yok). Taslak belge
-    değildir; son değişiklik `Invoice.ModifiedAt/ModifiedByUserId`'de tutulur.
-  - **Kısmi ödemeler** `Paid` aksiyonuyla yazılır; ayrım `details.fullySettled` alanındadır.
+
+| `action` | Ne zaman | `details` (özet) |
+|---|---|---|
+| `Created` | Taslak veya Stornorechnung oluşturuldu | kaynak (manual/reservation), satır sayısı, tutarlar, uygulanan oranlar |
+| `Updated` | **Taslak** güncellendi (`PUT /invoices/{id}`) | `changedFields` + `guestId/culture/lineCount` ve `net/vat/cityTax/gross` için `{old,new}` |
+| `Finalized` | Numara atandı, belge kilitlendi | `invoiceNumber`, `issuedAt`, tutarlar, satır sayısı |
+| `PaymentRecorded` | **Her** ödeme (kısmi dâhil) | `paymentId`, `method`, `amount`, `paidAt`, `reference`, `totalPaid`, `outstandingAmount` |
+| `Paid` | **Yalnızca** bakiye kapandığında (durum geçişi) | `previousStatus`, `status`, `settledByPaymentId`, `totalPaid` |
+| `Cancelled` | Taslak iptali veya Stornorechnung ile iptal | önceki durum, `stornoRequired`, `cancelledByInvoiceId`, `reason` |
+
+- **`PaymentRecorded` ile `Paid` ayrıdır:** ilki bir *tahsilat olayı*, ikincisi bir *durum
+  geçişi*dir. Bakiyeyi kapatan ödemede **iki kayıt** oluşur (`PaymentRecorded`, ardından `Paid`);
+  kısmi ödemede yalnızca `PaymentRecorded`. Eski `details.fullySettled` ayrımı **kaldırıldı**.
+- `Updated` GoBD açısından **zorunlu değildir** (taslak henüz belge değildir), *Nachvollziehbarkeit*
+  için tutulur: faturanın hangi tutarla oluşup hangi tutarla kesinleştiği izlenebilir olur.
 
 #### Doğrulama (400 + `errors`)
 
@@ -214,6 +250,8 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
   faturaya **taşınır** (`folioId` korunur) → aynı masraf iki kez faturalanamaz. Satır tutarları
   sunucuda **yeniden hesaplanır**; satırdaki oran > 0 ise korunur, değilse türden çözülür.
 - Aynı rezervasyon için **iptal edilmemiş** bir fatura varsa → **409**.
+- Kurtaxe: `type = CityTax`, kişi sayısı otelin çocuk muafiyetine göre belirlenir
+  (bkz. "Tutar hesabı" §3). Muafiyet açıkken açıklamaya muafiyet notu eklenir.
 - Satır açıklamaları şu an **dil-nötr ASCII** üretilir (`"Room charge ..."`, `"City tax (Kurtaxe) ..."`);
   yerelleştirme fatura PDF/exporter fazında yapılacaktır.
 

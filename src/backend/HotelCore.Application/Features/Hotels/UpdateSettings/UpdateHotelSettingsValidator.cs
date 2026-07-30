@@ -16,6 +16,9 @@ public sealed class UpdateHotelSettingsValidator : AbstractValidator<UpdateHotel
     private const int MaxEmailLength = 200;
     private const int MaxTaxNumberLength = 50;
 
+    /// <summary>Kurtaxe çocuk muafiyeti yaş sınırı üst değeri (DB: <c>CK_Hotels_CityTaxChildAgeLimit</c>).</summary>
+    private const int MaxChildAgeLimit = 99;
+
     public UpdateHotelSettingsValidator()
     {
         RuleFor(request => request.Id).NotEmpty();
@@ -55,6 +58,18 @@ public sealed class UpdateHotelSettingsValidator : AbstractValidator<UpdateHotel
             RuleFor(request => request.TaxProfile.VatRate).InclusiveBetween(0m, 100m);
             RuleFor(request => request.TaxProfile.ReducedVatRate).InclusiveBetween(0m, 100m);
             RuleFor(request => request.TaxProfile.CityTaxPerPersonNight).GreaterThanOrEqualTo(0m);
+
+            // Yas siniri: null (bilinmiyor) ya da 0-99. Aralik veritabanindaki
+            // CK_Hotels_CityTaxChildAgeLimit kisiti ile BIREBIR aynidir; burada olmasinin nedeni
+            // kullaniciya 500 yerine anlamli 400 dondurmektir.
+            RuleFor(request => request.TaxProfile.CityTaxChildAgeLimit)
+                .InclusiveBetween(0, MaxChildAgeLimit)
+                .When(request => request.TaxProfile.CityTaxChildAgeLimit is not null)
+                .WithMessage($"Yas siniri 0 ile {MaxChildAgeLimit} arasinda olmalidir.");
+
+            // DIKKAT: cityTaxExemptChildren = true iken yas siniri ZORUNLU DEGILDIR. Muafiyetin
+            // varligi hesabi belirler (cocuklar sayilmaz); sinir yalnizca belgelenen dayanaktir ve
+            // otel bunu bilmeyebilir. Zorunlu kilmak muafiyeti acmayi gereksiz yere engellerdi.
         });
     }
 }

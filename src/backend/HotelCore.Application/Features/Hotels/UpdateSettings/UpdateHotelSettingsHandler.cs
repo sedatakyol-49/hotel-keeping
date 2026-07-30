@@ -38,6 +38,11 @@ internal sealed class UpdateHotelSettingsHandler(
         hotel.TaxProfile.CityTaxPerPersonNight = request.TaxProfile.CityTaxPerPersonNight;
         hotel.TaxProfile.CityTaxEnabled = request.TaxProfile.CityTaxEnabled;
 
+        // Kurtaxe cocuk muafiyeti. Yas siniri muafiyet KAPALIYKEN de saklanir: otelin belediye
+        // kurali (orn. "18 yas alti") muafiyet gecici olarak kapatildiginda kaybolmasin.
+        hotel.TaxProfile.CityTaxExemptChildren = request.TaxProfile.CityTaxExemptChildren;
+        hotel.TaxProfile.CityTaxChildAgeLimit = request.TaxProfile.CityTaxChildAgeLimit;
+
         await database.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return await reader.GetAsync(request.Id, cancellationToken).ConfigureAwait(false);

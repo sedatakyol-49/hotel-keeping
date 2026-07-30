@@ -88,6 +88,8 @@ internal sealed class HotelReader(IAppDbContext database, ICurrentUser currentUs
                     ReducedVatRate = candidate.TaxProfile.ReducedVatRate,
                     CityTaxPerPersonNight = candidate.TaxProfile.CityTaxPerPersonNight,
                     CityTaxEnabled = candidate.TaxProfile.CityTaxEnabled,
+                    CityTaxExemptChildren = candidate.TaxProfile.CityTaxExemptChildren,
+                    CityTaxChildAgeLimit = candidate.TaxProfile.CityTaxChildAgeLimit,
                 },
             })
             .FirstOrDefaultAsync(cancellationToken)

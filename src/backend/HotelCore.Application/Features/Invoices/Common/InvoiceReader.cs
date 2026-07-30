@@ -55,20 +55,17 @@ internal sealed class InvoiceReader(IAppDbContext database)
                 OutstandingAmount =
                     invoice.GrossAmount - (invoice.Payments.Sum(payment => (decimal?)payment.Amount) ?? 0m),
                 CancelledByInvoiceId = invoice.CancelledByInvoiceId,
-                // Ters bag: Domain'de storno -> orijinal alani yok, yalnizca orijinal -> storno var.
-                // Bu yuzden "bu fatura hangi faturayi iptal ediyor" bilgisi ilintili alt sorguyla
-                // okunur (bkz. raporda Domain onerisi: Invoice.CancelsInvoiceId).
-                CancelsInvoiceId = database.Invoices
-                    .Where(original => original.CancelledByInvoiceId == invoice.Id)
-                    .Select(original => (Guid?)original.Id)
-                    .FirstOrDefault(),
+                // Ters bag DOGRUDAN kolondan okunur (Invoice.CancelsInvoiceId): storno cifti
+                // domain'de her iki yonden kurulur (MarkCancelled(Invoice)), bu yuzden burada
+                // ilintili alt sorgu (her satir icin Invoices taramasi) YOK.
+                CancelsInvoiceId = invoice.CancelsInvoiceId,
                 CreatedAt = invoice.CreatedAt,
             })
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
         return new PagedResult<InvoiceResponse>(
-            // Turetilmis bayrak: alt sorguyu ikinci kez calistirmamak icin bellekte doldurulur.
+            // Turetilmis bayrak: SQL'e cevrilebilir bir ifade degil, bu yuzden bellekte doldurulur.
             items.ConvertAll(item => item with { IsCancellationInvoice = item.CancelsInvoiceId is not null }),
             query.Paging.Page,
             query.Paging.PageSize,
@@ -102,10 +99,8 @@ internal sealed class InvoiceReader(IAppDbContext database)
                 OutstandingAmount =
                     candidate.GrossAmount - (candidate.Payments.Sum(payment => (decimal?)payment.Amount) ?? 0m),
                 CancelledByInvoiceId = candidate.CancelledByInvoiceId,
-                CancelsInvoiceId = database.Invoices
-                    .Where(original => original.CancelledByInvoiceId == candidate.Id)
-                    .Select(original => (Guid?)original.Id)
-                    .FirstOrDefault(),
+                // Ters bag dogrudan kolondan (bkz. ListAsync notu).
+                CancelsInvoiceId = candidate.CancelsInvoiceId,
                 CreatedAt = candidate.CreatedAt,
                 LineItems = candidate.LineItems
                     .OrderBy(line => line.SortOrder)
@@ -191,7 +186,9 @@ internal sealed class InvoiceReader(IAppDbContext database)
                 hotel.TaxProfile.VatRate,
                 hotel.TaxProfile.ReducedVatRate,
                 hotel.TaxProfile.CityTaxPerPersonNight,
-                hotel.TaxProfile.CityTaxEnabled))
+                hotel.TaxProfile.CityTaxEnabled,
+                hotel.TaxProfile.CityTaxExemptChildren,
+                hotel.TaxProfile.CityTaxChildAgeLimit))
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 

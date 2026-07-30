@@ -109,6 +109,16 @@ internal sealed class RatePlanReader(IAppDbContext database)
     /// özel plan her zaman önce gelir (bkz. <c>ReservationPricingService</c>).
     /// Pasif planlar (<c>IsActive = false</c>) çakışma üretmez.
     /// </para>
+    /// <para>
+    /// <b>Bu kontrol tek savunma değildir:</b> aynı kural veritabanında
+    /// <c>EX_RatePlans_NoOverlappingActivePlans</c> (PostgreSQL <c>EXCLUDE USING gist</c> +
+    /// <c>daterange(ValidFrom, ValidTo, '[]')</c>, <c>WHERE "IsActive"</c>) ile de zorlanır.
+    /// Buradaki ön kontrol <b>kullanıcı deneyimi</b> içindir: çakışan planın <i>adını ve
+    /// aralığını</i> veren tek yerdir. İki eşzamanlı isteğin arasına giren <b>yarış durumunda</b>
+    /// ön kontrol boş dönebilir; o hâlde <b>409</b> veritabanı kısıtından gelir
+    /// (SQLSTATE <c>23P01</c> → <c>AppDbContext</c> bunu <c>ConflictException</c>'a çevirir) ve
+    /// mesaj plan adı içermeyen genel çakışma metnidir.
+    /// </para>
     /// </summary>
     public async Task EnsureNoOverlapAsync(
         Guid roomTypeId,

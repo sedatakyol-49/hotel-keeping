@@ -19,12 +19,13 @@ namespace HotelCore.Application.Features.Invoices.Common;
 /// <see cref="IDateTimeProvider.UtcNow"/> (UTC) — ikisi de istekten değil sunucudan alınır.
 /// </para>
 /// <para>
-/// <b>Bilinen sınır:</b> <see cref="InvoiceAuditAction"/> enum'ı yalnızca
-/// <c>Created/Finalized/Paid/Cancelled</c> içerir. Taslak <b>güncellemesi</b> için karşılık gelen
-/// bir aksiyon yoktur; taslak henüz belge değildir (GoBD belge işlevi finalize ile başlar) ve
-/// son değişiklik <c>Invoice.ModifiedAt/ModifiedByUserId</c>'de tutulur. Kısmi ödemeler
-/// <c>Paid</c> aksiyonuyla, <c>details.fullySettled=false</c> bilgisiyle yazılır — iz kaybetmemek
-/// için. Enum'a <c>Updated</c>/<c>PaymentRecorded</c> eklenmesi Domain işidir.
+/// <b>Aksiyon kümesi:</b> <see cref="InvoiceAuditAction.Created"/>,
+/// <see cref="InvoiceAuditAction.Updated"/> (taslak değişikliği — belge değil, ama
+/// <i>Nachvollziehbarkeit</i> için tutulur), <see cref="InvoiceAuditAction.Finalized"/>,
+/// <see cref="InvoiceAuditAction.PaymentRecorded"/> (her tahsilat olayı; kısmi de dâhil),
+/// <see cref="InvoiceAuditAction.Paid"/> (yalnızca bakiye kapandığında — <b>durum geçişi</b>) ve
+/// <see cref="InvoiceAuditAction.Cancelled"/>. Tahsilat olayı ile durum geçişi <b>ayrı</b>
+/// kayıtlardır: "bakiye ne zaman kapandı?" sorusu JSON ayrıntısı ayrıştırılmadan yanıtlanır.
 /// </para>
 /// </summary>
 internal sealed class InvoiceAuditWriter(

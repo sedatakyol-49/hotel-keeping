@@ -83,13 +83,18 @@ culture      -> tercih edilen dil
   "addressLine":"...", "postalCode":"10115", "phone":"...", "email":"...",
   "taxNumber":"DE123456789", "defaultCulture":"de", "currency":"EUR", "roomCount":13,
   "taxProfile": { "vatRate":19.00, "reducedVatRate":7.00,
-                  "cityTaxPerPersonNight":3.00, "cityTaxEnabled":true } }
+                  "cityTaxPerPersonNight":3.00, "cityTaxEnabled":true,
+                  "cityTaxExemptChildren":true,   // Kurtaxe'de cocuklar muaf mi (varsayilan false)
+                  "cityTaxChildAgeLimit":18 } }   // null olabilir; HESABA GIRMEZ (asagi bkz.)
 
 // PUT /hotels/{id}/settings  → 200 + HotelResponse
 { "name":"...", "country":"DE", "city":"Berlin", "addressLine":null, "postalCode":null,
   "phone":null, "email":null, "taxNumber":null, "defaultCulture":"de", "currency":"EUR",
   "taxProfile": { "vatRate":19, "reducedVatRate":7,
-                  "cityTaxPerPersonNight":3, "cityTaxEnabled":true } }
+                  "cityTaxPerPersonNight":3, "cityTaxEnabled":true,
+                  "cityTaxExemptChildren":true, "cityTaxChildAgeLimit":18 } }
+// taxProfile OKUMA ve YAZMADA ayni sekildedir: GET govdesi dogrudan PUT'a gonderilebilir.
+// PUT tam degisimdir — gonderilmeyen alanlar varsayilana (false / null) duser.
 
 // GET/PUT /head-office/settings → HeadOfficeSettingsResponse
 { "id":"guid", "brandName":"HotelCore Group", "defaultCulture":"de", "hotelCount":1 }
@@ -99,6 +104,17 @@ culture      -> tercih edilen dil
 harf (ISO 4217) · `defaultCulture` ∈ `de|en|tr` · `country` enum adı · `vatRate` ve
 `reducedVatRate` 0–100 · `cityTaxPerPersonNight` ≥ 0 · `addressLine` ≤ 200 · `postalCode` ≤ 20 ·
 `phone` ≤ 50 · `email` geçerli e-posta ≤ 200 · `taxNumber` ≤ 50.
+
+**Kurtaxe çocuk muafiyeti:**
+- `cityTaxExemptChildren` ≤ tek hesaplanabilir bilgi: `true` ise vergiye tabi kişi sayısı
+  **yalnızca `adults`**'tır (`adults + children` değil) → çocuklu rezervasyonlarda Kurtaxe **düşer**.
+  Varsayılan `false`, yani muafiyet **opt-in**; mevcut oteller etkilenmez.
+- `cityTaxChildAgeLimit` (null veya **0–99**) **hesaba girmez**. Rezervasyon yalnızca yetişkin/çocuk
+  **sayısı** tutar, doğum tarihi tutmaz; bu yüzden yaşa göre ayrıştırma yapılamaz. Değer faturada
+  muafiyetin hukuki dayanağı olarak basılır ve "çocuk" tanımını belgeler.
+- Muafiyet açıkken yaş sınırı **zorunlu değildir** (otel bilmiyor olabilir). Sınır, muafiyet
+  kapalıyken de saklanır — belediye kuralı geçici kapatmada kaybolmasın.
+- Aralık dışı değer → **400**, hata anahtarı `TaxProfile.CityTaxChildAgeLimit`.
 
 > **Vergi oranları koda hardcode edilmez** (architecture.md §4.1) — burada yönetilir ve
 > faturalama bu değerleri okur.
