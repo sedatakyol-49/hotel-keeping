@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Common;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
@@ -151,23 +152,6 @@ public class AppDbContext : DbContext, IAppDbContext
     }
 
     /// <summary>
-    /// İstemciye gösterilen genel çakışma mesajı. Hangi kısıtın ihlal edildiği (tablo/index adı)
-    /// <b>sızdırılmaz</b>; kullanıcı dostu mesajı handler'ların ön kontrolü verir. Buraya yalnızca
-    /// ön kontrolü atlatan yarış durumları düşer.
-    /// </summary>
-    private const string UniqueViolationMessage =
-        "Kayit mevcut bir kayitla cakisiyor; girilen degerler benzersiz olmalidir. Lutfen tekrar deneyin.";
-
-    /// <summary>
-    /// Dışlama (EXCLUDE) kısıtı mesajı — bugün yalnızca fiyat planı tarih aralığı çakışmasında
-    /// oluşur. Şema detayı sızdırılmadan "aralık çakışması" olduğu söylenir; kullanıcı dostu,
-    /// plan adı içeren mesaj handler'ın ön kontrolünden gelir.
-    /// </summary>
-    private const string ExclusionViolationMessage =
-        "Kayit mevcut bir kaydin tarih araligiyla cakisiyor; ayni kapsamda cakisan aralik olamaz. " +
-        "Lutfen tarihleri kontrol edip tekrar deneyin.";
-
-    /// <summary>
     /// PostgreSQL'in <b>çakışma</b> sınıfı hatalarını arar: benzersizlik ihlali (23505) ve dışlama
     /// kısıtı ihlali (23P01). Sarmalama derinliği sağlayıcıya göre değişebildiği için tüm inner
     /// exception zinciri taranır.
@@ -194,7 +178,13 @@ public class AppDbContext : DbContext, IAppDbContext
 
     /// <summary>
     /// Savunma katmanı: ön kontrol ile INSERT arasındaki yarış durumunda (iki eşzamanlı istek)
-    /// kullanıcı 500 değil <b>409</b> alır. Teşhis için kısıt/tablo adı log'lanır.
+    /// kullanıcı 500 değil <b>409</b> alır.
+    /// <para>
+    /// İstemciye giden metin <see cref="Messages"/> üzerinden isteğin dilinde üretilir ve
+    /// <b>kısıt/tablo adı içermez</b> (şema detayı sızmaz); bu ayrıntı teşhis için yalnızca
+    /// log'a yazılır. Kullanıcı dostu, alana özgü mesajı handler'ların ön kontrolü verir —
+    /// buraya yalnızca o kontrolü atlatan yarış durumları düşer.
+    /// </para>
     /// </summary>
     private ConflictException ToConflictException(PostgresException violation, DbUpdateException exception)
     {
@@ -205,12 +195,12 @@ public class AppDbContext : DbContext, IAppDbContext
         {
             _logger?.ExclusionConstraintViolation(constraint, table, exception);
 
-            return new ConflictException(ExclusionViolationMessage, exception);
+            return new ConflictException(Messages.ExclusionViolation, exception);
         }
 
         _logger?.UniqueConstraintViolation(constraint, table, exception);
 
-        return new ConflictException(UniqueViolationMessage, exception);
+        return new ConflictException(Messages.UniqueViolation, exception);
     }
 
     /// <summary>
@@ -410,8 +400,7 @@ public class AppDbContext : DbContext, IAppDbContext
             if (entry.State is EntityState.Deleted)
             {
                 // Buraya yalnızca soft-delete dönüşümünü atlatan doğrudan silme girişimleri düşer.
-                throw new InvalidOperationException(
-                    $"Fatura silinemez (GoBD 10 yil saklama zorunlulugu). Invoice Id: {entry.Entity.Id}.");
+                throw new InvalidOperationException(Messages.InvoiceNotDeletable(entry.Entity.Id));
             }
 
             if (entry.State is not EntityState.Modified)
@@ -433,9 +422,10 @@ public class AppDbContext : DbContext, IAppDbContext
             if (blocked.Length > 0)
             {
                 throw new InvalidOperationException(
-                    $"Kesinlesmis fatura degistirilemez (GoBD). Invoice Id: {entry.Entity.Id}, " +
-                    $"durum: {originalStatus}, degistirilen alanlar: {string.Join(", ", blocked)}. " +
-                    "Duzeltme icin iptal faturasi (Stornorechnung) olusturun.");
+                    Messages.InvoiceImmutable(
+                        entry.Entity.Id,
+                        originalStatus,
+                        string.Join(", ", blocked)));
             }
         }
 
@@ -460,8 +450,11 @@ public class AppDbContext : DbContext, IAppDbContext
             }
 
             throw new InvalidOperationException(
-                $"Kesinlesmis faturanin satirlari degistirilemez (GoBD). Invoice Id: {id}, " +
-                $"durum: {status}, satir Id: {entry.Entity.Id}, islem: {entry.State}.");
+                Messages.InvoiceLineItemsImmutable(
+                    id,
+                    status.Value,
+                    entry.Entity.Id,
+                    entry.State.ToString()));
         }
     }
 

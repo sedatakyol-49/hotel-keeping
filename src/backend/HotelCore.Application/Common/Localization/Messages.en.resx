@@ -450,4 +450,20 @@
   <data name="Validation_VacationMaxDays" xml:space="preserve">
     <value>A vacation request may not exceed {0} days.</value>
   </data>
+
+  <data name="Conflict_UniqueViolation" xml:space="preserve">
+    <value>The record conflicts with an existing record; the values entered must be unique. Please try again.</value>
+  </data>
+  <data name="Conflict_ExclusionViolation" xml:space="preserve">
+    <value>The record overlaps the date range of an existing record; overlapping ranges are not allowed within the same scope. Please check the dates and try again.</value>
+  </data>
+  <data name="Conflict_InvoiceNotDeletable" xml:space="preserve">
+    <value>An invoice cannot be deleted (GoBD: 10-year retention obligation). Invoice Id: {0}.</value>
+  </data>
+  <data name="Conflict_InvoiceImmutable" xml:space="preserve">
+    <value>A finalised invoice must not be changed (GoBD). Invoice Id: {0}, status: {1}, changed fields: {2}. Create a Stornorechnung (cancellation invoice) to correct it.</value>
+  </data>
+  <data name="Conflict_InvoiceLineItemsImmutable" xml:space="preserve">
+    <value>The line items of a finalised invoice must not be changed (GoBD). Invoice Id: {0}, status: {1}, line item Id: {2}, operation: {3}.</value>
+  </data>
 </root>

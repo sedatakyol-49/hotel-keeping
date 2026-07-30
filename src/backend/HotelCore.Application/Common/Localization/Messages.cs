@@ -426,6 +426,48 @@ public static class Messages
         Format("Validation_VacationMaxDays", maxDays);
 
     // ---------------------------------------------------------------------------------------
+    // Kalıcılık katmanı (AppDbContext): veritabanı kısıtları ve GoBD guard'ı
+    // ---------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Benzersizlik ihlali (PostgreSQL SQLSTATE <c>23505</c>) çevirisi. Hangi kısıtın/tablonun
+    /// ihlal edildiği <b>kasıtlı olarak parametre değildir</b>: şema detayı istemciye sızmaz,
+    /// teşhis için yalnızca sunucu log'una yazılır.
+    /// </summary>
+    public static string UniqueViolation => Text("Conflict_UniqueViolation");
+
+    /// <summary>
+    /// Dışlama (EXCLUDE) kısıtı ihlali (SQLSTATE <c>23P01</c>) çevirisi — aynı şekilde kısıt adı
+    /// içermez.
+    /// </summary>
+    public static string ExclusionViolation => Text("Conflict_ExclusionViolation");
+
+    /// <summary>GoBD 10 yıl saklama zorunluluğu: fatura hiçbir yoldan silinemez.</summary>
+    public static string InvoiceNotDeletable(Guid invoiceId) =>
+        Format("Conflict_InvoiceNotDeletable", invoiceId);
+
+    /// <summary>
+    /// GoBD değiştirilemezlik guard'ı — fatura içeriği. <paramref name="changedProperties"/>
+    /// teknik alan adlarının listesidir (<c>GrossAmount</c> ...) ve çevrilmez.
+    /// </summary>
+    public static string InvoiceImmutable(
+        Guid invoiceId,
+        InvoiceStatus status,
+        string changedProperties) =>
+        Format("Conflict_InvoiceImmutable", invoiceId, status, changedProperties);
+
+    /// <summary>
+    /// GoBD değiştirilemezlik guard'ı — fatura satırları. <paramref name="operation"/> EF Core
+    /// girdi durumunun adıdır (<c>Added</c>/<c>Modified</c>/<c>Deleted</c>) ve çevrilmez.
+    /// </summary>
+    public static string InvoiceLineItemsImmutable(
+        Guid invoiceId,
+        InvoiceStatus status,
+        Guid lineItemId,
+        string operation) =>
+        Format("Conflict_InvoiceLineItemsImmutable", invoiceId, status, lineItemId, operation);
+
+    // ---------------------------------------------------------------------------------------
     // Altyapı
     // ---------------------------------------------------------------------------------------
 

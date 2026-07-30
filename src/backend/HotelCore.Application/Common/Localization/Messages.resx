@@ -479,4 +479,25 @@
   <data name="Validation_VacationMaxDays" xml:space="preserve">
     <value>Ein Urlaubsantrag darf höchstens {0} Tage umfassen.</value>
   </data>
+
+  <!-- ================= Persistenz / Kalicilik katmani (AppDbContext) =================
+       Veritabani kisitlarindan (SQLSTATE) cevrilen mesajlar ve GoBD degistirilemezlik
+       guard'i. Kisit/tablo adi gibi sema detaylari BILINCLI OLARAK yer tutucularda YOKTUR;
+       teshis icin yalnizca log'a yazilir (PersistenceLog). Fatura/satir kimlikleri, durum
+       adlari ve alan adlari teknik belirtectir ve cevrilmez. -->
+  <data name="Conflict_UniqueViolation" xml:space="preserve">
+    <value>Der Datensatz steht im Widerspruch zu einem vorhandenen Datensatz; die eingegebenen Werte müssen eindeutig sein. Bitte versuchen Sie es erneut.</value>
+  </data>
+  <data name="Conflict_ExclusionViolation" xml:space="preserve">
+    <value>Der Datensatz überschneidet sich mit dem Zeitraum eines vorhandenen Datensatzes; im selben Geltungsbereich sind überschneidende Zeiträume nicht zulässig. Bitte prüfen Sie die Daten und versuchen Sie es erneut.</value>
+  </data>
+  <data name="Conflict_InvoiceNotDeletable" xml:space="preserve">
+    <value>Eine Rechnung kann nicht gelöscht werden (GoBD: 10 Jahre Aufbewahrungspflicht). Rechnung Id: {0}.</value>
+  </data>
+  <data name="Conflict_InvoiceImmutable" xml:space="preserve">
+    <value>Eine festgeschriebene Rechnung darf nicht geändert werden (GoBD). Rechnung Id: {0}, Status: {1}, geänderte Felder: {2}. Erstellen Sie zur Korrektur eine Stornorechnung.</value>
+  </data>
+  <data name="Conflict_InvoiceLineItemsImmutable" xml:space="preserve">
+    <value>Die Positionen einer festgeschriebenen Rechnung dürfen nicht geändert werden (GoBD). Rechnung Id: {0}, Status: {1}, Position Id: {2}, Vorgang: {3}.</value>
+  </data>
 </root>

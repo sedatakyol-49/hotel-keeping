@@ -80,9 +80,16 @@ public sealed class RatePlanExclusionConstraintTests(PostgresFixture fixture)
         var act = async () => await database.SaveChangesAsync();
 
         var thrown = await act.Should().ThrowAsync<ConflictException>();
-        thrown.Which.Message.Should().Contain("tarih araligiyla cakisiyor");
+
+        // Mesaj artik yerellestirilmis kaynaktan gelir; metin yerine DAVRANIS dogrulanir:
+        // (1) sema detayi (kisit adi) kullaniciya sizmaz, (2) cakisan satir yazilmamistir.
+        thrown.Which.Message.Should().NotContain(ConstraintName);
 
         database.ChangeTracker.Clear();
+
+        var count = await database.RatePlans.IgnoreQueryFilters()
+            .CountAsync(plan => plan.RoomTypeId == scenario.RoomTypeAId);
+        count.Should().Be(1, "cakisan ikinci plan veritabanina yazilmamalidir");
     }
 
     [RequiresPostgresFact]

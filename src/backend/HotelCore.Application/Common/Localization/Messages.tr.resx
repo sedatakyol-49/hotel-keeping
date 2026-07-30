@@ -451,4 +451,20 @@
   <data name="Validation_VacationMaxDays" xml:space="preserve">
     <value>Bir izin talebi en fazla {0} gün olabilir.</value>
   </data>
+
+  <data name="Conflict_UniqueViolation" xml:space="preserve">
+    <value>Kayıt mevcut bir kayıtla çakışıyor; girilen değerler benzersiz olmalıdır. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="Conflict_ExclusionViolation" xml:space="preserve">
+    <value>Kayıt mevcut bir kaydın tarih aralığıyla çakışıyor; aynı kapsamda çakışan aralık olamaz. Lütfen tarihleri kontrol edip tekrar deneyin.</value>
+  </data>
+  <data name="Conflict_InvoiceNotDeletable" xml:space="preserve">
+    <value>Fatura silinemez (GoBD 10 yıl saklama zorunluluğu). Fatura Id: {0}.</value>
+  </data>
+  <data name="Conflict_InvoiceImmutable" xml:space="preserve">
+    <value>Kesinleşmiş fatura değiştirilemez (GoBD). Fatura Id: {0}, durum: {1}, değiştirilen alanlar: {2}. Düzeltme için iptal faturası (Stornorechnung) oluşturun.</value>
+  </data>
+  <data name="Conflict_InvoiceLineItemsImmutable" xml:space="preserve">
+    <value>Kesinleşmiş faturanın satırları değiştirilemez (GoBD). Fatura Id: {0}, durum: {1}, satır Id: {2}, işlem: {3}.</value>
+  </data>
 </root>

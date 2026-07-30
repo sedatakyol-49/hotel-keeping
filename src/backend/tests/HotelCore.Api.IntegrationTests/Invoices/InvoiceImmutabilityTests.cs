@@ -110,7 +110,10 @@ public sealed class InvoiceImmutabilityTests(PostgresFixture fixture)
         var act = async () => await database.SaveChangesAsync();
 
         var thrown = await act.Should().ThrowAsync<InvalidOperationException>();
-        thrown.Which.Message.Should().Contain("Kesinlesmis faturanin satirlari degistirilemez");
+
+        // Mesaj yerellestirildi (de/en/tr): dilden BAGIMSIZ parcalar dogrulanir — GoBD kisaltmasi
+        // ve EF girdi durumunun adi hicbir dilde cevrilmez.
+        thrown.Which.Message.Should().Contain("GoBD").And.Contain(nameof(EntityState.Added));
 
         database.ChangeTracker.Clear();
     }
@@ -129,7 +132,7 @@ public sealed class InvoiceImmutabilityTests(PostgresFixture fixture)
         var act = async () => await database.SaveChangesAsync();
 
         var thrown = await act.Should().ThrowAsync<InvalidOperationException>();
-        thrown.Which.Message.Should().Contain("Kesinlesmis faturanin satirlari degistirilemez");
+        thrown.Which.Message.Should().Contain("GoBD").And.Contain(nameof(EntityState.Deleted));
 
         database.ChangeTracker.Clear();
     }
@@ -165,7 +168,7 @@ public sealed class InvoiceImmutabilityTests(PostgresFixture fixture)
         var act = async () => await database.SaveChangesAsync();
 
         var thrown = await act.Should().ThrowAsync<InvalidOperationException>();
-        thrown.Which.Message.Should().Contain("Kesinlesmis fatura degistirilemez");
+        thrown.Which.Message.Should().Contain("GoBD");
         thrown.Which.Message.Should().Contain(nameof(Invoice.GrossAmount));
 
         database.ChangeTracker.Clear();
