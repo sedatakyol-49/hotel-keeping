@@ -22,7 +22,7 @@ import {
   type AvailableRoomResponse,
 } from '../../core/models/availability.model';
 import { GUEST_LIMITS, type GuestResponse } from '../../core/models/guest.model';
-import { SUPPORTED_LANGUAGES } from '../../core/models/language.model';
+import { SUPPORTED_LANGUAGES } from '@hotelcore/shared';
 import type { ApiError } from '../../core/models/problem-details.model';
 import {
   RESERVATION_CHANNELS,

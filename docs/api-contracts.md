@@ -7,6 +7,11 @@
 ## Genel Kurallar
 - **Base URL:** `/api/v1`
 - **Auth:** `Authorization: Bearer <jwt>` (login hariç tüm endpoint'ler).
+
+> **İstisna — public kanal:** `/api/v1/public/**` altındaki uçlar **anonimdir**, aktif otel
+> `X-Hotel-Id` ile değil **yoldaki `hotelSlug`** ile belirlenir ve şemaları **ayrı bir OpenAPI
+> belgesindedir** (`/swagger/public-v1/swagger.json`). Kuralları:
+> **[api-contracts-public-booking.md](api-contracts-public-booking.md)**.
 - **Aktif otel:** `X-Hotel-Id: <guid>` header'ı (opsiyonel; yoksa JWT'deki varsayılan otel).
   Head Office kullanıcısı bu header'ı boş bırakırsa → konsolide (tüm oteller) görünüm.
 - **Dil:** `Accept-Language: de|en|tr` (yoksa kullanıcı profili → yoksa `de`).
@@ -437,6 +442,36 @@ Bilinmesi gereken tanımlar — **bu modülde asıl zorluk kod değil, tanımlar
 > dönem raporları bugünkü servis dışı odalara göre hesaplanır. Tarihsel doğruluk için tarih aralıklı
 > bir `RoomBlock` kaydı gerekir (şema değişikliği, bu fazda yapılmadı). Aynı sebeple doluluk oranı
 > **%100'ü aşabilir** ve bilinçli olarak kırpılmaz.
+
+### Misafire Açık (Public) Rezervasyon Kanalı — **planlı**
+
+Bu modülün sözleşmesi kendi dosyasındadır:
+**[api-contracts-public-booking.md](api-contracts-public-booking.md)** (otel/marka künyesi,
+Impressum, oda tipi kataloğu, müsaitlik + fiyat teklifi, hold, rezervasyon, sorgulama, iptal).
+Mimari kararlar: **[architecture-public-booking.md](architecture-public-booking.md)**.
+
+Bilinmesi gereken kararlar:
+- **Base URL `/api/v1/public`, tüm uçlar anonim.** Otel yoldaki `hotelSlug` ile belirlenir;
+  `Authorization` ve `X-Hotel-Id` header'ları **yok sayılır**. Public uçlar **401/403 üretmez** —
+  her yetki/varlık sorunu **404**'e indirgenir.
+- **Public DTO'lar admin DTO'larından ayrıdır** (`Public*` öneki, ayrı OpenAPI belgesi). Oda
+  numarası, kat, housekeeping durumu, `reservationNumber`, iç notlar, doluluk/ciro alanları
+  public yanıtlarda **hiç bulunmaz**; kimlikler GUID değil `hotelSlug`/`roomTypeCode`/
+  `bookingReference`'tır.
+- **Fiyat ve müsaitlik tek kaynaktan:** `ReservationPricingService`, `InvoiceAmounts`,
+  `TaxProfile.CountTaxablePersons`, `CityTaxLiability` ve `AvailabilityQuery` **yeniden kullanılır**;
+  public teklifin toplamı üretilen faturanın `grossAmount`'una **kuruşu kuruşuna eşittir**.
+- **15 dakikalık hold** (`BookingHold`) vardır: fiyat/özet donar, oda sunucuda pinlenir.
+  Yarışın son güvencesi `Reservations` üzerindeki yeni **`EXCLUDE USING gist`** kısıtıdır
+  (`daterange(CheckIn, CheckOut, '[)')`) — bu kısıt bugünkü admin tarafı çift rezervasyon
+  açığını da kapatır.
+- **Kart verisi hiçbir uçta kabul edilmez** (PCI-DSS kapsam dışılığı); gövdede kart alanı adı
+  geçerse **400 `CARD_DATA_NOT_ACCEPTED`**. Ödeme "girişte" (`PayAtProperty`), gerçek PSP
+  `IPaymentAuthorizationProvider` soyutlamasının arkasındadır.
+- Her public hata yanıtı `extensions.code` içinde **dilden bağımsız** stabil bir anahtar taşır
+  (`HOLD_EXPIRED`, `SUMMARY_CHANGED`, …); admin uçları bu alanı bu fazda taşımaz.
+- Yeni kanal değeri **`ReservationChannel.Website`** eklenir; `Channel = Direct` fiyat planları
+  web rezervasyonlarına **uygulanmaz**.
 
 ## Frontend Client Üretimi
 Backend `dotnet run` ile ayaktayken:

@@ -1,0 +1,168 @@
+/*
+ * ===========================================================================
+ * MISAFIR SITESI — gorsel dil
+ * ===========================================================================
+ *
+ * Tema **paylasilan katmandan turer**, kopyalanmaz:
+ *   @import '../../shared/styles/theme.css'  ->  ayni renkler, ayni yazi
+ *   aileleri, ayni "yasakli utility" listesi (rounded / shadow uretilmez).
+ * Asagidaki @theme blogu o sistemi **genisletir**; ikinci bir palet yoktur.
+ * Yeni token eklerken kural: mevcut bir token isi goruyorsa yenisi eklenmez.
+ *
+ * ---------------------------------------------------------------------------
+ * NE KORUNDU (panelle birebir ayni)
+ * ---------------------------------------------------------------------------
+ * - Kose yuvarlama, golge, gradyan YOK. Bunlar "her sablonda olan" seylerdir;
+ *   1px cetvel disiplini markanin tek gercek ayirt edicisidir ve sicaklik
+ *   uretmek icin yuvarlak kose gerekmez — bosluk ve fotograf yeter.
+ * - Emoji, stok ikon seti YOK. Ikon yerine tipografi ve cizgi.
+ * - Yazi aileleri: Instrument Serif (baslik), IBM Plex Sans (metin),
+ *   IBM Plex Mono (etiket + SAYI). Fiyat ve tarih mono/tabular kalir: misafir
+ *   sitesinde sayilar karsilastirilir, hizalanmalari islevseldir.
+ * - Murekkep/kagit ve lacivert/bakir aksanlar. Marka isareti ayni.
+ *
+ * ---------------------------------------------------------------------------
+ * NE GEVSEDI (ve neden)
+ * ---------------------------------------------------------------------------
+ * 1) ZEMIN ACILDI: --color-canvas (#fbf9f4), panelin #f4f1ea kagidindan bir
+ *    ton acik. Panel uzun vardiyalarda bakilan yogun bir yuzeydir; hafif kisik
+ *    kagit parlamayi azaltir. Misafir sitesinde ekranda gecirilen sure kisadir
+ *    ve sayfanin isi fotografi tasimaktir — daha acik zemin fotografi "renk
+ *    ornegi" olmaktan cikarip fotograf yapar.
+ * 2) TIPOGRAFIK OLCEK BUYUDU: --text-display / --text-headline / --text-lede.
+ *    Panelde baslik ~1.5rem'de kalir cunku ekranda 40 satir veri vardir.
+ *    Burada sayfada tek bir onerme vardir; editoryal olcek onu tasir.
+ * 3) BOSLUK COGALDI: --spacing-section (clamp 3rem..6.5rem). Panelin ritmi
+ *    16px, burada bolum ritmi ~%400 daha genis. Bosluk, yuvarlak koseye
+ *    basvurmadan "sicaklik" uretmenin dogru yoludur.
+ * 4) BUYUK HARF DISIPLINI DARALDI: panelde her etiket mono+uppercase'tir.
+ *    Burada uppercase yalnizca eyebrow, fiyat/tarih ve form etiketlerinde
+ *    kalir; gezinme ve govde metni normal cumle duzenindedir. Sebep: surekli
+ *    buyuk harf "sistem ciktisi" gibi okunur; misafire konusan bir ses degil.
+ * 5) TEK BIRINCIL EYLEM: .hcg-action — dolu murekkep zeminli, 48px yuksek
+ *    dikdortgen buton (hap degil, yuvarlak degil). Panelde eylemler esit
+ *    agirliktadir cunku donusum diye bir sey yoktur; burada "buk" eylemi
+ *    tereddutsuz bulunmalidir.
+ * 6) MEDYA BIRINCI SINIF OGE: --color-media / --color-media-line tokenlari ve
+ *    hcg-media bileseni. Kutu olculeri her zaman onceden ayrilir
+ *    (CLS = 0); gorsel sonra veritabanindan gelince ayni kutuya oturur.
+ */
+
+/* Otomatik tarama kapali; kaynaklar acikca sayilir (bkz. src/styles.css). */
+@import 'tailwindcss' source(none);
+
+@source './';
+@source '../../shared/src';
+
+/* Ortak tasarim sistemi (tokenlar, temel katman, ortak bilesen siniflari). */
+@import '../../shared/styles/theme.css';
+
+/* ------------------------------------------------------------------------- */
+/* Misafir tarafina ozgu GENISLETMELER                                        */
+/* ------------------------------------------------------------------------- */
+@theme {
+  /* --- Yuzeyler --- */
+  --color-canvas: #fbf9f4;
+  --color-canvas-deep: #efeadd;
+
+  /* --- Medya yer tutucusu (gercek fotograf gelene kadar) --- */
+  --color-media: #e9e3d6;
+  --color-media-line: #cdc5b1;
+
+  /* --- Editoryal olcek --- */
+  --text-display: clamp(2.5rem, 7vw, 4.75rem);
+  --text-display--line-height: 1.02;
+  --text-headline: clamp(1.625rem, 3.4vw, 2.5rem);
+  --text-headline--line-height: 1.1;
+  --text-lede: clamp(1.0625rem, 1.5vw, 1.1875rem);
+  --text-lede--line-height: 1.6;
+
+  /* --- Ritim --- */
+  --spacing-section: clamp(3rem, 8vw, 6.5rem);
+  --spacing-gutter: clamp(1.25rem, 4vw, 3rem);
+  /* Okuma genisligi (~70 karakter) */
+  --spacing-measure: 34rem;
+  /* Birincil eylem yuksekligi: dokunmatik alt sinirin (44px) uzerinde */
+  --spacing-action: 3rem;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-canvas);
+  }
+
+  /*
+   * Baglantilar: alt cizgi KALIR (erisilebilirlik — renk tek isaret olamaz),
+   * ama offset ile nefes alir. Kalinlik 1px: sayfanin geri kalanindaki cetvel
+   * cizgisiyle ayni agirlik.
+   */
+  main a:not([class]) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+}
+
+@layer components {
+  /*
+   * Birincil eylem. Hap degil, yuvarlak degil, golgesiz: dolu murekkep
+   * dikdortgen. Uzerine gelindiginde bakira doner — marka aksani zaten bakir.
+   */
+  .hcg-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--spacing-action);
+    padding-inline: 1.5rem;
+    border: 1px solid var(--color-ink);
+    background-color: var(--color-ink);
+    color: var(--color-ink-inverse);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .hcg-action:hover {
+    border-color: var(--color-copper);
+    background-color: var(--color-copper);
+  }
+
+  /* Ikincil eylem: ayni geometri, bos zemin. */
+  .hcg-action--quiet {
+    border-color: var(--color-rule-strong);
+    background-color: transparent;
+    color: var(--color-ink);
+  }
+
+  .hcg-action--quiet:hover {
+    border-color: var(--color-ink);
+    background-color: transparent;
+    color: var(--color-copper);
+  }
+
+  /* Sayfa genisligi — panelin tam genislikli calisma yuzeyinden farkli olarak
+     misafir tarafinda icerik olculu bir sutunda durur. */
+  .hcg-shell {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: var(--spacing-gutter);
+  }
+
+  /* Gezinme baglantisi: buyuk harf yok, alt cizgi hover'da cetvel gibi gelir. */
+  .hcg-nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--spacing-touch);
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .hcg-nav-link:hover,
+  .hcg-nav-link[aria-current='page'] {
+    border-bottom: 1px solid var(--color-copper);
+  }
+}

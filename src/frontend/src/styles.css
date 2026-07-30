@@ -1,242 +1,27 @@
 /*
- * HotelCore — global stil girisi.
+ * HotelCore yonetim paneli — global stil girisi.
  *
  * Tailwind v4 "CSS-first" yapilandirmasi: ayri bir tailwind.config.js YOKTUR.
- * Tum tasarim tokenlari asagidaki @theme blogunda tanimlanir ve otomatik olarak
- * utility uretir (ornek: --color-paper -> bg-paper / text-paper / border-paper).
+ * Tasarim tokenlarinin tamami artik **paylasilan katmandadir**
+ * (`projects/shared/styles/theme.css`); misafir sitesi ayni dosyayi import eder.
+ * Boylece iki uygulamada tek renk/tipografi sistemi olur.
  *
  * Not: Bu dosya bilincli olarak .css'tir (.scss degil). Tailwind v4'un
  * `@import "tailwindcss"` direktifi Sass tarafindan islenmemelidir; component
  * stilleri ise SCSS olarak kalir (angular.json -> inlineStyleLanguage: scss).
  */
 
-@import 'tailwindcss';
+/*
+ * `source(none)`: otomatik kaynak taramasi KAPALI, kaynaklar acikca sayilir.
+ * Sebep: workspace artik iki uygulama barindiriyor; otomatik tarama misafir
+ * sitesinin siniflarini da bulur ve panelin CSS'ine ait olmayan yardimcilari
+ * yazardi. Acik liste ile her uygulamanin stil ciktisi kendi kaynagindan ibaret
+ * kalir.
+ */
+@import 'tailwindcss' source(none);
 
-/* ------------------------------------------------------------------------- */
-/* "Otel Defteri" tasarim sistemi tokenlari                                   */
-/* ------------------------------------------------------------------------- */
-@theme {
-  /*
-     Yasak utility'ler: kose yuvarlama ve golge namespace'leri bilincli olarak
-     bosaltildi. Boylece ilgili siniflar hic uretilmez ve "Otel Defteri"
-     kurallari (rounded / box-shadow / drop-shadow yok) arac seviyesinde zorlanir.
-  */
-  --radius-*: initial;
-  --shadow-*: initial;
-  --inset-shadow-*: initial;
-  --drop-shadow-*: initial;
-  --text-shadow-*: initial;
+@source './';
+@source '../projects/shared/src';
 
-  /* --- Zemin & murekkep --- */
-  --color-paper: #f4f1ea;
-  --color-paper-raised: #faf8f2;
-  --color-paper-sunken: #eae5d9;
-  --color-ink: #16150f;
-  --color-ink-muted: #5c5749;
-  --color-ink-faint: #8b8574;
-  --color-ink-inverse: #f4f1ea;
-
-  /* --- 1px cetvel ayraclar --- */
-  --color-rule: #d9d3c3;
-  --color-rule-strong: #b9b2a0;
-
-  /* --- Aksanlar --- */
-  --color-navy: #1f3a5f;
-  --color-navy-tint: #e6eaf0;
-  --color-copper: #a9662f;
-  --color-copper-tint: #f4e8dd;
-  /* Opsiyon / bekleyen durumlar */
-  --color-brass: #8f6b2e;
-  --color-brass-tint: #f1e9d7;
-
-  /* --- Durum renkleri (defter estetigine uygun kisik tonlar) --- */
-  --color-danger: #8a2f2a;
-  --color-danger-tint: #f3e2df;
-  --color-success: #2f5d3a;
-  --color-success-tint: #e2ece4;
-
-  /* --- Tipografi --- */
-  --font-serif: 'Instrument Serif', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
-  --font-sans: 'IBM Plex Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-
-  /* Etiketler icin genis harf araligi */
-  --tracking-label: 0.16em;
-  --tracking-eyebrow: 0.22em;
-
-  /* --- Duzen olculeri --- */
-  --spacing-sidebar: 15rem;
-  /* Daraltilmis (rail) kenar cubugu: yalnizca kisa gosterim sigar */
-  --spacing-rail: 3.5rem;
-  --spacing-topbar: 3.5rem;
-  /* Dokunmatik hedef alt siniri (>= 44px) */
-  --spacing-touch: 2.75rem;
-}
-
-/* ------------------------------------------------------------------------- */
-/* Temel katman                                                               */
-/* ------------------------------------------------------------------------- */
-@layer base {
-  :root {
-    color-scheme: light;
-  }
-
-  html {
-    -webkit-text-size-adjust: 100%;
-    scrollbar-color: var(--color-rule-strong) var(--color-paper);
-  }
-
-  body {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
-    font-family: var(--font-sans);
-    font-size: 0.9375rem;
-    line-height: 1.55;
-    font-variant-numeric: tabular-nums;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5 {
-    font-family: var(--font-serif);
-    font-weight: 400;
-    letter-spacing: -0.005em;
-    line-height: 1.15;
-  }
-
-  /* Sayilar her zaman hizali */
-  th,
-  td,
-  time,
-  output,
-  data {
-    font-variant-numeric: tabular-nums;
-  }
-
-  table {
-    border-collapse: collapse;
-  }
-
-  ::selection {
-    background-color: var(--color-navy);
-    color: var(--color-ink-inverse);
-  }
-
-  /* Klavye erisilebilirligi: gorunur odak halkasi */
-  :focus-visible {
-    outline: 2px solid var(--color-navy);
-    outline-offset: 2px;
-  }
-
-  [hidden] {
-    display: none !important;
-  }
-}
-
-/* ------------------------------------------------------------------------- */
-/* Bilesen katmani — tekrar eden form/tablo kaliplari                          */
-/* ------------------------------------------------------------------------- */
-@layer components {
-  .hc-input {
-    display: block;
-    width: 100%;
-    min-height: var(--spacing-touch);
-    padding: 0.5rem 0.75rem;
-    background-color: var(--color-paper-raised);
-    border: 1px solid var(--color-rule-strong);
-    color: var(--color-ink);
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-  }
-
-  .hc-input::placeholder {
-    color: var(--color-ink-faint);
-  }
-
-  .hc-input:focus {
-    border-color: var(--color-navy);
-    outline: 2px solid var(--color-navy);
-    outline-offset: -1px;
-  }
-
-  .hc-input[aria-invalid='true'] {
-    border-color: var(--color-danger);
-  }
-
-  .hc-label {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
-    color: var(--color-ink-muted);
-  }
-
-  /* Yatay kaydirilan grid'lerde sabit basliklar icin ortak taban */
-  .hc-sticky-head {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background-color: var(--color-paper);
-  }
-
-  /* Klavye kullanicilari icin "icerige atla" baglantisi */
-  .hc-skip-link {
-    position: absolute;
-    left: 0.5rem;
-    top: -100vh;
-    z-index: 100;
-    padding: 0.5rem 1rem;
-    background-color: var(--color-ink);
-    color: var(--color-ink-inverse);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
-  }
-
-  .hc-skip-link:focus {
-    top: 0.5rem;
-  }
-}
-
-/* ------------------------------------------------------------------------- */
-/* Ozel utility'ler                                                            */
-/* ------------------------------------------------------------------------- */
-
-/* Mono + uppercase + genis aralikli etiket metni */
-@utility label-mono {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-}
-
-/* Bolum ustu "eyebrow" metni */
-@utility eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: var(--tracking-eyebrow);
-  text-transform: uppercase;
-  color: var(--color-ink-faint);
-}
-
-/* Sayisal deger sunumu */
-@utility numeric {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Dokunmatik hedef minimum olcusu */
-@utility touch-target {
-  min-height: var(--spacing-touch);
-  min-width: var(--spacing-touch);
-}
-
-@media print {
-  body {
-    background: #fff;
-  }
-}
+/* Tokenlar + temel katman + ortak bilesen siniflari. */
+@import '../projects/shared/styles/theme.css';

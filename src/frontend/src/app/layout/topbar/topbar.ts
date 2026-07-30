@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import { BrandMark } from '../../shared/ui/brand-mark/brand-mark';
+import { BrandMark } from '@hotelcore/shared';
 import { HotelSwitcher } from '../hotel-switcher/hotel-switcher';
 import { UserMenu } from '../user-menu/user-menu';
 

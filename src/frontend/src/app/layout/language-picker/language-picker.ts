@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import type { AppLanguage } from '../../core/models/language.model';
+import { LanguageStore, type AppLanguage } from '@hotelcore/shared';
+
 import { LanguageService } from '../../core/services/language.service';
-import { LanguageStore } from '../../core/state/language.store';
 
 /**
  * Dil secici — ince cetvel ayraclarla ayrilmis buton grubu (ikon/bayrak yok).

@@ -1,0 +1,15 @@
+# HotelCore — misafir sitesi
+#
+# Kisiye ozel akislar taranmaz; dil on ekli icerik sayfalari serbesttir.
+# (Ayrica her sayfa kendi `robots` meta etiketini de tasir; bu dosya yalnizca
+#  tarama butcesini korur, dizinleme karari meta etiketindedir.)
+
+User-agent: *
+Disallow: /de/booking
+Disallow: /en/booking
+Disallow: /tr/booking
+Disallow: /de/confirmation/
+Disallow: /en/confirmation/
+Disallow: /tr/confirmation/
+
+Sitemap: https://www.hotelcore.example/sitemap.xml

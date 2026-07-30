@@ -1,0 +1,175 @@
+{
+  "common": {
+    "appName": "HotelCore",
+    "tagline": "Hotel & Restaurant",
+    "pendingApi": "Die Inhalte dieser Seite werden angebunden, sobald der API-Vertrag steht.",
+    "loading": "Wird geladen …"
+  },
+  "a11y": {
+    "skipToContent": "Zum Inhalt springen"
+  },
+  "nav": {
+    "mainNavigation": "Hauptnavigation",
+    "languageNavigation": "Sprache wählen",
+    "home": "Startseite",
+    "rooms": "Zimmer & Preise",
+    "book": "Jetzt buchen"
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "Englisch",
+    "tr": "Türkisch"
+  },
+  "seo": {
+    "defaultTitle": "HotelCore — direkt buchen",
+    "defaultDescription": "Zimmer direkt beim Haus buchen: bester Preis, freie Stornierung, persönlicher Kontakt."
+  },
+  "home": {
+    "meta": {
+      "title": "HotelCore — Zimmer direkt buchen",
+      "description": "Zimmer direkt beim Haus buchen: bester Preis, freie Stornierung, persönlicher Kontakt."
+    },
+    "hero": {
+      "eyebrow": "Direkt beim Haus",
+      "title": "Ein Zimmer, das schon auf Sie eingerichtet ist.",
+      "lede": "Keine Zwischenhändler, keine versteckten Gebühren. Sie buchen dort, wo auch das Frühstück gemacht wird.",
+      "cta": "Verfügbarkeit prüfen",
+      "imageAlt": "Ansicht des Hauses",
+      "imageCaption": "Bild folgt"
+    },
+    "rooms": {
+      "title": "Zimmer",
+      "all": "Alle Zimmer",
+      "imageAlt": "Zimmeransicht",
+      "pendingTitle": "Zimmertyp",
+      "pendingBody": "Beschreibung, Ausstattung und Belegung folgen aus der Zimmerverwaltung.",
+      "pendingPrice": "Preis auf Anfrage"
+    },
+    "direct": {
+      "title": "Warum direkt buchen",
+      "bestRate": {
+        "title": "Bester Preis",
+        "body": "Auf dieser Seite gilt derselbe Preis wie am Empfang — ohne Provision Dritter."
+      },
+      "flexible": {
+        "title": "Freie Stornierung",
+        "body": "Pläne ändern sich. Die Bedingungen stehen vor der Buchung, nicht im Kleingedruckten."
+      },
+      "contact": {
+        "title": "Ein Ansprechpartner",
+        "body": "Wünsche zur Anreise oder zum Zimmer gehen direkt an die Rezeption."
+      }
+    }
+  },
+  "search": {
+    "eyebrow": "Verfügbarkeit",
+    "title": "Freie Zimmer",
+    "lede": "Wählen Sie Zeitraum und Belegung; die Preise gelten tagesaktuell.",
+    "meta": {
+      "title": "Freie Zimmer — HotelCore",
+      "description": "Verfügbarkeit und tagesaktuelle Preise für Ihren Zeitraum."
+    }
+  },
+  "roomType": {
+    "eyebrow": "Zimmertyp",
+    "title": "Zimmer im Detail",
+    "lede": "Ausstattung, Belegung und Preise für diesen Zimmertyp.",
+    "imageAlt": "Zimmeransicht",
+    "meta": {
+      "title": "Zimmer — HotelCore",
+      "description": "Ausstattung, Belegung und tagesaktuelle Preise für diesen Zimmertyp."
+    }
+  },
+  "booking": {
+    "eyebrow": "Buchung",
+    "title": "Ihre Buchung",
+    "lede": "Drei Schritte: Zeitraum, Ihre Angaben, Bestätigung.",
+    "steps": {
+      "dates": "Zeitraum und Zimmer",
+      "guest": "Ihre Angaben",
+      "confirm": "Prüfen und bestätigen"
+    },
+    "meta": {
+      "title": "Buchung — HotelCore",
+      "description": "Buchungsstrecke für Ihre Reservierung."
+    }
+  },
+  "confirmation": {
+    "eyebrow": "Bestätigt",
+    "title": "Wir haben Ihre Buchung",
+    "lede": "Eine Bestätigung ist unterwegs zu Ihrer E-Mail-Adresse.",
+    "reference": "Buchungsnummer",
+    "meta": {
+      "title": "Buchungsbestätigung — HotelCore",
+      "description": "Bestätigung Ihrer Reservierung."
+    }
+  },
+  "legal": {
+    "eyebrow": "Rechtliches",
+    "pending": "Der verbindliche Text wird vom Haus eingepflegt.",
+    "imprint": {
+      "label": "Impressum",
+      "title": "Impressum",
+      "description": "Anbieterkennzeichnung nach §5 DDG.",
+      "sections": {
+        "provider": "Anbieter",
+        "contact": "Kontakt",
+        "register": "Registereintrag",
+        "vat": "Umsatzsteuer-Identifikationsnummer",
+        "supervision": "Aufsichtsbehörde",
+        "disputeResolution": "Streitbeilegung"
+      },
+      "meta": {
+        "title": "Impressum — HotelCore"
+      }
+    },
+    "privacy": {
+      "label": "Datenschutz",
+      "title": "Datenschutzerklärung",
+      "description": "Informationen zur Verarbeitung personenbezogener Daten.",
+      "sections": {
+        "controller": "Verantwortlicher",
+        "officer": "Datenschutzbeauftragter",
+        "purposes": "Zwecke der Verarbeitung",
+        "recipients": "Empfänger",
+        "retention": "Speicherdauer",
+        "rights": "Ihre Rechte"
+      },
+      "meta": {
+        "title": "Datenschutzerklärung — HotelCore"
+      }
+    },
+    "terms": {
+      "label": "AGB",
+      "title": "Allgemeine Geschäftsbedingungen",
+      "description": "Bedingungen für Buchung und Aufenthalt.",
+      "sections": {
+        "scope": "Geltungsbereich",
+        "booking": "Buchung und Vertragsschluss",
+        "payment": "Preise und Zahlung",
+        "cancellation": "Stornierung und Nichtanreise",
+        "houseRules": "Hausordnung",
+        "liability": "Haftung"
+      },
+      "meta": {
+        "title": "AGB — HotelCore"
+      }
+    }
+  },
+  "footer": {
+    "about": "Ein Haus, das seine Zimmer selbst vermietet — und seine Gäste selbst empfängt.",
+    "legal": "Rechtliches",
+    "legalNavigation": "Rechtliche Hinweise",
+    "language": "Sprache",
+    "copyright": "© {{year}} HotelCore",
+    "priceNote": "Alle Preise inklusive Mehrwertsteuer."
+  },
+  "errors": {
+    "notFound": {
+      "code": "Fehler 404",
+      "title": "Diese Seite gibt es nicht",
+      "lede": "Vielleicht wurde sie verschoben. Von der Startseite aus finden Sie alles wieder.",
+      "home": "Zur Startseite"
+    }
+  }
+}

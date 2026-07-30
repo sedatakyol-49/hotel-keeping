@@ -23,12 +23,17 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
+            "outputPath": "dist/hotelcore-web",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/shared/assets"
               }
             ],
             "styles": ["src/styles.css"]
@@ -92,6 +97,123 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+          }
+        }
+      }
+    },
+
+    "guest-web": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss",
+          "changeDetection": "OnPush"
+        }
+      },
+      "root": "projects/guest-web",
+      "sourceRoot": "projects/guest-web/src",
+      "prefix": "hcg",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/guest-web/src/main.ts",
+            "server": "projects/guest-web/src/main.server.ts",
+            "outputMode": "server",
+            "ssr": {
+              "entry": "projects/guest-web/src/server.ts"
+            },
+            "outputPath": "dist/guest-web",
+            "tsConfig": "projects/guest-web/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/guest-web/public"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/shared/assets"
+              }
+            ],
+            "styles": ["projects/guest-web/src/styles.css"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "400kB",
+                  "maximumError": "800kB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "projects/guest-web/src/environments/environment.ts",
+                  "with": "projects/guest-web/src/environments/environment.development.ts"
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4300
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "guest-web:build:production"
+            },
+            "development": {
+              "buildTarget": "guest-web:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runner": "vitest",
+            "tsConfig": "projects/guest-web/tsconfig.spec.json",
+            "buildTarget": "guest-web:build:development",
+            "setupFiles": ["projects/guest-web/src/test-setup.ts"]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/guest-web/src/**/*.ts",
+              "projects/guest-web/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
+
+    "shared": {
+      "projectType": "library",
+      "root": "projects/shared",
+      "sourceRoot": "projects/shared/src",
+      "prefix": "hc",
+      "architect": {
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/shared/src/**/*.ts", "projects/shared/src/**/*.html"]
           }
         }
       }

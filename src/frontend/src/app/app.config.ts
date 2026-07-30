@@ -19,7 +19,7 @@ import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { HTTP_INTERCEPTORS_IN_ORDER } from './core/interceptors';
-import { DEFAULT_LANGUAGE } from './core/models/language.model';
+import { DEFAULT_LANGUAGE } from '@hotelcore/shared';
 import { AuthService } from './core/services/auth.service';
 import { LanguageService } from './core/services/language.service';
 import { TranslatedTitleStrategy } from './core/services/translated-title.strategy';

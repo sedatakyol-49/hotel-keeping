@@ -12,7 +12,15 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
+    /*
+     * Paylasilan katman ng-packagr ile derlenmez; kaynak olarak yol eslemesi
+     * uzerinden her iki uygulamaya da girer (gerekce: projects/shared/src/public-api.ts).
+     * Yol, baseUrl olmadan bu tsconfig'e goreli cozulur (TypeScript >= 4.4).
+     */
+    "paths": {
+      "@hotelcore/shared": ["./projects/shared/src/public-api.ts"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

@@ -1,7 +1,7 @@
 import type { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 
-import { LanguageStore } from '../state/language.store';
+import { LanguageStore } from '@hotelcore/shared';
 
 /**
  * `Accept-Language: de|en|tr` basligini ekler; backend hata mesajlarini

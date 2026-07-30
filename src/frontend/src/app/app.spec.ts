@@ -3,16 +3,16 @@ import { TestBed } from '@angular/core/testing';
 import { TitleStrategy } from '@angular/router';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { LanguageStore, SUPPORTED_LANGUAGES } from '@hotelcore/shared';
+
 import { App } from './app';
 import { appConfig } from './app.config';
-import { SUPPORTED_LANGUAGES } from './core/models/language.model';
 import { AuthService } from './core/services/auth.service';
 import { CurrentHotelService } from './core/services/current-hotel.service';
 import { LanguageService } from './core/services/language.service';
 import { TokenStorageService } from './core/services/token-storage.service';
 import { TranslatedTitleStrategy } from './core/services/translated-title.strategy';
 import { AuthStore } from './core/state/auth.store';
-import { LanguageStore } from './core/state/language.store';
 
 /**
  * Duman testi: `appConfig` saglayici grafiginin cozuldugunu dogrular.

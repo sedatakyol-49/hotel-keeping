@@ -1,0 +1,175 @@
+{
+  "common": {
+    "appName": "HotelCore",
+    "tagline": "Otel & Restoran",
+    "pendingApi": "Bu sayfanın içeriği, API sözleşmesi netleştiğinde bağlanacak.",
+    "loading": "Yükleniyor …"
+  },
+  "a11y": {
+    "skipToContent": "İçeriğe geç"
+  },
+  "nav": {
+    "mainNavigation": "Ana gezinme",
+    "languageNavigation": "Dil seçin",
+    "home": "Ana sayfa",
+    "rooms": "Odalar & fiyatlar",
+    "book": "Rezervasyon"
+  },
+  "language": {
+    "de": "Almanca",
+    "en": "İngilizce",
+    "tr": "Türkçe"
+  },
+  "seo": {
+    "defaultTitle": "HotelCore — doğrudan rezervasyon",
+    "defaultDescription": "Odanızı doğrudan otelden ayırtın: en iyi fiyat, ücretsiz iptal, muhatabı belli bir hizmet."
+  },
+  "home": {
+    "meta": {
+      "title": "HotelCore — odanızı doğrudan ayırtın",
+      "description": "Odanızı doğrudan otelden ayırtın: en iyi fiyat, ücretsiz iptal, muhatabı belli bir hizmet."
+    },
+    "hero": {
+      "eyebrow": "Doğrudan otelden",
+      "title": "Sizi bekleyen bir oda.",
+      "lede": "Aracı yok, gizli ücret yok. Rezervasyonu, kahvaltının hazırlandığı yerden yapıyorsunuz.",
+      "cta": "Uygunluğu görün",
+      "imageAlt": "Otelin görünümü",
+      "imageCaption": "Görsel eklenecek"
+    },
+    "rooms": {
+      "title": "Odalar",
+      "all": "Tüm odalar",
+      "imageAlt": "Oda görünümü",
+      "pendingTitle": "Oda tipi",
+      "pendingBody": "Açıklama, donanım ve kapasite oda yönetiminden gelecek.",
+      "pendingPrice": "Fiyat için sorunuz"
+    },
+    "direct": {
+      "title": "Neden doğrudan rezervasyon",
+      "bestRate": {
+        "title": "En iyi fiyat",
+        "body": "Buradaki fiyat resepsiyondaki fiyattır — üzerine aracı komisyonu binmez."
+      },
+      "flexible": {
+        "title": "Ücretsiz iptal",
+        "body": "Planlar değişir. Koşullar rezervasyondan önce yazılıdır, küçük puntoda değil."
+      },
+      "contact": {
+        "title": "Tek muhatap",
+        "body": "Varış saati veya oda ile ilgili istekler doğrudan resepsiyona ulaşır."
+      }
+    }
+  },
+  "search": {
+    "eyebrow": "Uygunluk",
+    "title": "Müsait odalar",
+    "lede": "Tarih ve kişi sayısını seçin; fiyatlar güne göre gösterilir.",
+    "meta": {
+      "title": "Müsait odalar — HotelCore",
+      "description": "Seçtiğiniz tarihler için uygunluk ve güncel fiyatlar."
+    }
+  },
+  "roomType": {
+    "eyebrow": "Oda tipi",
+    "title": "Oda ayrıntıları",
+    "lede": "Bu oda tipinin donanımı, kapasitesi ve fiyatları.",
+    "imageAlt": "Oda görünümü",
+    "meta": {
+      "title": "Oda — HotelCore",
+      "description": "Bu oda tipinin donanımı, kapasitesi ve güncel fiyatları."
+    }
+  },
+  "booking": {
+    "eyebrow": "Rezervasyon",
+    "title": "Rezervasyonunuz",
+    "lede": "Üç adım: tarih, bilgileriniz, onay.",
+    "steps": {
+      "dates": "Tarih ve oda",
+      "guest": "Bilgileriniz",
+      "confirm": "Kontrol ve onay"
+    },
+    "meta": {
+      "title": "Rezervasyon — HotelCore",
+      "description": "Rezervasyon akışı."
+    }
+  },
+  "confirmation": {
+    "eyebrow": "Onaylandı",
+    "title": "Rezervasyonunuzu aldık",
+    "lede": "Onay e-postası adresinize gönderiliyor.",
+    "reference": "Rezervasyon numarası",
+    "meta": {
+      "title": "Rezervasyon onayı — HotelCore",
+      "description": "Rezervasyonunuzun onayı."
+    }
+  },
+  "legal": {
+    "eyebrow": "Hukuki",
+    "pending": "Bağlayıcı metin otel tarafından girilecek.",
+    "imprint": {
+      "label": "Künye",
+      "title": "Künye (Impressum)",
+      "description": "§5 DDG uyarınca sağlayıcı bilgileri.",
+      "sections": {
+        "provider": "Sağlayıcı",
+        "contact": "İletişim",
+        "register": "Ticaret sicili",
+        "vat": "Vergi kimlik numarası",
+        "supervision": "Denetim makamı",
+        "disputeResolution": "Uyuşmazlık çözümü"
+      },
+      "meta": {
+        "title": "Künye — HotelCore"
+      }
+    },
+    "privacy": {
+      "label": "Gizlilik",
+      "title": "Gizlilik bildirimi",
+      "description": "Kişisel verilerin işlenmesine ilişkin bilgilendirme.",
+      "sections": {
+        "controller": "Veri sorumlusu",
+        "officer": "Veri koruma görevlisi",
+        "purposes": "İşleme amaçları",
+        "recipients": "Alıcılar",
+        "retention": "Saklama süresi",
+        "rights": "Haklarınız"
+      },
+      "meta": {
+        "title": "Gizlilik bildirimi — HotelCore"
+      }
+    },
+    "terms": {
+      "label": "Koşullar",
+      "title": "Genel işlem koşulları",
+      "description": "Rezervasyon ve konaklama koşulları.",
+      "sections": {
+        "scope": "Kapsam",
+        "booking": "Rezervasyon ve sözleşmenin kurulması",
+        "payment": "Fiyatlar ve ödeme",
+        "cancellation": "İptal ve gelmeme",
+        "houseRules": "Otel kuralları",
+        "liability": "Sorumluluk"
+      },
+      "meta": {
+        "title": "Genel işlem koşulları — HotelCore"
+      }
+    }
+  },
+  "footer": {
+    "about": "Odalarını kendi kiralayan, misafirini kendi karşılayan bir otel.",
+    "legal": "Hukuki",
+    "legalNavigation": "Hukuki bilgiler",
+    "language": "Dil",
+    "copyright": "© {{year}} HotelCore",
+    "priceNote": "Tüm fiyatlara KDV dahildir."
+  },
+  "errors": {
+    "notFound": {
+      "code": "Hata 404",
+      "title": "Böyle bir sayfa yok",
+      "lede": "Taşınmış olabilir. Ana sayfadan her şeye yeniden ulaşabilirsiniz.",
+      "home": "Ana sayfaya dön"
+    }
+  }
+}

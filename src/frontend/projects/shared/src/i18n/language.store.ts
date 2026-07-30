@@ -6,7 +6,7 @@ import {
   LANGUAGE_LOCALES,
   SUPPORTED_LANGUAGES,
   type AppLanguage,
-} from '../models/language.model';
+} from './language.model';
 
 /**
  * Aktif dilin tek kaynagi (signal store).

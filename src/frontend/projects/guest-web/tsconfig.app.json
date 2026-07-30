@@ -1,0 +1,13 @@
+/* Misafir sitesi — uygulama derlemesi (tarayici + sunucu giris noktalari). */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/guest-web",
+    /* server.ts `node:http` / `node:fs` kullanir. */
+    "types": ["node"],
+    /* Ceviri paketleri JSON olarak import edilir (bkz. bundled-translate.loader.ts). */
+    "resolveJsonModule": true
+  },
+  "files": ["src/main.ts", "src/main.server.ts", "src/server.ts"],
+  "include": ["src/**/*.d.ts"]
+}

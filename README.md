@@ -34,11 +34,17 @@ Detaylar: [docs/architecture.md](docs/architecture.md).
 | **Rezervasyon** | 🔄 | ⏳ | Misafir, fiyat planı, müsaitlik, check-in/out, doluluk planı |
 | **Rechnung (Faturalama)** | 🔄 | ⏳ | GoBD: kesintisiz numara, değiştirilemezlik, Stornorechnung, denetim izi |
 | **Raporlama** | ⏳ | ⏳ | Doluluk, ciro, kanal dağılımı, ADR/RevPAR |
+| **Public Rezervasyon** | ⏳ | ⏳ | Misafire açık online kanal: arama, fiyat teklifi, hold, rezervasyon, iptal (ayrı Angular uygulaması, SSR) |
 
 ✅ bitti · 🔄 geliştiriliyor · ⏳ planlı
 
 Sözleşmelerin tamamı [docs/api-contracts.md](docs/api-contracts.md)'de; mimari kararlar ve
 gerekçeleri [docs/architecture.md](docs/architecture.md) §10 karar günlüğünde.
+
+**Misafire açık (public) rezervasyon kanalı** kendi belgelerinde tanımlıdır:
+[docs/architecture-public-booking.md](docs/architecture-public-booking.md) (mimari, workspace,
+SSR, güvenlik ve mevzuat eşlemesi) ve
+[docs/api-contracts-public-booking.md](docs/api-contracts-public-booking.md) (uç uç sözleşme).
 
 ### Bilinen sınırlar
 - İzin günü hesabı **takvim günüdür**; hafta sonu ve resmî tatil mantığı bu fazda yoktur.
@@ -80,6 +86,30 @@ faturalanması) **muhtemelen yanlıştır** ve canlıya çıkmadan mali müşavi
   belediye adına tahsil ettiği tutarı (UStG §10 Abs. 1 Satz 5, *durchlaufender Posten*) misafirden
   isteyemez.
 
+### Tüketiciye açık satış — canlıya çıkmadan hukuki onay isteyen kararlar
+Public rezervasyon kanalı (planlı modül) tüketici hukukunun admin tarafında hiç karşılaşılmayan
+zorunluluklarını getirir. Aşağıdaki yedi karar sözleşmede **uygulanmış varsayım** olarak yazılmıştır;
+**avukat/hukukçu onayı** alınmadan üretimde kullanılmamalıdır. Tam gerekçeler ve karşı görüşler:
+[docs/architecture-public-booking.md](docs/architecture-public-booking.md) §10.
+
+| Karar | Uygulanan varsayım | Değişecek tek yer |
+|---|---|---|
+| Button-Lösung (§312j Abs. 3 BGB) | Ödeme otelde yapılsa da düğme **`zahlungspflichtig buchen`** olmalı; sunucu metni doğrulamaz, **kanıt olarak dondurur** | `legal.orderButton.payable` i18n anahtarı |
+| §312f kalıcı veri taşıyıcısı | E-posta yeterlidir, **içerik gövdede** olmak kaydıyla (yalnızca bağlantı değil) | `IBookingConfirmationSender` şablonu |
+| Sözleşmenin kurulma anı | **Anında onay = kabul** (onay e-postası *Annahme*'dir) | `PublicBookingSettings.ConfirmationMode` |
+| Sözleşmenin tarafı | **Otel** (fatura da otel adına kesiliyor), marka/Head Office değil | `HotelLegalProfile` düzeyi |
+| Kurtaxe'nin gösterimi (PAngV) | Toplam fiyatın **içinde** *ve ayrıca* ayrı satır olarak | `price.totalGross` bileşimi |
+| Geç iptal / no-show bedelinin KDV'si | **Karar verilmedi, bilinçli olarak** — public sözleşme yalnızca tutarı bildirir; yukarıdaki fatura tartışması aynen geçerlidir | `InvoiceAmounts.ResolveVatRate` |
+| DSGVO Art. 17 self-servis silme | **Bu fazda yok**; faturalanmış konaklama GoBD/AO §147 gereği 10 yıl saklanır, talepler manuel işlenir | Ayrı faz |
+
+Ayrıca **§312g Abs. 2 Nr. 9 BGB**: tarihli konaklamada 14 günlük cayma hakkı **yoktur**, ama bu
+misafire bildirilmek zorundadır — genel bir *Widerrufsbelehrung* göstermek yanlış olur. Sözleşme
+bunu ayrı bir `legal.withdrawalRight` bildirimi olarak taşır ve onaylanan **versiyonu dondurur**.
+
+**Kart verisi hiçbir koşulda veritabanımıza yazılmaz.** Public uçlarda kart alanı yoktur; gövdede
+böyle bir alan adı geçerse istek reddedilir ve gövde loglanmaz. PCI-DSS kapsamı dışında kalmanın
+tek yolu budur.
+
 ### §14 UStG zorunlu fatura içeriği — bilinen eksikler
 Fatura verisi §14 Abs. 4 UStG'ye karşı denetlendi. **Orana göre ayrıştırılmış tutarlar** (Nr. 8),
 düzenleyen/alıcı künyesi (Nr. 1), vergi numarası (Nr. 2) ve hizmet dönemi (Nr. 6) eklendi. Şema
@@ -96,6 +126,11 @@ gerektirdiği için **yapılmayanlar**, belge (PDF) üretimine geçmeden önce k
 - Erken çıkışta Kurtaxe **fiilî geceye** göre hesaplanmalıdır; bunun için rezervasyonda fiilî
   giriş/çıkış **takvim günü** ve otelde **saat dilimi** tutulması gerekir (UTC anını güne indirgemek
   gün sınırında bir geceyi kaydırır ve yanlış beyan üretir).
+
+> Bu eksiklerden ikisi **public rezervasyon kanalı** çalışmasında kapatılır: `Hotel.VatId`
+> (USt-IdNr., `TaxNumber` = Steuernummer'dan ayrı — §5 DDG Impressum de bunu ister) ve
+> `Hotel.TimeZoneId` (IANA). Saat dilimi eklenince erken çıkış eksiğinin **yarısı** kapanır;
+> fiilî giriş/çıkış **takvim günü** hâlâ tutulmadığı için madde açık kalır.
 
 ## Multi-Agent Yapı
 Proje `.claude/` altında ajan ve skill tanımlarıyla organize edilmiştir:
@@ -116,7 +151,11 @@ hotel-core/
     │   ├── global.json                # SDK sabitlemesi
     │   ├── HotelCore.{Domain,Application,Infrastructure,Api}/
     │   └── tests/HotelCore.{Domain,Application,Api.Integration}Tests/
-    └── frontend/                      # Angular 22 workspace (hotelcore-web)
+    └── frontend/                      # Angular 22 workspace
+        ├── src/                       # hotelcore-web — ADMIN uygulaması (CSR)
+        └── projects/
+            ├── shared/                # paylaşılan kütüphane (@hotelcore/shared)
+            └── guest-web/             # MİSAFİR uygulaması (SSR + prerender)
 ```
 
 ## Kurulum

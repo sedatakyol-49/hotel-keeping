@@ -25,7 +25,7 @@ import {
   type InvoiceStatus,
   type UpdateInvoiceRequest,
 } from '../../core/models/invoice.model';
-import { SUPPORTED_LANGUAGES, isAppLanguage } from '../../core/models/language.model';
+import { SUPPORTED_LANGUAGES, isAppLanguage } from '@hotelcore/shared';
 import type { ApiError } from '../../core/models/problem-details.model';
 import type { ReservationResponse } from '../../core/models/reservation.model';
 import { applyApiFieldErrors } from '../../shared/forms/api-field-errors';

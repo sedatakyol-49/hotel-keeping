@@ -1,4 +1,4 @@
-import type { AppLanguage } from './language.model';
+import type { AppLanguage } from '@hotelcore/shared';
 
 /**
  * Otel vergi profili — docs/api-contracts.md → "Hotels & Ayarlar".

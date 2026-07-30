@@ -25,7 +25,7 @@ import {
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
   type AppLanguage,
-} from '../../core/models/language.model';
+} from '@hotelcore/shared';
 import type { ApiError } from '../../core/models/problem-details.model';
 import {
   ROOM_TYPE_LIMITS,

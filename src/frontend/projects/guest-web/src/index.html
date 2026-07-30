@@ -1,0 +1,36 @@
+<!doctype html>
+<!--
+  `lang` niteligi rota dilinden yazilir (GuestLanguageService). SSR sirasinda da
+  yazildigi icin sunucudan cikan HTML dogru dili bildirir — arama motoru ve
+  ekran okuyucu ikisi de bu nitelige bakar.
+-->
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>HotelCore</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#fbf9f4" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+    <link rel="apple-touch-icon" href="icons/icon-maskable.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      `display=swap`: yazi tipi inerken metin gorunmez kalmaz (FOIT yok).
+      Yedek aileler tema tokenlarinda tanimli oldugu icin gecis kucuktur.
+    -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <hcg-root></hcg-root>
+    <noscript>
+      HotelCore benötigt JavaScript für die Buchung. — HotelCore requires JavaScript for booking. —
+      HotelCore rezervasyon için JavaScript gerektirir.
+    </noscript>
+  </body>
+</html>

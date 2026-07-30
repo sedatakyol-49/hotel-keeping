@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import { BrandMark } from './brand-mark';
+import { BrandMark } from '@hotelcore/shared';
 
 /** Isareti verilen girdilerle canlandirip kok `<svg>` ogesini dondurur. */
 function render(inputs: Partial<{ size: number; label: string }> = {}) {

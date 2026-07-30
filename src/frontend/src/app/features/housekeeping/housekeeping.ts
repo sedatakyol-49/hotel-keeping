@@ -12,7 +12,7 @@ import {
   type HousekeepingStatus,
 } from '../../core/models/room.model';
 import { AuthStore } from '../../core/state/auth.store';
-import { LanguageStore } from '../../core/state/language.store';
+import { LanguageStore } from '@hotelcore/shared';
 import { Button } from '../../shared/ui/button/button';
 import { EmptyState } from '../../shared/ui/empty-state/empty-state';
 import { HousekeepingStatusBadge } from '../../shared/ui/housekeeping-status/housekeeping-status';

@@ -1,0 +1,175 @@
+{
+  "common": {
+    "appName": "HotelCore",
+    "tagline": "Hotel & Restaurant",
+    "pendingApi": "This page will be connected as soon as the API contract is settled.",
+    "loading": "Loading …"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "mainNavigation": "Main navigation",
+    "languageNavigation": "Choose language",
+    "home": "Home",
+    "rooms": "Rooms & rates",
+    "book": "Book now"
+  },
+  "language": {
+    "de": "German",
+    "en": "English",
+    "tr": "Turkish"
+  },
+  "seo": {
+    "defaultTitle": "HotelCore — book direct",
+    "defaultDescription": "Book your room directly with the house: best rate, free cancellation, a real person to talk to."
+  },
+  "home": {
+    "meta": {
+      "title": "HotelCore — book your room direct",
+      "description": "Book your room directly with the house: best rate, free cancellation, a real person to talk to."
+    },
+    "hero": {
+      "eyebrow": "Direct with the house",
+      "title": "A room that is already expecting you.",
+      "lede": "No middlemen, no hidden fees. You book where breakfast is made.",
+      "cta": "Check availability",
+      "imageAlt": "View of the house",
+      "imageCaption": "Photo to follow"
+    },
+    "rooms": {
+      "title": "Rooms",
+      "all": "All rooms",
+      "imageAlt": "Room view",
+      "pendingTitle": "Room type",
+      "pendingBody": "Description, amenities and occupancy will come from room management.",
+      "pendingPrice": "Rate on request"
+    },
+    "direct": {
+      "title": "Why book direct",
+      "bestRate": {
+        "title": "Best rate",
+        "body": "The price here is the price at the desk — no third-party commission on top."
+      },
+      "flexible": {
+        "title": "Free cancellation",
+        "body": "Plans change. The terms are stated before you book, not in the small print."
+      },
+      "contact": {
+        "title": "One point of contact",
+        "body": "Requests about arrival or the room go straight to reception."
+      }
+    }
+  },
+  "search": {
+    "eyebrow": "Availability",
+    "title": "Available rooms",
+    "lede": "Pick your dates and party size; rates are shown for the day.",
+    "meta": {
+      "title": "Available rooms — HotelCore",
+      "description": "Availability and current rates for your dates."
+    }
+  },
+  "roomType": {
+    "eyebrow": "Room type",
+    "title": "The room in detail",
+    "lede": "Amenities, occupancy and rates for this room type.",
+    "imageAlt": "Room view",
+    "meta": {
+      "title": "Room — HotelCore",
+      "description": "Amenities, occupancy and current rates for this room type."
+    }
+  },
+  "booking": {
+    "eyebrow": "Booking",
+    "title": "Your booking",
+    "lede": "Three steps: dates, your details, confirmation.",
+    "steps": {
+      "dates": "Dates and room",
+      "guest": "Your details",
+      "confirm": "Review and confirm"
+    },
+    "meta": {
+      "title": "Booking — HotelCore",
+      "description": "Booking flow for your reservation."
+    }
+  },
+  "confirmation": {
+    "eyebrow": "Confirmed",
+    "title": "We have your booking",
+    "lede": "A confirmation is on its way to your inbox.",
+    "reference": "Booking number",
+    "meta": {
+      "title": "Booking confirmation — HotelCore",
+      "description": "Confirmation of your reservation."
+    }
+  },
+  "legal": {
+    "eyebrow": "Legal",
+    "pending": "The binding text will be supplied by the house.",
+    "imprint": {
+      "label": "Imprint",
+      "title": "Imprint",
+      "description": "Provider identification under §5 DDG (German law).",
+      "sections": {
+        "provider": "Provider",
+        "contact": "Contact",
+        "register": "Commercial register",
+        "vat": "VAT identification number",
+        "supervision": "Supervisory authority",
+        "disputeResolution": "Dispute resolution"
+      },
+      "meta": {
+        "title": "Imprint — HotelCore"
+      }
+    },
+    "privacy": {
+      "label": "Privacy",
+      "title": "Privacy policy",
+      "description": "Information on the processing of personal data.",
+      "sections": {
+        "controller": "Controller",
+        "officer": "Data protection officer",
+        "purposes": "Purposes of processing",
+        "recipients": "Recipients",
+        "retention": "Retention period",
+        "rights": "Your rights"
+      },
+      "meta": {
+        "title": "Privacy policy — HotelCore"
+      }
+    },
+    "terms": {
+      "label": "Terms",
+      "title": "Terms and conditions",
+      "description": "Conditions for booking and stay.",
+      "sections": {
+        "scope": "Scope",
+        "booking": "Booking and conclusion of contract",
+        "payment": "Rates and payment",
+        "cancellation": "Cancellation and no-show",
+        "houseRules": "House rules",
+        "liability": "Liability"
+      },
+      "meta": {
+        "title": "Terms and conditions — HotelCore"
+      }
+    }
+  },
+  "footer": {
+    "about": "A house that rents out its own rooms — and welcomes its own guests.",
+    "legal": "Legal",
+    "legalNavigation": "Legal information",
+    "language": "Language",
+    "copyright": "© {{year}} HotelCore",
+    "priceNote": "All rates include VAT."
+  },
+  "errors": {
+    "notFound": {
+      "code": "Error 404",
+      "title": "This page does not exist",
+      "lede": "It may have moved. Everything is reachable again from the home page.",
+      "home": "Go to home page"
+    }
+  }
+}

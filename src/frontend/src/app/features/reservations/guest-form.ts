@@ -8,7 +8,7 @@ import { firstValueFrom } from 'rxjs';
 import { GuestsApi } from '../../core/api/guests.api';
 import { toApiError } from '../../core/interceptors/problem-details.mapper';
 import { GUEST_LIMITS, type GuestWriteRequest } from '../../core/models/guest.model';
-import { SUPPORTED_LANGUAGES, isAppLanguage } from '../../core/models/language.model';
+import { SUPPORTED_LANGUAGES, isAppLanguage } from '@hotelcore/shared';
 import type { ApiError } from '../../core/models/problem-details.model';
 import { COUNTRIES } from '../../core/models/settings.model';
 import { applyApiFieldErrors, serverErrorMessages } from '../../shared/forms/api-field-errors';

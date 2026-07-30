@@ -1,8 +1,12 @@
 import { DOCUMENT, Injectable, effect, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
-import { DEFAULT_LANGUAGE, normalizeLanguage, type AppLanguage } from '../models/language.model';
-import { LanguageStore } from '../state/language.store';
+import {
+  DEFAULT_LANGUAGE,
+  LanguageStore,
+  normalizeLanguage,
+  type AppLanguage,
+} from '@hotelcore/shared';
 
 const LANGUAGE_KEY = 'hotelcore.language';
 

@@ -11,7 +11,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { SettingsApi } from '../../core/api/settings.api';
 import { toApiError } from '../../core/interceptors/problem-details.mapper';
-import { SUPPORTED_LANGUAGES, type AppLanguage } from '../../core/models/language.model';
+import { SUPPORTED_LANGUAGES, type AppLanguage } from '@hotelcore/shared';
 import { PERMISSIONS } from '../../core/models/permission.model';
 import type { ApiError } from '../../core/models/problem-details.model';
 import {

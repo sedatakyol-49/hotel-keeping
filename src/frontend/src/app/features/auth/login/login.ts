@@ -6,7 +6,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../core/state/auth.store';
 import { LanguagePicker } from '../../../layout/language-picker/language-picker';
-import { BrandMark } from '../../../shared/ui/brand-mark/brand-mark';
+import { BrandMark } from '@hotelcore/shared';
 import { Button } from '../../../shared/ui/button/button';
 import { Spinner } from '../../../shared/ui/spinner/spinner';
 

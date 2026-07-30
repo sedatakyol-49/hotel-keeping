@@ -1,6 +1,6 @@
 import { Pipe, inject, type PipeTransform } from '@angular/core';
 
-import { LanguageStore } from '../../core/state/language.store';
+import { LanguageStore } from '@hotelcore/shared';
 
 export type LocalizedDateStyle = 'short' | 'medium' | 'long' | 'dayMonth' | 'time' | 'weekdayShort';
 

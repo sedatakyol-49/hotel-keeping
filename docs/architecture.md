@@ -244,3 +244,38 @@ bu şemadan üretir (`openapi-generator` / `ng-openapi-gen`). Sözleşme değiş
 | 2026-07-30 | Head Office ayarlarında hedef kimlik **istekten alınmaz**, JWT `headOfficeId` claim'inden gelir | Başka markanın ayarlarına erişim yolu hiç açılmaz |
 | 2026-07-30 | Kenar çubuğu ağacı **`layout/navigation.ts`'te tek kez** tanımlanır; sidebar ve hub kartları oradan beslenir | Yeni modül iki yerde tanımlanmaz; izin süzmesi tek noktada |
 | 2026-07-30 | Kabuk düzeni: görüş alanı yüksekliğinde çerçeve, **yalnızca ana içerik kayar** | Header ve kenar çubuğu sabit kalır; ayrıca sticky tablo başlığı içeriğin kendi kaydırma kabına yapıştığı için header ile çakışmaz |
+| 2026-07-31 | Misafir sitesi **ayrı Angular uygulaması** (aynı workspace, `projects/guest-web`) + `projects/shared` (`@hotelcore/shared`) kütüphanesi | Ayrı origin = en güçlü güvenlik sınırı: misafir sayfasındaki XSS admin token'ına erişemez. Ayrıca SSR/prerender yalnızca misafir tarafında gerekir. Admin uygulaması **taşınmaz** (yalnızca kozmetik kazanç için yüzlerce import yolu kırılmaz) |
+| 2026-07-31 | Paylaşılan kütüphaneye **JWT'ye dokunan hiçbir şey girmez** | Kütüphane misafir paketine giriyor; kimlik yönetimi oraya girerse ayrı origin ile kurulan sınır anlamsızlaşır. Lint kuralı + test korur |
+| 2026-07-31 | Public API **aynı uygulamada, `/api/v1/public/**` önekiyle**; ama **ayrı OpenAPI belgesi** (`public-v1`) | Ayrı servis fiyat mantığını kopyalamayı gerektirirdi (tek kaynak kuralı). Ayrı belge, misafir client'ının admin şemalarının tek bir tipini bile görmemesini sağlar |
+| 2026-07-31 | Public tarafta otel **yol parametresi `hotelSlug`** ile belirlenir (`X-Hotel-Id` değil) | URL, CDN cache anahtarının ve SEO'nun kendisidir; header cache anahtarına girmez ve crawler göndermez. GUID'i public URL'e taşımak iç kimlikleri dışarı verir |
+| 2026-07-31 | `AppDbContext` global filter'ı `ICurrentUser` yerine **`ITenantContext`** okur | Anonim public istekte de kesin bir `HotelId` kurulmalı. Değişmez: `PublicChannel ⇒ HotelId != null && !CanAccessAllHotels` (sözleşme testi) |
+| 2026-07-31 | Public yolda **`IgnoreQueryFilters()` yasak**; token taşıyan uçlarda bile slug yoldadır | Başka otelin token'ı yanlış slug'da sunulursa satır global filtreye takılıp **404** olur — ayrı bir kontrol ve tek bir filtre bypass'ı gerekmez |
+| 2026-07-31 | Public DTO'lar admin DTO'larından **ayrı** (`Public*`, ayrı namespace + ayrı OpenAPI belgesi) | Paylaşılan tip, yarın admin'e eklenen bir alanı (maliyet, doluluk, iç not) **sessizce** public yanıta taşır. Ayrılık, sızıntıyı unutma hatasından bilinçli ekleme hatasına çevirir |
+| 2026-07-31 | Public satış **oda tipi bazında**; somut oda **hold anında sunucuda** deterministik atanır (`floor` ↑, `number` ↑) | Oda numarası/kat ifşası otelin yerleşimini ve doluluğunu açık eder; `Reservation.RoomId` ise zorunlu — ikisi ancak sunucu tarafı atama ile bağdaşır |
+| 2026-07-31 | **15 dakikalık `BookingHold`** + veritabanı kısıtı (ikisi birden) | §312j Abs. 2 özeti gerçekten ödenecek fiyatı göstermek zorunda; "son oda satıldı" hatası butona basıldıktan sonra gelemez. `Option` durumu hold olarak **kullanılmaz** (numara tüketir, grid'i/raporu/`Guest` tablosunu kirletir, gereksiz kişisel veri yaratır) |
+| 2026-07-31 | `Reservations` üzerinde **`EXCLUDE USING gist` + `daterange(CheckIn, CheckOut, '[)')`** çift rezervasyon kısıtı | Bugün tek koruma `AvailabilityService`'in kilitsiz ön kontrolü; iki eşzamanlı istek aynı odayı satabiliyor. Kısıt bu **mevcut açığı** kapatır ve 23P01 → 409 çevirisi zaten var. Predikat immutable olmak zorunda olduğu için süresi dolmuş hold'lar **fiziksel silinir** |
+| 2026-07-31 | Public referans **Crockford Base32 `4-4-4` (60 bit)**; erişim **160-bit token**, DB'de yalnızca SHA-256 hash'i | `RES-2026-00042` sıralıdır; sorgulama anahtarı yapılırsa tüm rezervasyonlar numaralandırılır. Crockford alfabesi `I/L/O/U` içermez → telefonda hatasız dikte. Hash saklama `RefreshToken` deseniyle aynı |
+| 2026-07-31 | `bookingReference` **taşıyıcı kimlik bilgisi değildir**: `lookup` ucu veri döndürmez, bağlantıyı e-postayla gönderir ve **her zaman 202** döner | Yanıt gövdesi de yanıt süresi de bir rezervasyonun varlığını sızdırmamalı |
+| 2026-07-31 | Public uçlar **401/403 üretmez**; her yetki/varlık sorunu **404** | 403, sorulan kaynağın var olduğunu doğrular. Mevcut "erişilemeyen otel 404" kararıyla aynı ilke |
+| 2026-07-31 | **Kart verisi hiçbir public uçta kabul edilmez**; gövdede kart alanı adı geçerse 400 + gövde loglanmaz | PAN bir kez bile kabul edilirse tüm API, log altyapısı, yedekler ve dev ortamları PCI-DSS kapsamına girer. Geri dönüşü çok pahalı bir eşik |
+| 2026-07-31 | Yeni kanal **`ReservationChannel.Website`** | Web satışını `Direct` ile karıştırmak kanal dağılımı raporunu anlamsız kılar. **Yan etki:** `Channel = Direct` fiyat planları web'e uygulanmaz; ayar ekranı bunu uyarır |
+| 2026-07-31 | `Hotel.TimeZoneId` (IANA) ve `Hotel.VatId` (USt-IdNr., `TaxNumber`'dan ayrı) eklenir | İptal son tarihi mutlak bir an olarak hesaplanmalı; §5 DDG Impressum USt-IdNr. ister. İkisi de README §14'teki bilinen eksikleri kapatır |
+| 2026-07-31 | Public teklif **ikinci bir fiyat motoru yazmaz**: `ReservationPricingService` oda tipi bazlı aşırı yükleme alır, `InvoiceAmounts` / `CountTaxablePersons` / `CityTaxLiability` yeniden kullanılır | İki hesap tek planlı konaklamada aynı, sezon geçişli konaklamada farklı sonuç verirdi. Bir test teklif toplamını faturanın `grossAmount`'una eşitler |
+
+## 11. Misafire Açık (Public) Rezervasyon Kanalı
+
+Sistemin kendi rezervasyonunu ürettiği, anonim ve SEO'ya açık misafir kanalı. Workspace yapısı,
+SSR/prerender kararı, anonim çok kiracılılık, müsaitlik/hold semantiği, ödeme soyutlaması, Alman
+mevzuatı eşlemesi ve ajanlar arası bağımlılık sırası ayrı dosyadadır:
+
+- **Mimari:** [architecture-public-booking.md](architecture-public-booking.md)
+- **API sözleşmesi:** [api-contracts-public-booking.md](api-contracts-public-booking.md)
+
+Bu bölümün §3 (multi-tenant), §4.3 (rezervasyon), §6 (GoBD) ve §7 (RBAC) ile kesişen noktaları:
+- Public istekte tenant kapsamı `ITenantContext` üzerinden **yol parametresindeki slug'dan** kurulur;
+  `CanAccessAllHotels` public kanalda **her zaman false**'tur.
+- Public kanal **yeni izin anahtarı getirmez** (§7 listesi değişmez): uçlar anonim, ayarlar
+  `Settings.Manage` altındadır.
+- `Reservation` yaşam döngüsü (§4.3) değişmez; public rezervasyon `Confirmed` olarak doğar ve
+  `Channel = Website` taşır. Geçici tutma **ayrı** bir entity'dir (`BookingHold`), `Option` durumu
+  bu amaçla kullanılmaz.

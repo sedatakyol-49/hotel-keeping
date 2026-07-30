@@ -1,6 +1,6 @@
 import { Pipe, inject, type PipeTransform } from '@angular/core';
 
-import { LanguageStore } from '../../core/state/language.store';
+import { LanguageStore } from '@hotelcore/shared';
 
 /**
  * Para bicimlendirme — locale'e gore (`de-DE` -> `1.234,56 €`).

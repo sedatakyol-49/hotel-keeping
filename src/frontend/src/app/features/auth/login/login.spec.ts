@@ -6,7 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { LanguageStore } from '../../../core/state/language.store';
+import { LanguageStore } from '@hotelcore/shared';
 import { LoginPage } from './login';
 
 async function render() {

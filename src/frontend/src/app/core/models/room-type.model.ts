@@ -1,4 +1,4 @@
-import type { AppLanguage } from './language.model';
+import type { AppLanguage } from '@hotelcore/shared';
 
 /**
  * Oda tipi cevirisi (`Translation` tablosu, mimari §4.6).

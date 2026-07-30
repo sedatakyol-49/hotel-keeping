@@ -39,6 +39,12 @@
 
 ## Sorumluluk Sınırları (kim neye dokunur)
 - **Frontend Agent** yalnızca `src/frontend/` altına yazar; backend'e dokunmaz.
+  Public kanalla birlikte **üç hedef** vardır: `src/` (proje adı `hotelcore-web`, admin, CSR),
+  `projects/guest-web` (misafir, SSR/prerender) ve `projects/shared` (kütüphane,
+  import yolu `@hotelcore/shared`).
+  **Sert kural:** paylaşılan kütüphaneye **JWT'ye dokunan hiçbir şey** (auth interceptor, token
+  deposu, permission guard, hotel switcher) ve admin API client'ları **konulamaz** — kütüphane
+  misafir paketine giriyor. Bkz. `architecture-public-booking.md` §2.1.
 - **Backend Agent** `src/backend/HotelCore.{Application,Api}` — iş mantığı ve API.
 - **Database Agent** `src/backend/HotelCore.{Domain,Infrastructure}` — entity ve persistence.
   (Domain, Backend ve Database ajanlarının ortak alanıdır; entity şekli Database, davranış Backend.)

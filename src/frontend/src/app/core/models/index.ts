@@ -4,7 +4,20 @@ export * from './employee.model';
 export * from './guest.model';
 export * from './hotel.model';
 export * from './invoice.model';
-export * from './language.model';
+/*
+ * Dil sozlesmesi paylasilan katmanda (`@hotelcore/shared`) yasar — misafir
+ * sitesi ile panel ayni dilleri, ayni locale eslemesini kullanmak zorundadir.
+ * Barrel yalnizca yeniden yayinlar; kopya tanim YOKTUR.
+ */
+export {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_DIRECTIONS,
+  LANGUAGE_LOCALES,
+  SUPPORTED_LANGUAGES,
+  isAppLanguage,
+  normalizeLanguage,
+  type AppLanguage,
+} from '@hotelcore/shared';
 export * from './paged-result.model';
 export * from './permission.model';
 export * from './problem-details.model';
