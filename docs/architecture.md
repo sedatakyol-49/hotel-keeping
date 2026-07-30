@@ -239,3 +239,8 @@ bu şemadan üretir (`openapi-generator` / `ng-openapi-gen`). Sözleşme değiş
 | 2026-07-30 | Unique ihlali (PostgreSQL `23505`) Infrastructure'da **409'a çevrilir** | Ön kontrol ile insert arasındaki yarış durumunda 500 yerine 409. Application katmanı Npgsql'e bağımlı olamaz (dependency-rule testi), bu yüzden çeviri `AppDbContext`'te |
 | 2026-07-30 | **Yazma işlemleri `X-Hotel-Id` zorunlu** (konsolide modda 400) | Head Office kullanıcısı tüm otelleri görürken kaydın hangi otele yazılacağı belirsizdir; sessizce bir otel seçmek yerine açık hata |
 | 2026-07-30 | Housekeeping panosu DTO'su **hiç finansal alan içermez** (frontend'de gizlemek değil) | §7: Housekeeping rolü fiyat/ciro görmez. Kural backend'de uygulanır; bir sözleşme testi bunu kalıcı olarak korur |
+| 2026-07-30 | Otel erişimi **`UserHotelAccess` tablosundan** doğrulanır, JWT claim'inden değil | `Hotel` tenant-scoped değildir (tenant kökünün kendisi), global filter onu süzmez. Veritabanını esas almak, erişim iptalinin token süresinin bitmesini beklememesini sağlar |
+| 2026-07-30 | Erişilemeyen otel **404** döner (403 değil) | Otelin varlığı sızdırılmaz — oda modülündeki tenant izolasyonu davranışıyla tutarlı |
+| 2026-07-30 | Head Office ayarlarında hedef kimlik **istekten alınmaz**, JWT `headOfficeId` claim'inden gelir | Başka markanın ayarlarına erişim yolu hiç açılmaz |
+| 2026-07-30 | Kenar çubuğu ağacı **`layout/navigation.ts`'te tek kez** tanımlanır; sidebar ve hub kartları oradan beslenir | Yeni modül iki yerde tanımlanmaz; izin süzmesi tek noktada |
+| 2026-07-30 | Kabuk düzeni: görüş alanı yüksekliğinde çerçeve, **yalnızca ana içerik kayar** | Header ve kenar çubuğu sabit kalır; ayrıca sticky tablo başlığı içeriğin kendi kaydırma kabına yapıştığı için header ile çakışmaz |

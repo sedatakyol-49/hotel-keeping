@@ -443,6 +443,12 @@
       "description": "Raporlar otel bazında veya tüm oteller için konsolide alınabilir."
     }
   },
+  "country": {
+    "DE": "Almanya",
+    "AT": "Avusturya",
+    "CH": "İsviçre",
+    "TR": "Türkiye"
+  },
   "settings": {
     "title": "Ayarlar",
     "subtitle": "Otel profili, vergi profili, roller ve yetkiler.",
@@ -451,6 +457,47 @@
       "description": "KDV oranları ve konaklama vergisi otel bazında yönetilir, koda gömülmez."
     },
     "appearance": "Görünüm",
-    "languageHint": "Dil seçimi anında uygulanır ve yerel olarak saklanır."
+    "languageHint": "Dil seçimi anında uygulanır ve yerel olarak saklanır.",
+    "loadFailed": "Ayarlar yüklenemedi.",
+    "saved": "Değişiklikler kaydedildi.",
+    "hotel": {
+      "title": "Otel profili",
+      "select": "Otel",
+      "noAccess": "Size atanmış bir otel yok.",
+      "name": "Otel adı",
+      "country": "Ülke",
+      "city": "Şehir",
+      "addressLine": "Cadde ve numara",
+      "postalCode": "Posta kodu",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "taxNumber": "Vergi numarası",
+      "taxNumberHint": "Fatura başlığında basılır.",
+      "defaultCulture": "Varsayılan dil",
+      "currency": "Para birimi (ISO 4217)"
+    },
+    "tax": {
+      "title": "Vergi profili",
+      "vatRate": "Standart KDV oranı (%)",
+      "reducedVatRate": "İndirimli oran (%)",
+      "cityTaxPerPersonNight": "Kişi/gece konaklama vergisi",
+      "cityTaxHint": "Otelin para biriminde.",
+      "cityTaxEnabled": "Bu otelde konaklama vergisi uygulanır"
+    },
+    "headOffice": {
+      "title": "Marka",
+      "brandName": "Marka adı",
+      "brandNameHint": "Misafirin gördüğü ad — koda gömülmez.",
+      "defaultCulture": "Varsayılan dil",
+      "hotelCount": "Bu markada {{count}} otel",
+      "unavailable": "Hesabınıza bağlı bir marka yok."
+    },
+    "validation": {
+      "nameRequired": "Lütfen bir ad girin (en fazla 200 karakter).",
+      "cityRequired": "Lütfen bir şehir girin.",
+      "email": "Lütfen geçerli bir e-posta adresi girin.",
+      "currency": "Tam üç harf (ISO 4217), örn. EUR.",
+      "percent": "0 ile 100 arasında bir değer."
+    }
   }
 }

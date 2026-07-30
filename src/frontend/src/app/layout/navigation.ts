@@ -162,7 +162,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         path: '/settings',
         labelKey: 'nav.settings',
         permissions: [PERMISSIONS.SettingsManage],
-        hub: { descriptionKey: 'hub.cards.settings.description', planned: true },
+        // Backend uclari hazir (GET/PUT /hotels/{id}/settings, /head-office/settings).
+        hub: { descriptionKey: 'hub.cards.settings.description' },
       },
     ],
   },

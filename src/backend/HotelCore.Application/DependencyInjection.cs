@@ -4,6 +4,8 @@ using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Common.Messaging.Behaviors;
 using HotelCore.Application.Features.Auth.Common;
+using HotelCore.Application.Features.HeadOffices.Common;
+using HotelCore.Application.Features.Hotels.Common;
 using HotelCore.Application.Features.Rooms.Common;
 using HotelCore.Application.Features.RoomTypes.Common;
 using Mapster;
@@ -51,6 +53,10 @@ public static class DependencyInjection
         // Oda yönetimi slice'larının paylaşılan okuma gövdeleri (liste/detay/pano yanıtları).
         services.AddScoped<RoomTypeReader>();
         services.AddScoped<RoomReader>();
+
+        // Ayarlar slice'ları: erişim kapsamı (UserHotelAccess) ve projeksiyonlar tek yerde.
+        services.AddScoped<HotelReader>();
+        services.AddScoped<HeadOfficeReader>();
 
         return services;
     }

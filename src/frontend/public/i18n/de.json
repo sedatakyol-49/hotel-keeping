@@ -443,6 +443,12 @@
       "description": "Auswertungen lassen sich je Hotel oder konsolidiert über alle Häuser abrufen."
     }
   },
+  "country": {
+    "DE": "Deutschland",
+    "AT": "Österreich",
+    "CH": "Schweiz",
+    "TR": "Türkei"
+  },
   "settings": {
     "title": "Einstellungen",
     "subtitle": "Hotelprofil, Steuerprofil, Rollen und Berechtigungen.",
@@ -451,6 +457,47 @@
       "description": "Steuersätze und Kurtaxe werden je Hotel gepflegt und nicht im Code hinterlegt."
     },
     "appearance": "Darstellung",
-    "languageHint": "Die Sprachauswahl gilt sofort und wird lokal gespeichert."
+    "languageHint": "Die Sprachauswahl gilt sofort und wird lokal gespeichert.",
+    "loadFailed": "Die Einstellungen konnten nicht geladen werden.",
+    "saved": "Änderungen gespeichert.",
+    "hotel": {
+      "title": "Hotelprofil",
+      "select": "Hotel",
+      "noAccess": "Ihnen ist kein Hotel zugeordnet.",
+      "name": "Hotelname",
+      "country": "Land",
+      "city": "Stadt",
+      "addressLine": "Straße und Hausnummer",
+      "postalCode": "Postleitzahl",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "taxNumber": "Steuernummer",
+      "taxNumberHint": "Erscheint im Rechnungskopf.",
+      "defaultCulture": "Standardsprache",
+      "currency": "Währung (ISO 4217)"
+    },
+    "tax": {
+      "title": "Steuerprofil",
+      "vatRate": "Regelsteuersatz (%)",
+      "reducedVatRate": "Ermäßigter Satz (%)",
+      "cityTaxPerPersonNight": "Kurtaxe je Person und Nacht",
+      "cityTaxHint": "In der Währung des Hotels.",
+      "cityTaxEnabled": "Kurtaxe in diesem Hotel erheben"
+    },
+    "headOffice": {
+      "title": "Marke",
+      "brandName": "Markenname",
+      "brandNameHint": "Der für Gäste sichtbare Name — nicht im Code hinterlegt.",
+      "defaultCulture": "Standardsprache",
+      "hotelCount": "{{count}} Hotel(s) in dieser Marke",
+      "unavailable": "Für Ihr Konto ist keine Marke hinterlegt."
+    },
+    "validation": {
+      "nameRequired": "Bitte einen Namen angeben (max. 200 Zeichen).",
+      "cityRequired": "Bitte eine Stadt angeben.",
+      "email": "Bitte eine gültige E-Mail-Adresse angeben.",
+      "currency": "Genau drei Buchstaben (ISO 4217), z. B. EUR.",
+      "percent": "Wert zwischen 0 und 100."
+    }
   }
 }

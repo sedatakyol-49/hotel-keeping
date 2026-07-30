@@ -1,0 +1,60 @@
+using FluentValidation;
+using HotelCore.Application.Common.Localization;
+
+namespace HotelCore.Application.Features.Hotels.UpdateSettings;
+
+/// <summary>
+/// api-contracts.md → "Hotels &amp; Ayarlar" doğrulama kuralları.
+/// </summary>
+public sealed class UpdateHotelSettingsValidator : AbstractValidator<UpdateHotelSettingsRequest>
+{
+    private const int MaxNameLength = 200;
+    private const int MaxCityLength = 100;
+    private const int MaxAddressLength = 200;
+    private const int MaxPostalCodeLength = 20;
+    private const int MaxPhoneLength = 50;
+    private const int MaxEmailLength = 200;
+    private const int MaxTaxNumberLength = 50;
+
+    public UpdateHotelSettingsValidator()
+    {
+        RuleFor(request => request.Id).NotEmpty();
+
+        RuleFor(request => request.Name).NotEmpty().MaximumLength(MaxNameLength);
+        RuleFor(request => request.City).NotEmpty().MaximumLength(MaxCityLength);
+        RuleFor(request => request.Country).IsInEnum();
+
+        RuleFor(request => request.AddressLine).MaximumLength(MaxAddressLength);
+        RuleFor(request => request.PostalCode).MaximumLength(MaxPostalCodeLength);
+        RuleFor(request => request.Phone).MaximumLength(MaxPhoneLength);
+        RuleFor(request => request.TaxNumber).MaximumLength(MaxTaxNumberLength);
+
+        RuleFor(request => request.Email)
+            .MaximumLength(MaxEmailLength)
+            .EmailAddress()
+            .When(request => !string.IsNullOrWhiteSpace(request.Email));
+
+        // Dil kumesi Application katmaninda tutulur: validator HTTP yapilandirmasina
+        // (Localization:SupportedCultures) bagimli olmamalidir.
+        RuleFor(request => request.DefaultCulture)
+            .NotEmpty()
+            .Must(SupportedCultures.IsSupported)
+            .WithMessage($"Desteklenen diller: {string.Join(", ", SupportedCultures.All)}.");
+
+        // ISO 4217: tam 3 buyuk harf. Kod listesi dogrulanmaz (yeni para birimi eklenince
+        // uygulamanin guncellenmesi gerekmesin diye), yalnizca bicim.
+        RuleFor(request => request.Currency)
+            .NotEmpty()
+            .Matches("^[A-Za-z]{3}$")
+            .WithMessage("Para birimi ISO 4217 bicimi olmalidir (3 harf).");
+
+        RuleFor(request => request.TaxProfile).NotNull();
+
+        When(request => request.TaxProfile is not null, () =>
+        {
+            RuleFor(request => request.TaxProfile.VatRate).InclusiveBetween(0m, 100m);
+            RuleFor(request => request.TaxProfile.ReducedVatRate).InclusiveBetween(0m, 100m);
+            RuleFor(request => request.TaxProfile.CityTaxPerPersonNight).GreaterThanOrEqualTo(0m);
+        });
+    }
+}

@@ -58,13 +58,50 @@ culture      -> tercih edilen dil
 - JWT'de `allHotels` claim'i **string** (`"true"`/`"false"`); `hotel` claim'i tek otelde string, çok otelde dizi olur. **Token'ı decode etmek yerine `user.hotels` / `user.defaultHotelId` kullanın.**
 - Development'ta HTTPS yönlendirmesi kapalı (`http://localhost:5080` doğrudan); Production'da `UseHttpsRedirection` + HSTS aktif.
 
-### Hotels & Ayarlar
-| Method | Path | İzin |
-|---|---|---|
-| GET | `/hotels` | `Hotels.View` |
-| GET | `/hotels/{id}` | `Hotels.View` |
-| PUT | `/hotels/{id}/settings` | `Settings.Manage` |
-| GET/PUT | `/head-office/settings` | `Settings.Manage` (marka adı, varsayılan politikalar) |
+### Hotels & Ayarlar — **uygulandı**
+
+| Method | Path | İzin | Not |
+|---|---|---|---|
+| GET | `/hotels` | `Hotels.View` | Kullanıcının **erişebildiği** oteller (düz dizi) |
+| GET | `/hotels/{id}` | `Hotels.View` | Detay + vergi profili |
+| PUT | `/hotels/{id}/settings` | `Settings.Manage` | Otel künyesi + `taxProfile` |
+| GET | `/head-office/settings` | `Settings.Manage` | Marka adı, varsayılan dil |
+| PUT | `/head-office/settings` | `Settings.Manage` | |
+
+> **Erişim kuralı:** `Hotel` tenant-scoped bir entity **değildir** (tenant kökünün kendisidir), bu
+> yüzden global query filter onu süzmez. Erişim `UserHotelAccess` tablosundan doğrulanır;
+> `allHotels` yetkisi olan kullanıcı kendi Head Office'ine bağlı **tüm** otelleri görür.
+> Erişilemeyen bir otel **404** döner (403 değil) — otelin varlığı sızdırılmaz.
+
+```jsonc
+// GET /hotels → HotelListItemResponse[]
+[{ "id":"guid", "name":"HotelCore Berlin Mitte", "city":"Berlin",
+   "country":"DE", "currency":"EUR", "defaultCulture":"de", "roomCount":13 }]
+
+// GET /hotels/{id} → HotelResponse
+{ "id":"guid", "headOfficeId":"guid", "name":"...", "country":"DE", "city":"Berlin",
+  "addressLine":"...", "postalCode":"10115", "phone":"...", "email":"...",
+  "taxNumber":"DE123456789", "defaultCulture":"de", "currency":"EUR", "roomCount":13,
+  "taxProfile": { "vatRate":19.00, "reducedVatRate":7.00,
+                  "cityTaxPerPersonNight":3.00, "cityTaxEnabled":true } }
+
+// PUT /hotels/{id}/settings  → 200 + HotelResponse
+{ "name":"...", "country":"DE", "city":"Berlin", "addressLine":null, "postalCode":null,
+  "phone":null, "email":null, "taxNumber":null, "defaultCulture":"de", "currency":"EUR",
+  "taxProfile": { "vatRate":19, "reducedVatRate":7,
+                  "cityTaxPerPersonNight":3, "cityTaxEnabled":true } }
+
+// GET/PUT /head-office/settings → HeadOfficeSettingsResponse
+{ "id":"guid", "brandName":"HotelCore Group", "defaultCulture":"de", "hotelCount":1 }
+```
+
+**Doğrulama:** `name`/`brandName` zorunlu ≤ 200 · `city` zorunlu ≤ 100 · `currency` tam 3 büyük
+harf (ISO 4217) · `defaultCulture` ∈ `de|en|tr` · `country` enum adı · `vatRate` ve
+`reducedVatRate` 0–100 · `cityTaxPerPersonNight` ≥ 0 · `addressLine` ≤ 200 · `postalCode` ≤ 20 ·
+`phone` ≤ 50 · `email` geçerli e-posta ≤ 200 · `taxNumber` ≤ 50.
+
+> **Vergi oranları koda hardcode edilmez** (architecture.md §4.1) — burada yönetilir ve
+> faturalama bu değerleri okur.
 
 ### Rooms & Housekeeping — **uygulandı**
 

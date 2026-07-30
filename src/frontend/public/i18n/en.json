@@ -443,6 +443,12 @@
       "description": "Reports can be retrieved per hotel or consolidated across all properties."
     }
   },
+  "country": {
+    "DE": "Germany",
+    "AT": "Austria",
+    "CH": "Switzerland",
+    "TR": "Türkiye"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Hotel profile, tax profile, roles and permissions.",
@@ -451,6 +457,47 @@
       "description": "VAT rates and city tax are maintained per hotel and are never hardcoded."
     },
     "appearance": "Appearance",
-    "languageHint": "The language selection applies immediately and is stored locally."
+    "languageHint": "The language selection applies immediately and is stored locally.",
+    "loadFailed": "The settings could not be loaded.",
+    "saved": "Changes saved.",
+    "hotel": {
+      "title": "Hotel profile",
+      "select": "Hotel",
+      "noAccess": "No hotel is assigned to you.",
+      "name": "Hotel name",
+      "country": "Country",
+      "city": "City",
+      "addressLine": "Street and number",
+      "postalCode": "Postal code",
+      "phone": "Phone",
+      "email": "Email",
+      "taxNumber": "Tax number",
+      "taxNumberHint": "Printed in the invoice header.",
+      "defaultCulture": "Default language",
+      "currency": "Currency (ISO 4217)"
+    },
+    "tax": {
+      "title": "Tax profile",
+      "vatRate": "Standard VAT rate (%)",
+      "reducedVatRate": "Reduced rate (%)",
+      "cityTaxPerPersonNight": "City tax per person and night",
+      "cityTaxHint": "In the hotel's currency.",
+      "cityTaxEnabled": "Charge city tax at this hotel"
+    },
+    "headOffice": {
+      "title": "Brand",
+      "brandName": "Brand name",
+      "brandNameHint": "The name guests see — never hardcoded.",
+      "defaultCulture": "Default language",
+      "hotelCount": "{{count}} hotel(s) in this brand",
+      "unavailable": "No brand is linked to your account."
+    },
+    "validation": {
+      "nameRequired": "Please enter a name (max. 200 characters).",
+      "cityRequired": "Please enter a city.",
+      "email": "Please enter a valid email address.",
+      "currency": "Exactly three letters (ISO 4217), e.g. EUR.",
+      "percent": "Value between 0 and 100."
+    }
   }
 }
