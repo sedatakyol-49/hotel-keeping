@@ -4,6 +4,8 @@ using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Common.Messaging.Behaviors;
 using HotelCore.Application.Features.Auth.Common;
+using HotelCore.Application.Features.Departments.Common;
+using HotelCore.Application.Features.Employees.Common;
 using HotelCore.Application.Features.HeadOffices.Common;
 using HotelCore.Application.Features.Hotels.Common;
 using HotelCore.Application.Features.Rooms.Common;
@@ -57,6 +59,10 @@ public static class DependencyInjection
         // Ayarlar slice'ları: erişim kapsamı (UserHotelAccess) ve projeksiyonlar tek yerde.
         services.AddScoped<HotelReader>();
         services.AddScoped<HeadOfficeReader>();
+
+        // Personel slice'ları: okuma gövdeleri ve paylaşılan benzersizlik kontrolleri.
+        services.AddScoped<DepartmentReader>();
+        services.AddScoped<EmployeeReader>();
 
         return services;
     }

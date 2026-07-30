@@ -218,10 +218,58 @@ alanında birlikte döner; liste yanıtında dönmez.
 | POST | `/invoices/{id}/cancel` | `Invoices.Cancel` (→ Stornorechnung) |
 | GET | `/invoices/{id}/pdf` | `Invoices.View` |
 
-### HR (Staff / Vacation / TimeTracking / Shifts)
+### Personel (Employees & Departments) — **uygulandı**
+
+| Method | Path | İzin | Not |
+|---|---|---|---|
+| GET | `/departments` | `Employees.View` | Düz dizi (departman sayısı az) |
+| POST | `/departments` | `Employees.Edit` | Ad otel içinde unique → **409** |
+| PUT | `/departments/{id}` | `Employees.Edit` | |
+| DELETE | `/departments/{id}` | `Employees.Edit` | **Hard delete**; bağlı çalışan varsa **409** |
+| GET | `/employees` | `Employees.View` | Sayfalı + filtreli |
+| GET | `/employees/{id}` | `Employees.View` | |
+| POST | `/employees` | `Employees.Edit` | `staffNumber` unique → **409** |
+| PUT | `/employees/{id}` | `Employees.Edit` | |
+| DELETE | `/employees/{id}` | `Employees.Edit` | Soft-delete |
+
+> `Department` **soft-delete edilemez** (kasıtlı): departman bir sınıflandırmadır, geçmiş kayıt
+> taşımaz. Bu yüzden silme gerçek silmedir ve bağlı çalışan varken engellenir.
+
+```jsonc
+// DepartmentResponse
+{ "id":"guid", "name":"Rezeption", "description":"...", "employeeCount":4 }
+
+// EmployeeResponse
+{ "id":"guid", "firstName":"Anna", "lastName":"Becker", "fullName":"Anna Becker",
+  "email":"anna@hotel.de", "phone":null, "staffNumber":"P-014",
+  "departmentId":"guid", "departmentName":"Rezeption",
+  "employmentType":"FullTime",            // enum ADI (string)
+  "annualLeaveDays":28.00,
+  "hiredOn":"2024-03-01", "terminatedOn":null,
+  "isActive":true,                        // terminatedOn yok veya gelecekte
+  "userId":"guid|null" }                  // login iliskisi (opsiyonel)
+
+// GET /employees → PagedResult<EmployeeResponse>
+// Filtreler: ?page=1&pageSize=20&departmentId=&employmentType=&search=&includeTerminated=false
+//   search  -> ad, soyad ve personel numarasinda contains (case-insensitive)
+//   siralama: lastName, firstName
+//   includeTerminated=false (varsayilan) -> isten ayrilmislar listelenmez
+
+// POST/PUT /employees
+{ "firstName":"Anna", "lastName":"Becker", "email":null, "phone":null,
+  "staffNumber":"P-014", "departmentId":"guid", "employmentType":"FullTime",
+  "annualLeaveDays":28, "hiredOn":"2024-03-01", "terminatedOn":null }
+```
+
+**Doğrulama:** `firstName`/`lastName` zorunlu ≤ 100 · `email` geçerli ≤ 200 · `phone` ≤ 50 ·
+`staffNumber` ≤ 20 (otel içinde unique) · `departmentId` **aynı otelde** olmalı, değilse **404** ·
+`employmentType` ∈ `FullTime | PartTime | MiniJob | Apprentice | Seasonal | Temporary` ·
+`annualLeaveDays` 0–60 · `hiredOn` zorunlu · `terminatedOn` ≥ `hiredOn` ·
+departman `name` zorunlu ≤ 100, `description` ≤ 500.
+
+### HR (Vacation / TimeTracking / Shifts) — henüz uygulanmadı
 | Method | Path | İzin |
 |---|---|---|
-| GET | `/employees` | `Employees.View` |
 | GET/POST | `/vacations` | `Vacations.View` / `Vacations.Request` |
 | POST | `/vacations/{id}/approve` | `Vacations.Approve` |
 | POST | `/time-entries/clock-in` | `TimeTracking.Record` |
