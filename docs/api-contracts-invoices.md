@@ -108,6 +108,9 @@ Draft ──finalize──► Finalized ──ödeme tamamlanınca──► Paid
 
 // POST /invoices/{id}/cancel  (gövde OPSİYONEL)
 { "reason":"Misafir talebi: yanlış oda tipi faturalandı" }   // ≤ 500, denetim izine yazılır
+// → 200 + **ORİJİNAL** faturanin InvoiceDetailResponse'u (storno DEĞİL).
+//   Kesinlesmis faturada: status=Cancelled ve cancelledByInvoiceId dolu → storno'ya bu alandan
+//   ulasilir (GET /invoices/{cancelledByInvoiceId}). Taslakta storno uretilmez, alan null kalir.
 
 // POST /invoices/{id}/payments
 { "method":"Card", "amount":100.00,

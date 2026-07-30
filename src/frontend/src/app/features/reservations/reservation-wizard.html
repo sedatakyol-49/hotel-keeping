@@ -1,0 +1,640 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="reservations.wizard.title"
+    subtitleKey="reservations.wizard.subtitle"
+    eyebrowKey="nav.reservations"
+  />
+
+  <!-- Adim gostergesi: ikon yok, numaralandirilmis tipografi -->
+  <ol
+    class="flex flex-wrap items-center gap-x-4 gap-y-2 border-y border-rule py-3"
+    data-testid="wizard-steps"
+  >
+    @for (item of steps; track item) {
+      @if (item !== 'done') {
+        <li class="flex items-center gap-2">
+          <button
+            type="button"
+            class="label-mono"
+            [class]="
+              step() === item
+                ? 'text-navy underline underline-offset-4'
+                : stepIndex(item) < stepIndex(step())
+                  ? 'text-ink hover:underline'
+                  : 'text-ink-faint'
+            "
+            [disabled]="stepIndex(item) >= stepIndex(step())"
+            [attr.aria-current]="step() === item ? 'step' : null"
+            [attr.data-testid]="'wizard-step-' + item"
+            (click)="goToStep(item)"
+          >
+            <span class="numeric">{{ stepIndex(item) + 1 }}</span>
+            ·
+            {{ 'reservations.wizard.step.' + item | translate }}
+          </button>
+        </li>
+      }
+    }
+  </ol>
+
+  @if (formErrorKey(); as errorKey) {
+    <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+      <p class="text-sm text-danger" data-testid="wizard-error">{{ errorKey | translate }}</p>
+      @if (conflictDetail(); as detail) {
+        <!-- Sunucu hangi rezervasyonla cakisildigini burada soyler -->
+        <p class="mt-1 font-mono text-xs text-ink" data-testid="wizard-conflict-detail">
+          {{ detail }}
+        </p>
+      }
+      @for (message of formErrors(); track message) {
+        <p class="mt-1 text-xs text-ink">{{ message }}</p>
+      }
+    </div>
+  }
+
+  <!-- ADIM 1: tarih + oda tipi -->
+  @if (step() === 'dates') {
+    <form
+      class="border border-rule bg-paper-raised"
+      [formGroup]="datesForm"
+      novalidate
+      data-testid="wizard-dates-form"
+      (ngSubmit)="searchAvailability()"
+    >
+      <h2 class="border-b border-rule px-4 py-3 label-mono text-ink">
+        {{ 'reservations.wizard.step.dates' | translate }}
+      </h2>
+
+      <div class="grid grid-cols-1 gap-5 px-4 py-5 sm:grid-cols-3">
+        <div>
+          <label class="hc-label" for="wizard-from">
+            {{ 'reservations.fields.checkIn' | translate }}
+          </label>
+          <input
+            id="wizard-from"
+            class="hc-input mt-1"
+            type="date"
+            formControlName="from"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="hc-label" for="wizard-to">
+            {{ 'reservations.fields.checkOut' | translate }}
+          </label>
+          <input id="wizard-to" class="hc-input mt-1" type="date" formControlName="to" required />
+          <p class="mt-1 text-xs text-ink-muted">
+            {{ 'reservations.wizard.checkOutHint' | translate }}
+          </p>
+        </div>
+
+        <div>
+          <label class="hc-label" for="wizard-room-type">
+            {{ 'reservations.fields.roomType' | translate }}
+          </label>
+          <select id="wizard-room-type" class="hc-input mt-1" formControlName="roomTypeId">
+            <option value="">{{ 'reservations.wizard.allRoomTypes' | translate }}</option>
+            @for (type of roomTypes.options(); track type.id) {
+              <option [value]="type.id">{{ type.code }} · {{ type.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @if (stayTooShort()) {
+        <p class="px-4 pb-2 text-sm text-danger" data-testid="wizard-stay-error">
+          {{ 'reservations.wizard.validation.stayTooShort' | translate }}
+        </p>
+      } @else if (stayTooLong()) {
+        <p class="px-4 pb-2 text-sm text-danger" data-testid="wizard-stay-error">
+          {{ 'reservations.wizard.validation.stayTooLong' | translate: { max: limits.maxNights } }}
+        </p>
+      } @else if (nights(); as nights) {
+        <p class="px-4 pb-2 eyebrow" data-testid="wizard-nights">
+          {{ 'reservations.nightsCount' | translate: { count: nights } }}
+        </p>
+      }
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+        <hc-button
+          type="submit"
+          data-testid="wizard-search"
+          [busy]="availabilityLoading()"
+          [disabled]="stayTooShort() || stayTooLong()"
+        >
+          {{ 'reservations.wizard.searchAvailability' | translate }}
+        </hc-button>
+        <hc-button variant="ghost" (pressed)="cancel()">{{ 'common.cancel' | translate }}</hc-button>
+      </div>
+    </form>
+  }
+
+  <!-- ADIM 2: musait odalar -->
+  @if (step() === 'room') {
+    <section class="border border-rule bg-paper-raised" aria-labelledby="wizard-rooms-heading">
+      <header class="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule px-4 py-3">
+        <h2 id="wizard-rooms-heading" class="label-mono text-ink">
+          {{ 'reservations.wizard.step.room' | translate }}
+        </h2>
+        @if (availability(); as availability) {
+          <p class="eyebrow" data-testid="wizard-availability-summary">
+            {{
+              'reservations.wizard.availableCount'
+                | translate
+                  : {
+                      available: availability.availableRoomCount,
+                      total: availability.totalRoomCount,
+                      outOfOrder: availability.outOfOrderRoomCount,
+                    }
+            }}
+          </p>
+        }
+      </header>
+
+      @if (availabilityLoading()) {
+        <div class="px-4 py-6">
+          <hc-spinner labelKey="common.loading" [showLabel]="true" />
+        </div>
+      } @else if (availabilityError(); as error) {
+        <div class="px-4 py-4" role="alert">
+          <p class="label-mono text-danger">
+            {{ 'reservations.wizard.availabilityFailed' | translate }}
+          </p>
+          <p class="mt-1 text-sm text-ink">{{ error.messageKey | translate }}</p>
+          @if (error.detail) {
+            <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+          }
+        </div>
+      } @else if ((availability()?.rooms ?? []).length === 0) {
+        <p class="px-4 py-6 text-sm text-ink-muted" data-testid="wizard-no-rooms">
+          {{ 'reservations.wizard.noRooms' | translate }}
+        </p>
+      } @else {
+        <ul class="divide-y divide-rule">
+          @for (room of availability()!.rooms; track room.roomId) {
+            <li>
+              <button
+                type="button"
+                class="flex w-full touch-target items-center justify-between gap-3 px-4 py-3 text-left hover:bg-paper-sunken"
+                [class.bg-navy-tint]="selectedRoom()?.roomId === room.roomId"
+                [attr.aria-pressed]="selectedRoom()?.roomId === room.roomId"
+                data-testid="wizard-room"
+                [attr.data-room]="room.roomNumber"
+                (click)="selectRoom(room)"
+              >
+                <span class="min-w-0">
+                  <span class="numeric text-ink">{{ room.roomNumber }}</span>
+                  <span class="ml-2 eyebrow">
+                    {{ room.roomTypeCode }} ·
+                    {{ 'reservations.wizard.floor' | translate: { floor: room.floor } }}
+                  </span>
+                </span>
+                <span class="shrink-0 label-mono text-ink-muted">
+                  {{ 'reservations.wizard.capacity' | translate: { count: room.capacity } }}
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      <!-- Fiyat gosterilmez: tutar yalnizca kayit sirasinda sunucuda hesaplanir -->
+      <p class="border-t border-rule px-4 py-2 text-xs text-ink-muted">
+        {{ 'reservations.wizard.priceNote' | translate }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+        <hc-button
+          data-testid="wizard-room-next"
+          [disabled]="selectedRoom() === null"
+          (pressed)="confirmRoom()"
+        >
+          {{ 'common.next' | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="goToStep('dates')">
+          {{ 'common.back' | translate }}
+        </hc-button>
+      </div>
+    </section>
+  }
+
+  <!-- ADIM 3: misafir sec veya olustur -->
+  @if (step() === 'guest') {
+    <section class="border border-rule bg-paper-raised" aria-labelledby="wizard-guest-heading">
+      <h2 id="wizard-guest-heading" class="border-b border-rule px-4 py-3 label-mono text-ink">
+        {{ 'reservations.wizard.step.guest' | translate }}
+      </h2>
+
+      <div class="border-b border-rule px-4 py-4">
+        <label class="hc-label" for="wizard-guest-search">
+          {{ 'guests.filters.search' | translate }}
+        </label>
+        <div class="mt-1 flex flex-wrap gap-2">
+          <input
+            #guestSearch
+            id="wizard-guest-search"
+            class="hc-input sm:max-w-md"
+            type="search"
+            [placeholder]="'guests.filters.searchPlaceholder' | translate"
+            (keydown.enter)="$event.preventDefault(); searchGuests(guestSearch.value)"
+          />
+          <hc-button
+            variant="secondary"
+            data-testid="wizard-guest-search"
+            (pressed)="searchGuests(guestSearch.value)"
+          >
+            {{ 'common.search' | translate }}
+          </hc-button>
+          <hc-button variant="ghost" data-testid="wizard-guest-new" (pressed)="openGuestForm()">
+            {{ 'reservations.wizard.newGuest' | translate }}
+          </hc-button>
+        </div>
+        @if (guests.truncated()) {
+          <p class="mt-2 text-xs text-ink-muted">{{ 'guests.truncated' | translate }}</p>
+        }
+      </div>
+
+      @if (guestFormOpen()) {
+        <!-- Yeni misafir: sozlesmede benzersizlik kurali yok, sessiz eslesme yapilmaz -->
+        <form
+          class="border-b border-rule px-4 py-4"
+          [formGroup]="newGuestForm"
+          novalidate
+          data-testid="wizard-guest-form"
+          (ngSubmit)="createGuest()"
+        >
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div>
+              <label class="hc-label" for="wizard-guest-first">
+                {{ 'guests.fields.firstName' | translate }}
+              </label>
+              <input
+                id="wizard-guest-first"
+                class="hc-input mt-1"
+                type="text"
+                formControlName="firstName"
+                required
+                [maxlength]="guestLimits.firstNameMaxLength"
+              />
+              @for (message of serverMessagesFor('firstName'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+            <div>
+              <label class="hc-label" for="wizard-guest-last">
+                {{ 'guests.fields.lastName' | translate }}
+              </label>
+              <input
+                id="wizard-guest-last"
+                class="hc-input mt-1"
+                type="text"
+                formControlName="lastName"
+                required
+                [maxlength]="guestLimits.lastNameMaxLength"
+              />
+              @for (message of serverMessagesFor('lastName'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+            <div>
+              <label class="hc-label" for="wizard-guest-email">
+                {{ 'common.email' | translate }}
+              </label>
+              <input
+                id="wizard-guest-email"
+                class="hc-input mt-1"
+                type="email"
+                formControlName="email"
+                [maxlength]="guestLimits.emailMaxLength"
+              />
+            </div>
+            <div>
+              <label class="hc-label" for="wizard-guest-phone">
+                {{ 'common.phone' | translate }}
+              </label>
+              <input
+                id="wizard-guest-phone"
+                class="hc-input mt-1"
+                type="tel"
+                formControlName="phone"
+                [maxlength]="guestLimits.phoneMaxLength"
+              />
+            </div>
+            <div>
+              <label class="hc-label" for="wizard-guest-nationality">
+                {{ 'guests.fields.nationality' | translate }}
+              </label>
+              <select
+                id="wizard-guest-nationality"
+                class="hc-input mt-1"
+                formControlName="nationality"
+              >
+                <option value="">{{ 'common.optional' | translate }}</option>
+                @for (country of countries; track country) {
+                  <option [value]="country">{{ country }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="hc-label" for="wizard-guest-culture">
+                {{ 'guests.fields.culture' | translate }}
+              </label>
+              <select id="wizard-guest-culture" class="hc-input mt-1" formControlName="culture">
+                @for (culture of cultures; track culture) {
+                  <option [value]="culture">
+                    {{ 'language.' + culture | translate }}
+                  </option>
+                }
+              </select>
+            </div>
+          </div>
+
+          @if (guestError(); as error) {
+            <p class="mt-3 text-sm text-danger" role="alert" data-testid="wizard-guest-error">
+              {{ error.messageKey | translate }}
+              @if (error.detail) {
+                <span class="ml-1 font-mono text-xs text-ink-muted">{{ error.detail }}</span>
+              }
+            </p>
+          }
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <hc-button type="submit" data-testid="wizard-guest-save" [busy]="guestSaving()">
+              {{ 'reservations.wizard.saveGuest' | translate }}
+            </hc-button>
+            <hc-button variant="ghost" (pressed)="closeGuestForm()">
+              {{ 'common.cancel' | translate }}
+            </hc-button>
+          </div>
+        </form>
+      }
+
+      @if (guests.loading()) {
+        <div class="px-4 py-6">
+          <hc-spinner labelKey="common.loading" [showLabel]="true" />
+        </div>
+      } @else if (guests.isEmpty()) {
+        <p class="px-4 py-6 text-sm text-ink-muted">{{ 'guests.empty.title' | translate }}</p>
+      } @else {
+        <ul class="divide-y divide-rule">
+          @for (guest of guests.items(); track guest.id) {
+            <li>
+              <button
+                type="button"
+                class="flex w-full touch-target items-center justify-between gap-3 px-4 py-3 text-left hover:bg-paper-sunken"
+                [class.bg-navy-tint]="selectedGuest()?.id === guest.id"
+                [attr.aria-pressed]="selectedGuest()?.id === guest.id"
+                data-testid="wizard-guest"
+                [attr.data-guest]="guest.id"
+                (click)="selectGuest(guest)"
+              >
+                <span class="min-w-0">
+                  <span class="block truncate text-ink">{{ guest.fullName }}</span>
+                  @if (guest.email || guest.city) {
+                    <span class="block truncate text-xs text-ink-faint">
+                      {{ guest.email }}
+                      @if (guest.email && guest.city) {
+                        ·
+                      }
+                      {{ guest.city }}
+                    </span>
+                  }
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+        <hc-button
+          data-testid="wizard-guest-next"
+          [disabled]="selectedGuest() === null"
+          (pressed)="confirmGuest()"
+        >
+          {{ 'common.next' | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="goToStep('room')">
+          {{ 'common.back' | translate }}
+        </hc-button>
+      </div>
+    </section>
+  }
+
+  <!-- ADIM 4: detaylar + kayit -->
+  @if (step() === 'details') {
+    <form
+      class="border border-rule bg-paper-raised"
+      [formGroup]="detailsForm"
+      novalidate
+      data-testid="wizard-details-form"
+      (ngSubmit)="submit()"
+    >
+      <h2 class="border-b border-rule px-4 py-3 label-mono text-ink">
+        {{ 'reservations.wizard.step.details' | translate }}
+      </h2>
+
+      <!-- Secim ozeti -->
+      <dl class="grid grid-cols-2 gap-4 border-b border-rule px-4 py-4 sm:grid-cols-4">
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.room' | translate }}</dt>
+          <dd class="numeric text-ink" data-testid="wizard-summary-room">
+            {{ selectedRoom()?.roomNumber }} · {{ selectedRoom()?.roomTypeCode }}
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.guest' | translate }}</dt>
+          <dd class="text-ink" data-testid="wizard-summary-guest">
+            {{ selectedGuest()?.fullName }}
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.stay' | translate }}</dt>
+          <dd class="numeric text-ink">
+            {{ datesForm.controls.from.value | hcDate: 'medium' }} –
+            {{ datesForm.controls.to.value | hcDate: 'medium' }}
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.columns.nights' | translate }}</dt>
+          <dd class="numeric text-ink">{{ nights() }}</dd>
+        </div>
+      </dl>
+
+      <div class="grid grid-cols-1 gap-5 px-4 py-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div>
+          <label class="hc-label" for="wizard-adults">
+            {{ 'reservations.fields.adults' | translate }}
+          </label>
+          <input
+            id="wizard-adults"
+            class="hc-input mt-1"
+            type="number"
+            inputmode="numeric"
+            step="1"
+            formControlName="adults"
+            [min]="limits.adultsMin"
+            [max]="limits.adultsMax"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="hc-label" for="wizard-children">
+            {{ 'reservations.fields.children' | translate }}
+          </label>
+          <input
+            id="wizard-children"
+            class="hc-input mt-1"
+            type="number"
+            inputmode="numeric"
+            step="1"
+            formControlName="children"
+            [min]="limits.childrenMin"
+            [max]="limits.childrenMax"
+          />
+        </div>
+
+        <div>
+          <label class="hc-label" for="wizard-channel">
+            {{ 'reservations.fields.channel' | translate }}
+          </label>
+          <select id="wizard-channel" class="hc-input mt-1" formControlName="channel" required>
+            @for (channel of channels; track channel) {
+              <option [value]="channel">{{ channelLabelKeys[channel] | translate }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="hc-label" for="wizard-deposit">
+            {{ 'reservations.fields.depositPercent' | translate }}
+          </label>
+          <input
+            id="wizard-deposit"
+            class="hc-input mt-1"
+            type="number"
+            inputmode="numeric"
+            step="1"
+            formControlName="depositPercent"
+            [min]="limits.depositPercentMin"
+            [max]="limits.depositPercentMax"
+          />
+        </div>
+
+        <div>
+          <label class="hc-label" for="wizard-status">{{ 'common.status' | translate }}</label>
+          <select id="wizard-status" class="hc-input mt-1" formControlName="status" required>
+            <option value="Confirmed">{{ 'reservations.status.confirmed' | translate }}</option>
+            <option value="Option">{{ 'reservations.status.option' | translate }}</option>
+          </select>
+          <p class="mt-1 text-xs text-ink-muted">
+            {{ 'reservations.wizard.statusHint' | translate }}
+          </p>
+        </div>
+
+        <div class="sm:col-span-2 xl:col-span-3">
+          <label class="hc-label" for="wizard-notes">{{ 'common.notes' | translate }}</label>
+          <textarea
+            id="wizard-notes"
+            class="hc-input mt-1"
+            rows="2"
+            formControlName="notes"
+            [maxlength]="limits.notesMaxLength"
+          ></textarea>
+        </div>
+      </div>
+
+      @if (capacityExceeded()) {
+        <p class="px-4 pb-2 text-sm text-danger" role="alert" data-testid="wizard-capacity-error">
+          {{
+            'reservations.wizard.validation.capacity'
+              | translate: { room: selectedRoom()?.roomNumber, capacity: selectedRoom()?.capacity }
+          }}
+        </p>
+      }
+
+      <!-- Tutar sunucuda hesaplanir; sihirbaz tahmin uretmez -->
+      <p class="border-t border-rule px-4 py-2 text-xs text-ink-muted" data-testid="wizard-amount-note">
+        {{ 'reservations.wizard.amountNote' | translate }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+        <hc-button
+          type="submit"
+          data-testid="wizard-submit"
+          [busy]="saving()"
+          [disabled]="!canSubmit()"
+        >
+          {{ 'reservations.wizard.submit' | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="goToStep('guest')">
+          {{ 'common.back' | translate }}
+        </hc-button>
+        <hc-button variant="ghost" (pressed)="cancel()">{{ 'common.cancel' | translate }}</hc-button>
+      </div>
+    </form>
+  }
+
+  <!-- SONUC: sunucunun hesapladigi tutar -->
+  @if (step() === 'done' && created(); as reservation) {
+    <section
+      class="border border-navy bg-paper-raised"
+      aria-labelledby="wizard-done-heading"
+      data-testid="wizard-done"
+    >
+      <h2 id="wizard-done-heading" class="border-b border-rule px-4 py-3 label-mono text-navy">
+        {{ 'reservations.wizard.created' | translate }}
+      </h2>
+
+      <dl class="grid grid-cols-2 gap-4 px-4 py-5 sm:grid-cols-4">
+        <div>
+          <dt class="eyebrow">{{ 'reservations.columns.number' | translate }}</dt>
+          <dd class="numeric text-lg text-ink" data-testid="wizard-done-number">
+            {{ reservation.reservationNumber }}
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.columns.total' | translate }}</dt>
+          <dd class="numeric text-lg text-navy" data-testid="wizard-done-total">
+            {{ reservation.totalAmount | hcMoney: reservation.currency }}
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.deposit' | translate }}</dt>
+          <dd class="numeric text-ink">
+            {{ reservation.depositAmount | hcMoney: reservation.currency }}
+            <span class="text-xs text-ink-faint">({{ reservation.depositPercent }} %)</span>
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.ratePlan' | translate }}</dt>
+          <dd class="text-ink" data-testid="wizard-done-rate-plan">
+            {{ reservation.ratePlanName || ('reservations.wizard.basePriceUsed' | translate) }}
+          </dd>
+        </div>
+      </dl>
+
+      <p class="border-t border-rule px-4 py-2 text-xs text-ink-muted">
+        {{ 'reservations.wizard.serverCalculated' | translate }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+        <a
+          class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+          [routerLink]="['/reservations', reservation.id]"
+          data-testid="wizard-done-detail"
+        >
+          {{ 'reservations.wizard.openDetail' | translate }}
+        </a>
+        <a
+          class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+          routerLink="/reservations"
+        >
+          {{ 'reservations.wizard.backToList' | translate }}
+        </a>
+      </div>
+    </section>
+  }
+</div>

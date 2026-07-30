@@ -79,7 +79,10 @@
     "timeTracking": "Zaman Takibi",
     "shifts": "Vardiyalar",
     "reports": "Raporlar",
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "occupancy": "Doluluk planı",
+    "guests": "Misafirler",
+    "ratePlans": "Fiyat planları"
   },
   "auth": {
     "title": "Oturum aç",
@@ -193,6 +196,15 @@
       },
       "settings": {
         "description": "Otel profili, vergi profili ve yetkiler."
+      },
+      "occupancy": {
+        "description": "Oda × gün: girişler, çıkışlar ve opsiyonlar tek bakışta."
+      },
+      "guests": {
+        "description": "Rezervasyon ve faturalar için misafir kayıtları."
+      },
+      "ratePlans": {
+        "description": "Oda tipine göre sezon ve kanal fiyatları."
       }
     },
     "empty": {
@@ -362,10 +374,158 @@
   },
   "reservations": {
     "title": "Rezervasyonlar",
-    "subtitle": "Doluluk ızgarasını, girişleri ve çıkışları tek ekranda izleyin.",
+    "subtitle": "Girişleri, çıkışları ve her rezervasyonun durumunu takip edin.",
     "empty": {
-      "title": "Seçilen dönemde rezervasyon yok",
-      "description": "Doluluk ızgarası oda ve gün bazında opsiyon, onay, giriş ve çıkış durumlarını gösterir."
+      "title": "Henüz rezervasyon yok",
+      "description": "Yeni bir rezervasyon oluşturun — sihirbaz oda, misafir ve tarihleri adım adım sorar."
+    },
+    "rangeNote": "Konaklama yarı açıktır: giriş günü sayılır, çıkış günü sayılmaz — çıkış günü ücretlendirilmez. Tarih filtresi, aralıkla kesişen tüm konaklamaları gösterir.",
+    "count": "{{count}} rezervasyon",
+    "nightsCount": "{{count}} gece",
+    "tableCaption": "Numara, misafir, konaklama, gece, oda, kanal, durum ve tutar ile rezervasyon listesi",
+    "loadFailed": "Rezervasyonlar yüklenemedi.",
+    "list": {
+      "loadFailed": "Rezervasyonlar yüklenemedi."
+    },
+    "emptyFiltered": {
+      "title": "Bu filtrelerle sonuç yok",
+      "description": "Tarih aralığını, durumu veya arama terimini değiştirin."
+    },
+    "actions": {
+      "create": "Yeni rezervasyon",
+      "occupancy": "Doluluk planı",
+      "guests": "Misafirler",
+      "ratePlans": "Fiyat planları",
+      "checkIn": "Giriş",
+      "checkOut": "Çıkış",
+      "cancel": "İptal et",
+      "noShow": "Gelmedi",
+      "conflict": "Bu adım mevcut durumda mümkün değil. Sunucu mesajı hangi geçişin denendiğini söylüyor.",
+      "finalState": "Bu rezervasyon tamamlandı — başka durum değişikliği yapılamaz.",
+      "cancelReason": "İptal gerekçesi (isteğe bağlı)",
+      "cancelReasonPlaceholder": "ör. misafir iptal etti",
+      "cancelHint": "Gerekçe, zaman damgasıyla rezervasyon notlarına eklenir.",
+      "checkInNote": "Giriş tarihinden önce check-in yapılamaz; geç giriş serbesttir.",
+      "checkOutDirtyNote": "Not: çıkış işlemi odayı otomatik olarak \"kirli\" yapar ve oda housekeeping listesine düşer.",
+      "checkOutDirtyDone": "Oda otomatik olarak \"kirli\" işaretlendi.",
+      "success": {
+        "check-in": "Giriş yapıldı.",
+        "check-out": "Çıkış yapıldı.",
+        "cancel": "Rezervasyon iptal edildi.",
+        "no-show": "Gelmedi olarak kaydedildi."
+      }
+    },
+    "filters": {
+      "legend": "Filtreler",
+      "search": "Arama",
+      "searchPlaceholder": "Rezervasyon numarası veya misafir adı",
+      "allStatuses": "Tüm durumlar",
+      "channel": "Kanal",
+      "allChannels": "Tüm kanallar",
+      "room": "Oda",
+      "allRooms": "Tüm odalar",
+      "apply": "Filtreleri uygula",
+      "reset": "Filtreleri temizle",
+      "guestActive": "Misafire göre filtreli",
+      "clearGuest": "Misafir filtresini kaldır"
+    },
+    "columns": {
+      "number": "Numara",
+      "guest": "Misafir",
+      "stay": "Konaklama",
+      "nights": "Gece",
+      "room": "Oda",
+      "channel": "Kanal",
+      "total": "Tutar"
+    },
+    "status": {
+      "option": "Opsiyon",
+      "confirmed": "Onaylandı",
+      "checkedIn": "Giriş yapıldı",
+      "checkedOut": "Çıkış yapıldı",
+      "cancelled": "İptal edildi",
+      "noShow": "Gelmedi"
+    },
+    "channel": {
+      "direct": "Doğrudan",
+      "phone": "Telefon",
+      "walkIn": "Kapıdan",
+      "bookingCom": "Booking.com",
+      "hrs": "HRS",
+      "expedia": "Expedia",
+      "corporate": "Kurumsal"
+    },
+    "pagination": {
+      "range": "{{total}} kayıttan {{from}}–{{to}}",
+      "page": "Sayfa {{page}} / {{pages}}"
+    },
+    "fields": {
+      "checkIn": "Giriş",
+      "checkOut": "Çıkış",
+      "roomType": "Oda tipi",
+      "room": "Oda",
+      "guest": "Misafir",
+      "stay": "Konaklama",
+      "occupancy": "Kişi sayısı",
+      "adults": "Yetişkin",
+      "children": "Çocuk",
+      "channel": "Kanal",
+      "depositPercent": "Kapora (%)",
+      "deposit": "Kapora",
+      "ratePlan": "Fiyat planı",
+      "timestamps": "Zaman damgaları"
+    },
+    "detail": {
+      "title": "Rezervasyon",
+      "loadFailed": "Rezervasyon yüklenemedi.",
+      "backToList": "Listeye dön",
+      "actions": "İşlemler",
+      "people": "{{adults}} yetişkin · {{children}} çocuk",
+      "createInvoice": "Fatura oluştur"
+    },
+    "folio": {
+      "title": "Folio",
+      "open": "Açık",
+      "closed": "Kapalı",
+      "empty": "Bu rezervasyon için folioda henüz kayıt yok.",
+      "loadFailed": "Folio yüklenemedi.",
+      "tableCaption": "Tip, açıklama, adet, fiyat, KDV oranı, net ve KDV ile folio satırları",
+      "grossNote": "Tüm fiyatlar brüttür (KDV dâhil); net ve KDV brüt tutardan ayrıştırılır."
+    },
+    "wizard": {
+      "title": "Yeni rezervasyon",
+      "subtitle": "Tarihi seçin, boş odayı verin, misafiri eşleştirin.",
+      "step": {
+        "dates": "Tarih",
+        "room": "Oda",
+        "guest": "Misafir",
+        "details": "Detaylar"
+      },
+      "checkOutHint": "Çıkış günü ücretlendirilmez.",
+      "allRoomTypes": "Tüm oda tipleri",
+      "searchAvailability": "Müsaitliği sorgula",
+      "availabilityFailed": "Müsaitlik yüklenemedi.",
+      "availableCount": "{{total}} odadan {{available}} boş · {{outOfOrder}} servis dışı",
+      "noRooms": "Seçilen aralıkta her gece boş olan bir oda yok.",
+      "floor": "{{floor}}. kat",
+      "capacity": "{{count}} kişilik",
+      "priceNote": "Müsaitlik yanıtı bilinçli olarak fiyat içermez — tutar kayıt sırasında sunucuda gece gece hesaplanır.",
+      "newGuest": "Yeni misafir oluştur",
+      "saveGuest": "Misafiri kaydet",
+      "statusHint": "Opsiyon odayı taahhütsüz tutar; takvimi onaylı rezervasyon gibi bloke eder.",
+      "amountNote": "Toplam tutar sunucuda hesaplanır (kanala özel plan → tüm kanallar planı → oda tipi baz fiyatı) ve kayıttan sonra gösterilir.",
+      "submit": "Rezervasyonu kaydet",
+      "created": "Rezervasyon oluşturuldu",
+      "openDetail": "Rezervasyonu aç",
+      "backToList": "Listeye dön",
+      "serverCalculated": "Tutar ve kapora sunucuda gece gece hesaplandı.",
+      "basePriceUsed": "Oda tipi baz fiyatı",
+      "conflict": "Oda bu aralıkta artık müsait değil.",
+      "validation": {
+        "stayTooShort": "Çıkış tarihi girişten sonra olmalı (en az bir gece).",
+        "stayTooLong": "Bir konaklama en fazla {{max}} gece olabilir.",
+        "capacity": "{{room}} numaralı odanın kapasitesi {{capacity}} kişi."
+      }
     }
   },
   "housekeeping": {
@@ -404,7 +564,191 @@
     "subtitle": "GoBD uyumlu faturalar: taslak, kesinleştirme ve iptal.",
     "empty": {
       "title": "Henüz fatura yok",
-      "description": "Kesinleşen faturalar değiştirilemez; düzeltmeler yalnızca iptal faturasıyla yapılır."
+      "description": "Bir rezervasyondan veya elle satır girerek taslak oluşturun."
+    },
+    "gobdNote": "Kesinleşmiş fatura değiştirilemez (GoBD). Düzeltme yalnızca iptal faturasıyla yapılır; orijinal belge korunur.",
+    "count": "{{count}} fatura",
+    "tableCaption": "Numara, fatura tarihi, misafir, rezervasyon, durum, brüt tutar ve kalan tutar ile fatura listesi",
+    "noNumber": "Numarasız taslak",
+    "cancellationInvoice": "İptal faturası",
+    "draftNoIssueDate": "Taslak — numara ve fatura tarihi kesinleştirmede atanır.",
+    "draftHint": "Fatura taslak olduğu sürece serbestçe düzenlenebilir; henüz belge değildir.",
+    "pdfUnavailable": "Belge üretimi henüz yok.",
+    "loadFailed": "Faturalar yüklenemedi.",
+    "emptyFiltered": {
+      "title": "Bu filtrelerle sonuç yok",
+      "description": "Durumu, tarih aralığını veya arama terimini değiştirin."
+    },
+    "actions": {
+      "create": "Yeni fatura",
+      "finalize": "Kesinleştir",
+      "cancel": "İptal et",
+      "addPayment": "Ödeme ekle",
+      "pdf": "PDF",
+      "conflict": "Bu işlem faturanın mevcut durumunda mümkün değil.",
+      "none": "Bu fatura için başka işlem yapılamaz.",
+      "success": {
+        "finalize": "Fatura kesinleştirildi.",
+        "cancel": "Fatura iptal edildi.",
+        "payment": "Ödeme kaydedildi."
+      }
+    },
+    "filters": {
+      "legend": "Filtreler",
+      "search": "Arama",
+      "searchPlaceholder": "Fatura numarası veya misafir adı",
+      "allStatuses": "Tüm durumlar",
+      "apply": "Filtreleri uygula",
+      "draftsHidden": "Tarih filtresi verildiğinde taslaklar listelenmez — taslağın fatura tarihi yoktur.",
+      "reservationActive": "Rezervasyona göre filtreli",
+      "guestActive": "Misafire göre filtreli",
+      "clear": "Filtreyi kaldır"
+    },
+    "columns": {
+      "number": "Numara",
+      "issuedAt": "Fatura tarihi",
+      "guest": "Misafir",
+      "reservation": "Rezervasyon",
+      "gross": "Brüt",
+      "outstanding": "Kalan",
+      "lineType": "Tip",
+      "description": "Açıklama",
+      "serviceDate": "Hizmet tarihi",
+      "quantity": "Adet",
+      "unitPrice": "Birim fiyat",
+      "vatRate": "KDV oranı",
+      "lineNet": "Net",
+      "lineVat": "KDV",
+      "lineGross": "Brüt"
+    },
+    "status": {
+      "draft": "Taslak",
+      "finalized": "Kesinleşti",
+      "paid": "Ödendi",
+      "cancelled": "İptal edildi"
+    },
+    "lineType": {
+      "roomCharge": "Konaklama",
+      "extra": "Ekstra",
+      "cityTax": "Konaklama vergisi"
+    },
+    "paymentMethod": {
+      "cash": "Nakit",
+      "card": "Kart",
+      "transfer": "Havale"
+    },
+    "pagination": {
+      "range": "{{total}} kayıttan {{from}}–{{to}}",
+      "page": "Sayfa {{page}} / {{pages}}"
+    },
+    "fields": {
+      "culture": "Fatura dili",
+      "createdAt": "Oluşturulma"
+    },
+    "detail": {
+      "title": "Fatura",
+      "loadFailed": "Fatura yüklenemedi.",
+      "backToList": "Listeye dön",
+      "actions": "İşlemler"
+    },
+    "lines": {
+      "title": "Satırlar",
+      "tableCaption": "Tip, açıklama, hizmet tarihi, adet, birim fiyat, KDV oranı, net, KDV ve brüt ile fatura satırları"
+    },
+    "totals": {
+      "net": "Net",
+      "vat": "KDV",
+      "cityTax": "Konaklama vergisi",
+      "cityTaxNote": "Aracılık kalemi — KDV matrahına dâhil değildir.",
+      "gross": "Brüt",
+      "paid": "Ödenen",
+      "outstanding": "Kalan tutar"
+    },
+    "payments": {
+      "title": "Ödemeler",
+      "empty": "Bu fatura için henüz ödeme kaydedilmedi."
+    },
+    "payment": {
+      "method": "Ödeme yöntemi",
+      "amount": "Tutar",
+      "paidAt": "Ödeme zamanı",
+      "paidAtHint": "Boş bırakılırsa sunucu saati kullanılır; gelecek tarih kabul edilmez.",
+      "reference": "Referans",
+      "outstanding": "Kalan tutar",
+      "paidHint": "Kısmi ödeme yapılabilir; brüt tutara ulaşıldığında durum \"Ödendi\" olur.",
+      "overpayment": "Tutar kalan bakiyeyi aşıyor. Fazla ödeme faturanın parçası değildir.",
+      "validation": {
+        "amountRequired": "Lütfen bir tutar girin.",
+        "amount": "Tutar 0’dan büyük olmalı."
+      }
+    },
+    "finalize": {
+      "confirm": "Kesinleştirme faturaya kesintisiz bir numara ve fatura tarihi verir.",
+      "irreversible": "Bu adım geri alınamaz: kesinleşmiş bir fatura ancak iptal faturasıyla düzeltilebilir."
+    },
+    "cancel": {
+      "confirmDraft": "Bu taslak doğrudan iptal edilir. İptal faturası oluşturulmaz, çünkü taslak belge değildir; fatura numarası dizisinde boşluk oluşmaz.",
+      "confirmStorno": "Orijinal fatura eksiksiz korunur. Ayrıca kendi numarası ve negatif tutarları olan bir iptal faturası (Stornorechnung) kesilir; iki belge toplamda sıfırlanır.",
+      "reason": "İptal gerekçesi (isteğe bağlı)",
+      "reasonPlaceholder": "ör. yanlış oda tipi faturalandı",
+      "auditNote": "Gerekçe denetim izine yazılır."
+    },
+    "storno": {
+      "cancelsPrefix": "Bu iptal faturası başka bir faturayı iptal ediyor.",
+      "cancelledByPrefix": "Bu fatura bir iptal faturasıyla kaldırıldı.",
+      "openOriginal": "Orijinal faturayı aç",
+      "openCancellation": "İptal faturasını aç",
+      "created": "Bir iptal faturası oluşturuldu."
+    },
+    "audit": {
+      "title": "Denetim izi",
+      "description": "GoBD uyarınca yalnızca eklenen kayıt: kim, ne zaman, ne — kayıtlar hiç değiştirilmez ve silinmez.",
+      "by": "Kullanıcı",
+      "limitNote": "Taslak düzenlemeleri kayda geçmez (taslak belge değildir); kısmi ödemeler ödeme kaydı olarak görünür.",
+      "action": {
+        "created": "Oluşturuldu",
+        "finalized": "Kesinleştirildi",
+        "paid": "Ödendi",
+        "cancelled": "İptal edildi",
+        "updated": "Güncellendi",
+        "paymentRecorded": "Ödeme kaydedildi"
+      }
+    },
+    "form": {
+      "createTitle": "Yeni fatura",
+      "editTitle": "Taslağı düzenle",
+      "subtitle": "Faturalar önce numarasız taslak olarak oluşur.",
+      "loadFailed": "Fatura yüklenemedi.",
+      "notEditable": "Bu fatura artık düzenlenemez.",
+      "notEditableHint": "Yalnızca taslaklar değiştirilebilir. Kesinleşmiş fatura için doğru yol iptal faturasıdır.",
+      "sourceLegend": "Faturanın kaynağı",
+      "sourceReservation": "Rezervasyondan",
+      "sourceManual": "Elle satır",
+      "sourceReservationHint": "Konaklama, faturalanmamış folio satırları ve konaklama vergisi sunucuda üretilir.",
+      "sourceManualHint": "Her satırı kendiniz girersiniz; misafir seçimi zorunludur.",
+      "reservationSearch": "Rezervasyon ara",
+      "reservationLinesNote": "Satırlar rezervasyondan üretilir ve fatura taslak durumdayken sonradan düzenlenebilir.",
+      "selectGuest": "Misafir seçin",
+      "addLine": "Satır ekle",
+      "removeLine": "Satırı kaldır",
+      "grossHint": "Brüt fiyat (KDV dâhil).",
+      "totalNote": "KDV oranı, net ve KDV sunucuda hesaplanır — istemci ne oran ne de toplam gönderir.",
+      "previewGross": "Önizleme brüt",
+      "createDraft": "Taslak oluştur",
+      "draftNote": "Taslak numarayı ancak kesinleştirmede alır.",
+      "cultureDefault": "Varsayılan (misafir veya otel)",
+      "cultureHint": "Daha sonra üretilecek belgenin dilini belirler.",
+      "conflict": "Bu rezervasyon için iptal edilmemiş bir fatura zaten var.",
+      "validation": {
+        "reservationRequired": "Lütfen bir rezervasyon seçin.",
+        "guestRequired": "Lütfen bir misafir seçin.",
+        "lineRequired": "Lütfen en az bir eksiksiz satır girin.",
+        "typeRequired": "Lütfen bir tip seçin.",
+        "descriptionRequired": "Lütfen bir açıklama girin.",
+        "quantityRequired": "Lütfen bir adet girin.",
+        "unitPriceRequired": "Lütfen bir birim fiyat girin.",
+        "descriptionLength": "En fazla 500 karakter."
+      }
     }
   },
   "employees": {
@@ -849,6 +1193,178 @@
       "email": "Lütfen geçerli bir e-posta adresi girin.",
       "currency": "Tam üç harf (ISO 4217), örn. EUR.",
       "percent": "0 ile 100 arasında bir değer."
+    }
+  },
+  "occupancy": {
+    "title": "Doluluk planı",
+    "subtitle": "Oda × gün — girişler, çıkışlar ve opsiyonlar tek bakışta.",
+    "tableCaption": "Oda ve gün bazında doluluk; her çubuk bir konaklamadır",
+    "loadFailed": "Doluluk planı yüklenemedi.",
+    "rangeTooLong": "Aralık çok uzun. Sunucu en fazla 92 gün kabul ediyor.",
+    "outOfOrder": "servis dışı",
+    "roomFree": "Seçilen aralıkta doluluk yok.",
+    "noStays": "Bu aralıkta hiç konaklama yok — planlama için ızgara açık kalır.",
+    "legend": "Kesikli = opsiyon (taahhütsüz). Çubuğun açık kenarı, konaklamanın seçilen aralığın dışına taştığını gösterir.",
+    "empty": {
+      "title": "Oda bulunamadı",
+      "description": "Doluluk planının dolması için önce oda tanımlayın."
+    },
+    "actions": {
+      "toList": "Listeye dön"
+    },
+    "range": {
+      "navLabel": "Aralık seç",
+      "nights": "{{count}} gece",
+      "previous": "Geri",
+      "next": "İleri",
+      "widthLabel": "Aralık uzunluğu",
+      "widthOption": "{{count}} gün",
+      "clamped": "Aralık {{max}} güne kısaltıldı — doluluk planı için sunucu daha fazlasına izin vermiyor."
+    },
+    "bar": {
+      "continuesBefore": "Konaklama bu aralıktan önce başlıyor.",
+      "continuesAfter": "Konaklama bu aralıktan sonra bitiyor.",
+      "nights": "{{count}} gece"
+    },
+    "free": {
+      "createAria": "{{room}} numaralı odayı {{date}} için doldur"
+    },
+    "columns": {
+      "room": "Oda"
+    },
+    "summary": {
+      "rooms": "Oda",
+      "roomNights": "Oda gecesi",
+      "occupied": "Dolu",
+      "rate": "Doluluk"
+    }
+  },
+  "guests": {
+    "title": "Misafirler",
+    "subtitle": "Rezervasyon ve faturalar için misafir kayıtları.",
+    "count": "{{count}} misafir",
+    "tableCaption": "Ad, e-posta, telefon ve şehir ile misafir listesi",
+    "truncated": "Yalnızca ilk sonuçlar gösteriliyor — aramayı daraltın.",
+    "stayCount": "Tamamlanan konaklama: {{count}}",
+    "loadFailed": "Misafirler yüklenemedi.",
+    "columns": {
+      "location": "Şehir"
+    },
+    "filters": {
+      "search": "Arama",
+      "searchPlaceholder": "Ad veya e-posta"
+    },
+    "actions": {
+      "create": "Yeni misafir",
+      "toReservations": "Rezervasyonlara git",
+      "reservations": "Rezervasyonlar"
+    },
+    "delete": {
+      "confirm": "Silinsin mi?",
+      "conflict": "Bu misafirin aktif veya gelecek tarihli rezervasyonu var; bu yüzden silinemez."
+    },
+    "empty": {
+      "title": "Henüz misafir kaydı yok",
+      "description": "Misafirler buradan veya doğrudan rezervasyon sihirbazından oluşturulabilir."
+    },
+    "emptyFiltered": {
+      "title": "Sonuç yok",
+      "description": "Bu aramaya uyan misafir bulunamadı."
+    },
+    "pagination": {
+      "range": "{{total}} kayıttan {{from}}–{{to}}",
+      "page": "Sayfa {{page}} / {{pages}}"
+    },
+    "fields": {
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "nationality": "Uyruk",
+      "culture": "Yazışma dili",
+      "cultureHint": "Fatura ve yazışmalarda kullanılacak dil.",
+      "addressLine": "Adres",
+      "postalCode": "Posta kodu",
+      "city": "Şehir",
+      "birthDate": "Doğum tarihi"
+    },
+    "form": {
+      "createTitle": "Yeni misafir",
+      "editTitle": "Misafiri düzenle",
+      "subtitle": "Aynı ada sahip kayıtlar meşrudur — bilinçli olarak benzersizlik kontrolü yoktur.",
+      "loadFailed": "Misafir yüklenemedi.",
+      "section": {
+        "person": "Kişi",
+        "address": "Adres"
+      },
+      "validation": {
+        "firstNameRequired": "Lütfen bir ad girin.",
+        "lastNameRequired": "Lütfen bir soyad girin.",
+        "email": "Lütfen geçerli bir e-posta adresi girin.",
+        "dateFormat": "Lütfen geçerli bir tarih girin.",
+        "tooLong": "Değer çok uzun."
+      }
+    }
+  },
+  "ratePlans": {
+    "title": "Fiyat planları",
+    "subtitle": "Oda tipine göre sezon ve kanal fiyatları.",
+    "rangeNote": "Geçerlilik kapalı bir aralıktır: son gün dâhildir. Konaklama ise yarı açıktır — çıkış günü ücretlendirilmez.",
+    "count": "{{count}} plan · {{active}} aktif",
+    "tableCaption": "Ad, oda tipi, geçerlilik, kanal, fiyat ve durum ile fiyat planı listesi",
+    "allChannels": "Tüm kanallar",
+    "active": "Aktif",
+    "inactive": "Pasif",
+    "loadFailed": "Fiyat planları yüklenemedi.",
+    "actions": {
+      "create": "Yeni fiyat planı"
+    },
+    "filters": {
+      "roomType": "Oda tipi",
+      "allRoomTypes": "Tüm oda tipleri",
+      "date": "Şu tarihte geçerli"
+    },
+    "columns": {
+      "roomType": "Oda tipi",
+      "validity": "Geçerlilik",
+      "channel": "Kanal",
+      "price": "Fiyat / gece"
+    },
+    "delete": {
+      "confirm": "Silinsin mi?",
+      "conflict": "Bu fiyat planı rezervasyonlarda kullanıldığı için silinemez. Bunun yerine planı pasife alın."
+    },
+    "empty": {
+      "title": "Henüz fiyat planı yok",
+      "description": "Plan yoksa oda tipinin baz fiyatı kullanılır."
+    },
+    "fields": {
+      "validFrom": "Başlangıç",
+      "validTo": "Bitiş (dâhil)",
+      "isActive": "Aktif"
+    },
+    "form": {
+      "createTitle": "Yeni fiyat planı",
+      "editTitle": "Fiyat planını düzenle",
+      "subtitle": "Aynı oda tipi ve kanal için aynı güne yalnızca bir aktif plan denk gelebilir.",
+      "loadFailed": "Fiyat planı yüklenemedi.",
+      "selectRoomType": "Oda tipi seçin",
+      "priceHint": "Gecelik brüt fiyat.",
+      "validToHint": "Bu gün aralığa dâhildir.",
+      "channelHint": "Seçim yapılmazsa plan tüm kanallar için geçerlidir; kanala özel plan önceliklidir.",
+      "inactiveHint": "Pasif planlar çakışma üretmez ve yeni rezervasyonları etkilemez.",
+      "overlap": "Bu oda tipi ve kanal için aralık, aktif bir planla çakışıyor.",
+      "validation": {
+        "roomTypeIdRequired": "Lütfen bir oda tipi seçin.",
+        "nameRequired": "Lütfen bir ad girin.",
+        "priceRequired": "Lütfen bir fiyat girin.",
+        "validFromRequired": "Lütfen başlangıç tarihi girin.",
+        "validToRequired": "Lütfen bitiş tarihi girin.",
+        "channelRequired": "Lütfen bir kanal seçin.",
+        "dateFormat": "Lütfen geçerli bir tarih girin.",
+        "price": "Fiyat 0 ile 100.000 arasında olmalı.",
+        "nameLength": "En fazla 150 karakter.",
+        "validityOrder": "Bitiş tarihi başlangıçtan önce olamaz.",
+        "overlap": "Mevcut aktif bir planla çakışıyor."
+      }
     }
   }
 }

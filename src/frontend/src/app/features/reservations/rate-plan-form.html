@@ -1,0 +1,207 @@
+<div class="space-y-6">
+  <hc-page-header
+    [titleKey]="isEdit() ? 'ratePlans.form.editTitle' : 'ratePlans.form.createTitle'"
+    subtitleKey="ratePlans.form.subtitle"
+    eyebrowKey="nav.reservations"
+  />
+
+  @if (loading()) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (loadError(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'ratePlans.form.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <a
+          class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+          routerLink="/reservations/rate-plans"
+        >
+          {{ 'common.back' | translate }}
+        </a>
+      </div>
+    </div>
+  } @else {
+    @if (formErrorKey(); as errorKey) {
+      <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+        <p class="text-sm text-danger" data-testid="rate-plan-form-error">
+          {{ errorKey | translate }}
+        </p>
+        @if (serverDetail(); as detail) {
+          <!-- Sunucu cakisan planin adini ve araligini burada verir -->
+          <p class="mt-1 font-mono text-xs text-ink" data-testid="rate-plan-form-detail">
+            {{ detail }}
+          </p>
+        }
+      </div>
+    }
+    @if (formErrors().length > 0) {
+      <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+        @for (message of formErrors(); track message) {
+          <p class="text-sm text-danger">{{ message }}</p>
+        }
+      </div>
+    }
+
+    <form
+      class="border border-rule bg-paper-raised"
+      [formGroup]="form"
+      novalidate
+      data-testid="rate-plan-form"
+      (ngSubmit)="submit()"
+    >
+      <div class="grid grid-cols-1 gap-5 px-4 py-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div>
+          <label class="hc-label" for="rate-plan-room-type">
+            {{ 'ratePlans.columns.roomType' | translate }}
+          </label>
+          <select
+            id="rate-plan-room-type"
+            class="hc-input mt-1"
+            formControlName="roomTypeId"
+            required
+            [attr.aria-invalid]="errorKeyFor('roomTypeId') ? 'true' : null"
+          >
+            <option value="">{{ 'ratePlans.form.selectRoomType' | translate }}</option>
+            @for (type of roomTypes.options(); track type.id) {
+              <option [value]="type.id">{{ type.code }} · {{ type.name }}</option>
+            }
+          </select>
+          @if (errorKeyFor('roomTypeId'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="rate-plan-room-type-error">
+              {{ errorKey | translate }}
+            </p>
+          }
+          @for (message of serverMessagesFor('roomTypeId'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div class="sm:col-span-1 xl:col-span-2">
+          <label class="hc-label" for="rate-plan-name">{{ 'common.name' | translate }}</label>
+          <input
+            id="rate-plan-name"
+            class="hc-input mt-1"
+            type="text"
+            formControlName="name"
+            required
+            [maxlength]="limits.nameMaxLength"
+            [attr.aria-invalid]="errorKeyFor('name') ? 'true' : null"
+          />
+          @if (errorKeyFor('name'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="rate-plan-name-error">
+              {{ errorKey | translate }}
+            </p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="rate-plan-price">
+            {{ 'ratePlans.columns.price' | translate }}
+          </label>
+          <input
+            id="rate-plan-price"
+            class="hc-input mt-1"
+            type="text"
+            inputmode="decimal"
+            formControlName="price"
+            required
+            [attr.aria-invalid]="errorKeyFor('price') ? 'true' : null"
+          />
+          <p class="mt-1 text-xs text-ink-muted">{{ 'ratePlans.form.priceHint' | translate }}</p>
+          @if (errorKeyFor('price'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="rate-plan-price-error">
+              {{ errorKey | translate }}
+            </p>
+          }
+          @for (message of serverMessagesFor('price'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="rate-plan-valid-from">
+            {{ 'ratePlans.fields.validFrom' | translate }}
+          </label>
+          <input
+            id="rate-plan-valid-from"
+            class="hc-input mt-1"
+            type="date"
+            formControlName="validFrom"
+            required
+            [attr.aria-invalid]="errorKeyFor('validFrom') ? 'true' : null"
+          />
+          @if (errorKeyFor('validFrom'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="rate-plan-valid-from-error">
+              {{ errorKey | translate }}
+            </p>
+          }
+          @for (message of serverMessagesFor('validFrom'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="rate-plan-valid-to">
+            {{ 'ratePlans.fields.validTo' | translate }}
+          </label>
+          <input
+            id="rate-plan-valid-to"
+            class="hc-input mt-1"
+            type="date"
+            formControlName="validTo"
+            required
+            [attr.aria-invalid]="validityOrderError() || errorKeyFor('validTo') ? 'true' : null"
+          />
+          <p class="mt-1 text-xs text-ink-muted">{{ 'ratePlans.form.validToHint' | translate }}</p>
+          @if (validityOrderError()) {
+            <p class="mt-1 text-xs text-danger" data-testid="rate-plan-validity-error">
+              {{ 'ratePlans.form.validation.validityOrder' | translate }}
+            </p>
+          } @else if (errorKeyFor('validTo'); as errorKey) {
+            <p class="mt-1 text-xs text-danger">{{ errorKey | translate }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="rate-plan-channel">
+            {{ 'ratePlans.columns.channel' | translate }}
+          </label>
+          <select id="rate-plan-channel" class="hc-input mt-1" formControlName="channel">
+            <option value="">{{ 'ratePlans.allChannels' | translate }}</option>
+            @for (channel of channels; track channel) {
+              <option [value]="channel">{{ channelLabelKeys[channel] | translate }}</option>
+            }
+          </select>
+          <p class="mt-1 text-xs text-ink-muted">{{ 'ratePlans.form.channelHint' | translate }}</p>
+        </div>
+
+        <div class="flex items-end">
+          <label class="flex items-center gap-2 label-mono text-ink" for="rate-plan-active">
+            <input
+              id="rate-plan-active"
+              type="checkbox"
+              class="size-5 border border-rule-strong accent-navy"
+              formControlName="isActive"
+            />
+            {{ 'ratePlans.fields.isActive' | translate }}
+          </label>
+        </div>
+      </div>
+
+      <p class="border-t border-rule px-4 py-2 text-xs text-ink-muted">
+        {{ 'ratePlans.form.inactiveHint' | translate }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+        <hc-button type="submit" data-testid="rate-plan-save" [busy]="saving()">
+          {{ 'common.save' | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="cancel()">
+          {{ 'common.cancel' | translate }}
+        </hc-button>
+      </div>
+    </form>
+  }
+</div>

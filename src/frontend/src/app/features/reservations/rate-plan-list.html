@@ -1,0 +1,269 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="ratePlans.title"
+    subtitleKey="ratePlans.subtitle"
+    eyebrowKey="nav.reservations"
+  >
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/reservations"
+      >
+        {{ 'guests.actions.toReservations' | translate }}
+      </a>
+      <a
+        *hcHasPermission="managePermission"
+        class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+        routerLink="/reservations/rate-plans/new"
+        data-testid="rate-plans-create"
+      >
+        {{ 'ratePlans.actions.create' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  <!-- Kapali aralik ≠ konaklama araligi: bu fark bilincli olarak yazilir -->
+  <p
+    class="border-l-2 border-brass bg-brass-tint px-3 py-2 text-sm text-ink"
+    data-testid="rate-plans-range-note"
+  >
+    {{ 'ratePlans.rangeNote' | translate }}
+  </p>
+
+  <form
+    class="flex flex-wrap items-end gap-3 border border-rule bg-paper-raised px-4 py-3"
+    novalidate
+    (ngSubmit)="applyFilters(roomTypeSelect.value, dateInput.value)"
+  >
+    <div>
+      <label class="hc-label" for="rate-plans-room-type">
+        {{ 'ratePlans.filters.roomType' | translate }}
+      </label>
+      <select
+        #roomTypeSelect
+        id="rate-plans-room-type"
+        class="hc-input mt-1"
+        [value]="filters().roomTypeId ?? ''"
+        (change)="applyFilters(roomTypeSelect.value, dateInput.value)"
+      >
+        <option value="">{{ 'ratePlans.filters.allRoomTypes' | translate }}</option>
+        @for (type of roomTypes.options(); track type.id) {
+          <option [value]="type.id" [selected]="type.id === filters().roomTypeId">
+            {{ type.code }} · {{ type.name }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div>
+      <label class="hc-label" for="rate-plans-date">
+        {{ 'ratePlans.filters.date' | translate }}
+      </label>
+      <input
+        #dateInput
+        id="rate-plans-date"
+        class="hc-input mt-1"
+        type="date"
+        [value]="filters().date ?? ''"
+      />
+    </div>
+
+    <hc-button type="submit">{{ 'common.filter' | translate }}</hc-button>
+    @if (store.hasFilters()) {
+      <hc-button variant="ghost" (pressed)="resetFilters()">
+        {{ 'common.reset' | translate }}
+      </hc-button>
+    }
+    <p class="ml-auto eyebrow" aria-live="polite">
+      {{ 'ratePlans.count' | translate: { count: store.items().length, active: store.activeCount() } }}
+    </p>
+  </form>
+
+  @if (deleteErrorKey(); as errorKey) {
+    <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+      <p class="text-sm text-danger" data-testid="rate-plan-delete-error">
+        {{ errorKey | translate }}
+      </p>
+      @if (store.deleteError()?.detail; as detail) {
+        <p class="mt-1 font-mono text-xs text-ink">{{ detail }}</p>
+      }
+      <div class="mt-2">
+        <hc-button size="sm" variant="ghost" (pressed)="store.clearDeleteError()">
+          {{ 'common.close' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  }
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'ratePlans.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state titleKey="ratePlans.empty.title" descriptionKey="ratePlans.empty.description" />
+  } @else {
+    <!-- Masaustu: yogun tablo -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="ratePlans.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'common.name' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'ratePlans.columns.roomType' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'ratePlans.columns.validity' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'ratePlans.columns.channel' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'ratePlans.columns.price' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'common.status' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (plan of store.items(); track plan.id) {
+            <tr data-testid="rate-plan-row" [class.opacity-40]="store.deletingId() === plan.id">
+              <th scope="row" class="px-4 py-3 text-left font-normal text-ink">{{ plan.name }}</th>
+              <td class="px-4 py-3 text-sm text-ink-muted">
+                {{ plan.roomTypeCode }} · {{ plan.roomTypeName }}
+              </td>
+              <td class="px-4 py-3 numeric text-ink">
+                {{ plan.validFrom | hcDate: 'medium' }} – {{ plan.validTo | hcDate: 'medium' }}
+              </td>
+              <td class="px-4 py-3 text-sm text-ink-muted" data-testid="rate-plan-channel">
+                @if (plan.channel) {
+                  {{ channelLabelKeys[plan.channel] | translate }}
+                } @else {
+                  {{ 'ratePlans.allChannels' | translate }}
+                }
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink">
+                {{ plan.price | hcMoney: plan.currency }}
+              </td>
+              <td class="px-4 py-3">
+                <hc-badge [tone]="plan.isActive ? 'success' : 'neutral'" [dashed]="!plan.isActive">
+                  {{ (plan.isActive ? 'ratePlans.active' : 'ratePlans.inactive') | translate }}
+                </hc-badge>
+              </td>
+              <td class="px-4 py-3 text-right">
+                @if (confirmingId() === plan.id) {
+                  <div class="flex flex-wrap justify-end gap-2">
+                    <span class="self-center text-xs text-ink-muted">
+                      {{ 'ratePlans.delete.confirm' | translate }}
+                    </span>
+                    <hc-button
+                      size="sm"
+                      variant="danger"
+                      data-testid="rate-plan-delete-confirm"
+                      [busy]="store.deletingId() === plan.id"
+                      (pressed)="remove(plan)"
+                    >
+                      {{ 'common.delete' | translate }}
+                    </hc-button>
+                    <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                      {{ 'common.cancel' | translate }}
+                    </hc-button>
+                  </div>
+                } @else {
+                  <span *hcHasPermission="managePermission" class="inline-flex justify-end gap-2">
+                    <a
+                      class="inline-flex min-h-9 items-center border border-rule-strong px-3 py-1.5 label-mono text-ink hover:bg-paper-sunken"
+                      [routerLink]="['/reservations/rate-plans', plan.id, 'edit']"
+                      data-testid="rate-plan-edit"
+                    >
+                      {{ 'common.edit' | translate }}
+                    </a>
+                    <hc-button
+                      size="sm"
+                      variant="ghost"
+                      data-testid="rate-plan-delete"
+                      (pressed)="askDelete(plan)"
+                    >
+                      {{ 'common.delete' | translate }}
+                    </hc-button>
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil: ayni store, kart yerlesimi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (plan of store.items(); track plan.id) {
+        <li class="px-4 py-4" [class.opacity-40]="store.deletingId() === plan.id">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-serif text-xl leading-tight text-ink">{{ plan.name }}</p>
+              <p class="mt-1 eyebrow">{{ plan.roomTypeCode }} · {{ plan.roomTypeName }}</p>
+              <p class="mt-1 numeric text-sm text-ink">
+                {{ plan.validFrom | hcDate: 'medium' }} – {{ plan.validTo | hcDate: 'medium' }}
+              </p>
+              <p class="mt-1 text-xs text-ink-muted">
+                @if (plan.channel) {
+                  {{ channelLabelKeys[plan.channel] | translate }}
+                } @else {
+                  {{ 'ratePlans.allChannels' | translate }}
+                }
+              </p>
+            </div>
+            <div class="shrink-0 text-right">
+              <p class="numeric text-ink">{{ plan.price | hcMoney: plan.currency }}</p>
+              <div class="mt-2">
+                <hc-badge [tone]="plan.isActive ? 'success' : 'neutral'" [dashed]="!plan.isActive">
+                  {{ (plan.isActive ? 'ratePlans.active' : 'ratePlans.inactive') | translate }}
+                </hc-badge>
+              </div>
+            </div>
+          </div>
+
+          <div *hcHasPermission="managePermission" class="mt-3 flex flex-wrap gap-2">
+            <a
+              class="inline-flex min-h-touch items-center border border-rule-strong px-3 py-2 label-mono text-ink"
+              [routerLink]="['/reservations/rate-plans', plan.id, 'edit']"
+            >
+              {{ 'common.edit' | translate }}
+            </a>
+            @if (confirmingId() === plan.id) {
+              <hc-button
+                size="sm"
+                variant="danger"
+                data-testid="rate-plan-delete-confirm"
+                [busy]="store.deletingId() === plan.id"
+                (pressed)="remove(plan)"
+              >
+                {{ 'ratePlans.delete.confirm' | translate }}
+              </hc-button>
+            } @else {
+              <hc-button size="sm" variant="ghost" (pressed)="askDelete(plan)">
+                {{ 'common.delete' | translate }}
+              </hc-button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>

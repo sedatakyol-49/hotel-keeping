@@ -1,0 +1,239 @@
+<div class="space-y-6">
+  <hc-page-header
+    [titleKey]="isEdit() ? 'guests.form.editTitle' : 'guests.form.createTitle'"
+    subtitleKey="guests.form.subtitle"
+    eyebrowKey="nav.reservations"
+  />
+
+  @if (loading()) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (loadError(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'guests.form.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <a
+          class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+          routerLink="/reservations/guests"
+        >
+          {{ 'common.back' | translate }}
+        </a>
+      </div>
+    </div>
+  } @else {
+    @if (formErrorKey(); as errorKey) {
+      <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+        <p class="text-sm text-danger" data-testid="guest-form-error">{{ errorKey | translate }}</p>
+        @if (serverDetail(); as detail) {
+          <p class="mt-1 font-mono text-xs text-ink" data-testid="guest-form-detail">
+            {{ detail }}
+          </p>
+        }
+      </div>
+    }
+    @if (formErrors().length > 0) {
+      <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+        @for (message of formErrors(); track message) {
+          <p class="text-sm text-danger">{{ message }}</p>
+        }
+      </div>
+    }
+
+    @if (stayCount() !== null) {
+      <p class="border-l-2 border-navy bg-navy-tint px-3 py-2 text-sm text-ink" data-testid="guest-stay-count">
+        {{ 'guests.stayCount' | translate: { count: stayCount() } }}
+      </p>
+    }
+
+    <form
+      class="border border-rule bg-paper-raised"
+      [formGroup]="form"
+      novalidate
+      data-testid="guest-form"
+      (ngSubmit)="submit()"
+    >
+      <h2 class="border-b border-rule px-4 py-3 label-mono text-ink">
+        {{ 'guests.form.section.person' | translate }}
+      </h2>
+
+      <div class="grid grid-cols-1 gap-5 px-4 py-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div>
+          <label class="hc-label" for="guest-first-name">
+            {{ 'guests.fields.firstName' | translate }}
+          </label>
+          <input
+            id="guest-first-name"
+            class="hc-input mt-1"
+            type="text"
+            formControlName="firstName"
+            required
+            [maxlength]="limits.firstNameMaxLength"
+            [attr.aria-invalid]="errorKeyFor('firstName') ? 'true' : null"
+          />
+          @if (errorKeyFor('firstName'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="guest-first-name-error">
+              {{ errorKey | translate }}
+            </p>
+          }
+          @for (message of serverMessagesFor('firstName'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="guest-last-name">
+            {{ 'guests.fields.lastName' | translate }}
+          </label>
+          <input
+            id="guest-last-name"
+            class="hc-input mt-1"
+            type="text"
+            formControlName="lastName"
+            required
+            [maxlength]="limits.lastNameMaxLength"
+            [attr.aria-invalid]="errorKeyFor('lastName') ? 'true' : null"
+          />
+          @if (errorKeyFor('lastName'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="guest-last-name-error">
+              {{ errorKey | translate }}
+            </p>
+          }
+          @for (message of serverMessagesFor('lastName'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="guest-birth-date">
+            {{ 'guests.fields.birthDate' | translate }}
+          </label>
+          <input id="guest-birth-date" class="hc-input mt-1" type="date" formControlName="birthDate" />
+          @if (errorKeyFor('birthDate'); as errorKey) {
+            <p class="mt-1 text-xs text-danger">{{ errorKey | translate }}</p>
+          }
+          @for (message of serverMessagesFor('birthDate'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="guest-email">{{ 'common.email' | translate }}</label>
+          <input
+            id="guest-email"
+            class="hc-input mt-1"
+            type="email"
+            formControlName="email"
+            [maxlength]="limits.emailMaxLength"
+            [attr.aria-invalid]="errorKeyFor('email') ? 'true' : null"
+          />
+          @if (errorKeyFor('email'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="guest-email-error">
+              {{ errorKey | translate }}
+            </p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="guest-phone">{{ 'common.phone' | translate }}</label>
+          <input
+            id="guest-phone"
+            class="hc-input mt-1"
+            type="tel"
+            formControlName="phone"
+            [maxlength]="limits.phoneMaxLength"
+          />
+        </div>
+
+        <div>
+          <label class="hc-label" for="guest-nationality">
+            {{ 'guests.fields.nationality' | translate }}
+          </label>
+          <select id="guest-nationality" class="hc-input mt-1" formControlName="nationality">
+            <option value="">{{ 'common.optional' | translate }}</option>
+            @for (country of countries; track country) {
+              <option [value]="country">{{ country }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <h2 class="border-y border-rule px-4 py-3 label-mono text-ink">
+        {{ 'guests.form.section.address' | translate }}
+      </h2>
+
+      <div class="grid grid-cols-1 gap-5 px-4 py-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="sm:col-span-2">
+          <label class="hc-label" for="guest-address">
+            {{ 'guests.fields.addressLine' | translate }}
+          </label>
+          <input
+            id="guest-address"
+            class="hc-input mt-1"
+            type="text"
+            formControlName="addressLine"
+            [maxlength]="limits.addressLineMaxLength"
+          />
+        </div>
+
+        <div>
+          <label class="hc-label" for="guest-postal-code">
+            {{ 'guests.fields.postalCode' | translate }}
+          </label>
+          <input
+            id="guest-postal-code"
+            class="hc-input mt-1"
+            type="text"
+            inputmode="numeric"
+            formControlName="postalCode"
+            [maxlength]="limits.postalCodeMaxLength"
+          />
+        </div>
+
+        <div>
+          <label class="hc-label" for="guest-city">{{ 'guests.fields.city' | translate }}</label>
+          <input
+            id="guest-city"
+            class="hc-input mt-1"
+            type="text"
+            formControlName="city"
+            [maxlength]="limits.cityMaxLength"
+          />
+        </div>
+
+        <div>
+          <label class="hc-label" for="guest-culture">
+            {{ 'guests.fields.culture' | translate }}
+          </label>
+          <select id="guest-culture" class="hc-input mt-1" formControlName="culture">
+            @for (culture of cultures; track culture) {
+              <option [value]="culture">{{ 'language.' + culture | translate }}</option>
+            }
+          </select>
+          <p class="mt-1 text-xs text-ink-muted">{{ 'guests.fields.cultureHint' | translate }}</p>
+        </div>
+
+        <div class="sm:col-span-2 xl:col-span-3">
+          <label class="hc-label" for="guest-note">{{ 'common.notes' | translate }}</label>
+          <textarea
+            id="guest-note"
+            class="hc-input mt-1"
+            rows="3"
+            formControlName="note"
+            [maxlength]="limits.noteMaxLength"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+        <hc-button type="submit" data-testid="guest-save" [busy]="saving()">
+          {{ 'common.save' | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="cancel()">
+          {{ 'common.cancel' | translate }}
+        </hc-button>
+      </div>
+    </form>
+  }
+</div>

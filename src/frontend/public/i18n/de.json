@@ -79,7 +79,10 @@
     "timeTracking": "Zeiterfassung",
     "shifts": "Schichtplan",
     "reports": "Berichte",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "occupancy": "Belegungsraster",
+    "guests": "Gäste",
+    "ratePlans": "Preispläne"
   },
   "auth": {
     "title": "Anmelden",
@@ -193,6 +196,15 @@
       },
       "settings": {
         "description": "Hotelprofil, Steuerprofil und Berechtigungen."
+      },
+      "occupancy": {
+        "description": "Zimmer × Tag: Anreisen, Abreisen und Optionen auf einen Blick."
+      },
+      "guests": {
+        "description": "Gästestammdaten für Reservierungen und Rechnungen."
+      },
+      "ratePlans": {
+        "description": "Saison- und Kanalpreise je Zimmertyp."
       }
     },
     "empty": {
@@ -362,10 +374,158 @@
   },
   "reservations": {
     "title": "Reservierungen",
-    "subtitle": "Belegungsraster, Anreisen und Abreisen im Blick behalten.",
+    "subtitle": "Anreisen, Abreisen und den Status jeder Buchung im Blick behalten.",
     "empty": {
-      "title": "Keine Reservierungen im gewählten Zeitraum",
-      "description": "Das Belegungsraster zeigt Option, Bestätigung, Check-in und Check-out je Zimmer und Tag."
+      "title": "Noch keine Reservierungen",
+      "description": "Legen Sie eine Reservierung an — Zimmer, Gast und Zeitraum werden im Assistenten Schritt für Schritt erfasst."
+    },
+    "rangeNote": "Der Aufenthalt ist halboffen: Anreise zählt, Abreise nicht — der Abreisetag wird nicht berechnet. Der Datumsfilter zeigt alle Aufenthalte, die sich mit dem Zeitraum überschneiden.",
+    "count": "{{count}} Reservierungen",
+    "nightsCount": "{{count}} Nächte",
+    "tableCaption": "Liste der Reservierungen mit Nummer, Gast, Aufenthalt, Nächten, Zimmer, Kanal, Status und Betrag",
+    "loadFailed": "Die Reservierungen konnten nicht geladen werden.",
+    "list": {
+      "loadFailed": "Die Reservierungen konnten nicht geladen werden."
+    },
+    "emptyFiltered": {
+      "title": "Keine Treffer für diese Filter",
+      "description": "Passen Sie Zeitraum, Status oder Suchbegriff an."
+    },
+    "actions": {
+      "create": "Neue Reservierung",
+      "occupancy": "Belegungsraster",
+      "guests": "Gäste",
+      "ratePlans": "Preispläne",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "cancel": "Stornieren",
+      "noShow": "No-Show",
+      "conflict": "Dieser Schritt ist im aktuellen Status nicht möglich. Die Server-Meldung nennt den versuchten Übergang.",
+      "finalState": "Diese Reservierung ist abgeschlossen — es sind keine weiteren Statusänderungen möglich.",
+      "cancelReason": "Stornogrund (optional)",
+      "cancelReasonPlaceholder": "z. B. Gast hat abgesagt",
+      "cancelHint": "Der Grund wird mit Zeitstempel an die Notizen der Reservierung angehängt.",
+      "checkInNote": "Ein Check-in vor dem Anreisetag ist nicht möglich; ein späterer Check-in ist erlaubt.",
+      "checkOutDirtyNote": "Hinweis: Mit dem Check-out wird das Zimmer automatisch auf „unrein“ gesetzt und erscheint im Housekeeping.",
+      "checkOutDirtyDone": "Das Zimmer wurde automatisch auf „unrein“ gesetzt.",
+      "success": {
+        "check-in": "Check-in durchgeführt.",
+        "check-out": "Check-out durchgeführt.",
+        "cancel": "Die Reservierung wurde storniert.",
+        "no-show": "Als No-Show erfasst."
+      }
+    },
+    "filters": {
+      "legend": "Filter",
+      "search": "Suche",
+      "searchPlaceholder": "Reservierungsnummer oder Gastname",
+      "allStatuses": "Alle Status",
+      "channel": "Kanal",
+      "allChannels": "Alle Kanäle",
+      "room": "Zimmer",
+      "allRooms": "Alle Zimmer",
+      "apply": "Filter anwenden",
+      "reset": "Filter zurücksetzen",
+      "guestActive": "Gefiltert nach Gast",
+      "clearGuest": "Gastfilter entfernen"
+    },
+    "columns": {
+      "number": "Nummer",
+      "guest": "Gast",
+      "stay": "Aufenthalt",
+      "nights": "Nächte",
+      "room": "Zimmer",
+      "channel": "Kanal",
+      "total": "Betrag"
+    },
+    "status": {
+      "option": "Option",
+      "confirmed": "Bestätigt",
+      "checkedIn": "Eingecheckt",
+      "checkedOut": "Ausgecheckt",
+      "cancelled": "Storniert",
+      "noShow": "No-Show"
+    },
+    "channel": {
+      "direct": "Direkt",
+      "phone": "Telefon",
+      "walkIn": "Laufkundschaft",
+      "bookingCom": "Booking.com",
+      "hrs": "HRS",
+      "expedia": "Expedia",
+      "corporate": "Firmenkunde"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} von {{total}}",
+      "page": "Seite {{page}} von {{pages}}"
+    },
+    "fields": {
+      "checkIn": "Anreise",
+      "checkOut": "Abreise",
+      "roomType": "Zimmertyp",
+      "room": "Zimmer",
+      "guest": "Gast",
+      "stay": "Aufenthalt",
+      "occupancy": "Belegung",
+      "adults": "Erwachsene",
+      "children": "Kinder",
+      "channel": "Kanal",
+      "depositPercent": "Anzahlung (%)",
+      "deposit": "Anzahlung",
+      "ratePlan": "Preisplan",
+      "timestamps": "Zeitstempel"
+    },
+    "detail": {
+      "title": "Reservierung",
+      "loadFailed": "Die Reservierung konnte nicht geladen werden.",
+      "backToList": "Zur Liste",
+      "actions": "Aktionen",
+      "people": "{{adults}} Erwachsene · {{children}} Kinder",
+      "createInvoice": "Rechnung erstellen"
+    },
+    "folio": {
+      "title": "Folio",
+      "open": "Offen",
+      "closed": "Geschlossen",
+      "empty": "Für diese Reservierung sind noch keine Buchungen im Folio erfasst.",
+      "loadFailed": "Das Folio konnte nicht geladen werden.",
+      "tableCaption": "Folio-Positionen mit Art, Beschreibung, Menge, Preis, Steuersatz, Netto und USt.",
+      "grossNote": "Alle Preise sind Bruttopreise (inkl. USt.); Netto und USt. werden aus dem Bruttobetrag herausgerechnet."
+    },
+    "wizard": {
+      "title": "Neue Reservierung",
+      "subtitle": "Zeitraum wählen, freies Zimmer belegen, Gast zuordnen.",
+      "step": {
+        "dates": "Zeitraum",
+        "room": "Zimmer",
+        "guest": "Gast",
+        "details": "Details"
+      },
+      "checkOutHint": "Der Abreisetag wird nicht berechnet.",
+      "allRoomTypes": "Alle Zimmertypen",
+      "searchAvailability": "Verfügbarkeit prüfen",
+      "availabilityFailed": "Die Verfügbarkeit konnte nicht geladen werden.",
+      "availableCount": "{{available}} von {{total}} Zimmern frei · {{outOfOrder}} außer Betrieb",
+      "noRooms": "Im gewählten Zeitraum ist kein Zimmer durchgehend frei.",
+      "floor": "Etage {{floor}}",
+      "capacity": "für {{count}} Personen",
+      "priceNote": "Die Verfügbarkeit enthält bewusst keine Preise — der Betrag wird beim Speichern serverseitig je Nacht ermittelt.",
+      "newGuest": "Neuen Gast anlegen",
+      "saveGuest": "Gast speichern",
+      "statusHint": "Eine Option hält das Zimmer unverbindlich; sie blockiert den Kalender wie eine Bestätigung.",
+      "amountNote": "Der Gesamtbetrag wird vom Server berechnet (kanalspezifischer Preisplan → allgemeiner Preisplan → Grundpreis des Zimmertyps) und nach dem Speichern angezeigt.",
+      "submit": "Reservierung speichern",
+      "created": "Reservierung angelegt",
+      "openDetail": "Reservierung öffnen",
+      "backToList": "Zur Liste",
+      "serverCalculated": "Betrag und Anzahlung wurden serverseitig je Nacht berechnet.",
+      "basePriceUsed": "Grundpreis des Zimmertyps",
+      "conflict": "Das Zimmer ist in diesem Zeitraum nicht mehr frei.",
+      "validation": {
+        "stayTooShort": "Die Abreise muss nach der Anreise liegen (mindestens eine Nacht).",
+        "stayTooLong": "Ein Aufenthalt darf höchstens {{max}} Nächte umfassen.",
+        "capacity": "Zimmer {{room}} ist für {{capacity}} Personen ausgelegt."
+      }
     }
   },
   "housekeeping": {
@@ -404,7 +564,191 @@
     "subtitle": "GoBD-konforme Rechnungen: Entwurf, Festschreibung und Storno.",
     "empty": {
       "title": "Noch keine Rechnungen",
-      "description": "Festgeschriebene Rechnungen sind unveränderbar; Korrekturen erfolgen ausschließlich per Stornorechnung."
+      "description": "Erstellen Sie einen Entwurf aus einer Reservierung oder mit manuell erfassten Positionen."
+    },
+    "gobdNote": "Festgeschriebene Rechnungen sind unveränderbar (GoBD). Korrekturen erfolgen ausschließlich über eine Stornorechnung; die ursprüngliche Rechnung bleibt erhalten.",
+    "count": "{{count}} Rechnungen",
+    "tableCaption": "Liste der Rechnungen mit Nummer, Rechnungsdatum, Gast, Reservierung, Status, Bruttobetrag und offenem Betrag",
+    "noNumber": "Entwurf ohne Nummer",
+    "cancellationInvoice": "Stornorechnung",
+    "draftNoIssueDate": "Entwurf — Nummer und Rechnungsdatum entstehen erst beim Festschreiben.",
+    "draftHint": "Solange die Rechnung ein Entwurf ist, kann sie frei bearbeitet werden; sie ist noch kein Beleg.",
+    "pdfUnavailable": "Belegerstellung noch nicht verfügbar.",
+    "loadFailed": "Die Rechnungen konnten nicht geladen werden.",
+    "emptyFiltered": {
+      "title": "Keine Treffer für diese Filter",
+      "description": "Passen Sie Status, Zeitraum oder Suchbegriff an."
+    },
+    "actions": {
+      "create": "Neue Rechnung",
+      "finalize": "Festschreiben",
+      "cancel": "Stornieren",
+      "addPayment": "Zahlung erfassen",
+      "pdf": "PDF",
+      "conflict": "Der Vorgang ist im aktuellen Status der Rechnung nicht möglich.",
+      "none": "Für diese Rechnung sind keine weiteren Vorgänge möglich.",
+      "success": {
+        "finalize": "Die Rechnung wurde festgeschrieben.",
+        "cancel": "Die Rechnung wurde storniert.",
+        "payment": "Die Zahlung wurde erfasst."
+      }
+    },
+    "filters": {
+      "legend": "Filter",
+      "search": "Suche",
+      "searchPlaceholder": "Rechnungsnummer oder Gastname",
+      "allStatuses": "Alle Status",
+      "apply": "Filter anwenden",
+      "draftsHidden": "Bei gesetztem Datumsfilter werden Entwürfe nicht angezeigt — sie haben kein Rechnungsdatum.",
+      "reservationActive": "Gefiltert nach Reservierung",
+      "guestActive": "Gefiltert nach Gast",
+      "clear": "Filter entfernen"
+    },
+    "columns": {
+      "number": "Nummer",
+      "issuedAt": "Rechnungsdatum",
+      "guest": "Gast",
+      "reservation": "Reservierung",
+      "gross": "Brutto",
+      "outstanding": "Offen",
+      "lineType": "Art",
+      "description": "Beschreibung",
+      "serviceDate": "Leistungsdatum",
+      "quantity": "Menge",
+      "unitPrice": "Einzelpreis",
+      "vatRate": "USt.-Satz",
+      "lineNet": "Netto",
+      "lineVat": "USt.",
+      "lineGross": "Brutto"
+    },
+    "status": {
+      "draft": "Entwurf",
+      "finalized": "Festgeschrieben",
+      "paid": "Bezahlt",
+      "cancelled": "Storniert"
+    },
+    "lineType": {
+      "roomCharge": "Übernachtung",
+      "extra": "Extra",
+      "cityTax": "Kurtaxe"
+    },
+    "paymentMethod": {
+      "cash": "Bar",
+      "card": "Karte",
+      "transfer": "Überweisung"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} von {{total}}",
+      "page": "Seite {{page}} von {{pages}}"
+    },
+    "fields": {
+      "culture": "Rechnungssprache",
+      "createdAt": "Angelegt am"
+    },
+    "detail": {
+      "title": "Rechnung",
+      "loadFailed": "Die Rechnung konnte nicht geladen werden.",
+      "backToList": "Zur Liste",
+      "actions": "Vorgänge"
+    },
+    "lines": {
+      "title": "Positionen",
+      "tableCaption": "Rechnungspositionen mit Art, Beschreibung, Leistungsdatum, Menge, Einzelpreis, Steuersatz, Netto, USt. und Brutto"
+    },
+    "totals": {
+      "net": "Netto",
+      "vat": "USt.",
+      "cityTax": "Kurtaxe",
+      "cityTaxNote": "Durchlaufender Posten — nicht Teil der Umsatzsteuer-Bemessungsgrundlage.",
+      "gross": "Brutto",
+      "paid": "Bezahlt",
+      "outstanding": "Offener Betrag"
+    },
+    "payments": {
+      "title": "Zahlungen",
+      "empty": "Für diese Rechnung wurde noch keine Zahlung erfasst."
+    },
+    "payment": {
+      "method": "Zahlungsart",
+      "amount": "Betrag",
+      "paidAt": "Zahlungszeitpunkt",
+      "paidAtHint": "Ohne Angabe wird der Serverzeitpunkt verwendet; ein Datum in der Zukunft ist unzulässig.",
+      "reference": "Referenz",
+      "outstanding": "Offener Betrag",
+      "paidHint": "Teilzahlungen sind möglich; sobald der Bruttobetrag erreicht ist, wechselt der Status auf „Bezahlt“.",
+      "overpayment": "Der Betrag übersteigt den offenen Betrag. Überzahlungen sind nicht Teil der Rechnung.",
+      "validation": {
+        "amountRequired": "Bitte einen Betrag angeben.",
+        "amount": "Der Betrag muss größer als 0 sein."
+      }
+    },
+    "finalize": {
+      "confirm": "Mit dem Festschreiben erhält die Rechnung eine fortlaufende Nummer und ein Rechnungsdatum.",
+      "irreversible": "Dieser Schritt ist unwiderruflich: Eine festgeschriebene Rechnung kann danach nur noch per Stornorechnung korrigiert werden."
+    },
+    "cancel": {
+      "confirmDraft": "Dieser Entwurf wird direkt storniert. Es entsteht keine Stornorechnung, da ein Entwurf kein Beleg ist; in der Rechnungsnummernfolge bleibt keine Lücke.",
+      "confirmStorno": "Die ursprüngliche Rechnung bleibt vollständig erhalten. Es wird zusätzlich eine Stornorechnung mit eigener Nummer und negativen Beträgen erstellt, sodass sich beide Belege auf null ausgleichen.",
+      "reason": "Stornogrund (optional)",
+      "reasonPlaceholder": "z. B. Falscher Zimmertyp berechnet",
+      "auditNote": "Der Grund wird im Änderungsprotokoll festgehalten."
+    },
+    "storno": {
+      "cancelsPrefix": "Diese Stornorechnung storniert eine andere Rechnung.",
+      "cancelledByPrefix": "Diese Rechnung wurde durch eine Stornorechnung aufgehoben.",
+      "openOriginal": "Ursprungsrechnung öffnen",
+      "openCancellation": "Stornorechnung öffnen",
+      "created": "Es wurde eine Stornorechnung erstellt."
+    },
+    "audit": {
+      "title": "Änderungsprotokoll",
+      "description": "Fortschreibendes Protokoll nach GoBD: wer, wann und was — Einträge werden nie geändert oder gelöscht.",
+      "by": "Benutzer",
+      "limitNote": "Bearbeitungen an Entwürfen werden nicht protokolliert (ein Entwurf ist kein Beleg); Teilzahlungen erscheinen als Zahlungseintrag.",
+      "action": {
+        "created": "Angelegt",
+        "finalized": "Festgeschrieben",
+        "paid": "Bezahlt",
+        "cancelled": "Storniert",
+        "updated": "Geändert",
+        "paymentRecorded": "Zahlung erfasst"
+      }
+    },
+    "form": {
+      "createTitle": "Neue Rechnung",
+      "editTitle": "Entwurf bearbeiten",
+      "subtitle": "Rechnungen entstehen zunächst als Entwurf ohne Nummer.",
+      "loadFailed": "Die Rechnung konnte nicht geladen werden.",
+      "notEditable": "Diese Rechnung ist nicht mehr bearbeitbar.",
+      "notEditableHint": "Nur Entwürfe können geändert werden. Für eine festgeschriebene Rechnung ist eine Stornorechnung der vorgesehene Weg.",
+      "sourceLegend": "Grundlage der Rechnung",
+      "sourceReservation": "Aus Reservierung",
+      "sourceManual": "Positionen manuell",
+      "sourceReservationHint": "Übernachtung, offene Folio-Positionen und Kurtaxe werden serverseitig erzeugt.",
+      "sourceManualHint": "Sie erfassen jede Position selbst; Gast ist dabei Pflicht.",
+      "reservationSearch": "Reservierung suchen",
+      "reservationLinesNote": "Die Positionen werden aus der Reservierung erzeugt und können nach dem Anlegen im Entwurf angepasst werden.",
+      "selectGuest": "Gast wählen",
+      "addLine": "Position hinzufügen",
+      "removeLine": "Position entfernen",
+      "grossHint": "Bruttopreis (inkl. USt.).",
+      "totalNote": "Steuersatz, Netto und USt. werden serverseitig ermittelt — der Client sendet weder Steuersatz noch Summen.",
+      "previewGross": "Vorschau brutto",
+      "createDraft": "Entwurf anlegen",
+      "draftNote": "Der Entwurf erhält erst beim Festschreiben eine Nummer.",
+      "cultureDefault": "Standard (Gast bzw. Hotel)",
+      "cultureHint": "Bestimmt die Sprache des späteren Belegs.",
+      "conflict": "Für diese Reservierung besteht bereits eine nicht stornierte Rechnung.",
+      "validation": {
+        "reservationRequired": "Bitte eine Reservierung wählen.",
+        "guestRequired": "Bitte einen Gast wählen.",
+        "lineRequired": "Bitte mindestens eine vollständige Position erfassen.",
+        "typeRequired": "Bitte eine Art wählen.",
+        "descriptionRequired": "Bitte eine Beschreibung angeben.",
+        "quantityRequired": "Bitte eine Menge angeben.",
+        "unitPriceRequired": "Bitte einen Einzelpreis angeben.",
+        "descriptionLength": "Höchstens 500 Zeichen."
+      }
     }
   },
   "employees": {
@@ -849,6 +1193,178 @@
       "email": "Bitte eine gültige E-Mail-Adresse angeben.",
       "currency": "Genau drei Buchstaben (ISO 4217), z. B. EUR.",
       "percent": "Wert zwischen 0 und 100."
+    }
+  },
+  "occupancy": {
+    "title": "Belegungsraster",
+    "subtitle": "Zimmer × Tag — Anreisen, Abreisen und Optionen auf einen Blick.",
+    "tableCaption": "Belegung je Zimmer und Tag; ein Balken entspricht einem Aufenthalt",
+    "loadFailed": "Das Belegungsraster konnte nicht geladen werden.",
+    "rangeTooLong": "Der Zeitraum ist zu lang. Der Server erlaubt höchstens 92 Tage.",
+    "outOfOrder": "außer Betrieb",
+    "roomFree": "Im gewählten Zeitraum keine Belegung.",
+    "noStays": "Im gewählten Zeitraum gibt es keine Belegung — das Raster bleibt zur Planung sichtbar.",
+    "legend": "Gestrichelt = Option (unverbindlich). Ein offener Balkenrand bedeutet, dass der Aufenthalt über den Zeitraum hinausgeht.",
+    "empty": {
+      "title": "Keine Zimmer vorhanden",
+      "description": "Legen Sie zuerst Zimmer an, damit das Belegungsraster gefüllt werden kann."
+    },
+    "actions": {
+      "toList": "Zur Liste"
+    },
+    "range": {
+      "navLabel": "Zeitraum wählen",
+      "nights": "{{count}} Nächte",
+      "previous": "Zurück",
+      "next": "Vor",
+      "widthLabel": "Länge des Zeitraums",
+      "widthOption": "{{count}} Tage",
+      "clamped": "Der Zeitraum wurde auf {{max}} Tage gekürzt — mehr lässt der Server für das Belegungsraster nicht zu."
+    },
+    "bar": {
+      "continuesBefore": "Der Aufenthalt beginnt vor diesem Zeitraum.",
+      "continuesAfter": "Der Aufenthalt endet nach diesem Zeitraum.",
+      "nights": "{{count}} Nächte"
+    },
+    "free": {
+      "createAria": "Zimmer {{room}} am {{date}} belegen"
+    },
+    "columns": {
+      "room": "Zimmer"
+    },
+    "summary": {
+      "rooms": "Zimmer",
+      "roomNights": "Zimmernächte",
+      "occupied": "Belegt",
+      "rate": "Auslastung"
+    }
+  },
+  "guests": {
+    "title": "Gäste",
+    "subtitle": "Stammdaten der Gäste für Reservierungen und Rechnungen.",
+    "count": "{{count}} Gäste",
+    "tableCaption": "Liste der Gäste mit Name, E-Mail, Telefon und Ort",
+    "truncated": "Es werden nur die ersten Treffer angezeigt — bitte Suche eingrenzen.",
+    "stayCount": "Abgeschlossene Aufenthalte: {{count}}",
+    "loadFailed": "Die Gäste konnten nicht geladen werden.",
+    "columns": {
+      "location": "Ort"
+    },
+    "filters": {
+      "search": "Suche",
+      "searchPlaceholder": "Name oder E-Mail"
+    },
+    "actions": {
+      "create": "Neuer Gast",
+      "toReservations": "Zu den Reservierungen",
+      "reservations": "Reservierungen"
+    },
+    "delete": {
+      "confirm": "Wirklich löschen?",
+      "conflict": "Dieser Gast hat eine laufende oder künftige Reservierung und kann deshalb nicht gelöscht werden."
+    },
+    "empty": {
+      "title": "Noch keine Gäste erfasst",
+      "description": "Gäste können hier oder direkt im Reservierungsassistenten angelegt werden."
+    },
+    "emptyFiltered": {
+      "title": "Keine Treffer",
+      "description": "Für diese Suche wurde kein Gast gefunden."
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} von {{total}}",
+      "page": "Seite {{page}} von {{pages}}"
+    },
+    "fields": {
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "nationality": "Staatsangehörigkeit",
+      "culture": "Korrespondenzsprache",
+      "cultureHint": "Sprache für Rechnungen und Schriftverkehr.",
+      "addressLine": "Straße und Hausnummer",
+      "postalCode": "PLZ",
+      "city": "Ort",
+      "birthDate": "Geburtsdatum"
+    },
+    "form": {
+      "createTitle": "Neuen Gast anlegen",
+      "editTitle": "Gast bearbeiten",
+      "subtitle": "Gleiche Namen sind zulässig — es gibt bewusst keine Eindeutigkeitsprüfung.",
+      "loadFailed": "Der Gast konnte nicht geladen werden.",
+      "section": {
+        "person": "Person",
+        "address": "Anschrift"
+      },
+      "validation": {
+        "firstNameRequired": "Bitte einen Vornamen angeben.",
+        "lastNameRequired": "Bitte einen Nachnamen angeben.",
+        "email": "Bitte eine gültige E-Mail-Adresse angeben.",
+        "dateFormat": "Bitte ein gültiges Datum angeben.",
+        "tooLong": "Der Wert ist zu lang."
+      }
+    }
+  },
+  "ratePlans": {
+    "title": "Preispläne",
+    "subtitle": "Saison- und Kanalpreise je Zimmertyp.",
+    "rangeNote": "Die Gültigkeit ist ein geschlossener Zeitraum: der letzte Tag zählt mit. Ein Aufenthalt ist dagegen halboffen — der Abreisetag wird nicht berechnet.",
+    "count": "{{count}} Preispläne · {{active}} aktiv",
+    "tableCaption": "Liste der Preispläne mit Name, Zimmertyp, Gültigkeit, Kanal, Preis und Status",
+    "allChannels": "Alle Kanäle",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "loadFailed": "Die Preispläne konnten nicht geladen werden.",
+    "actions": {
+      "create": "Neuer Preisplan"
+    },
+    "filters": {
+      "roomType": "Zimmertyp",
+      "allRoomTypes": "Alle Zimmertypen",
+      "date": "Gültig am"
+    },
+    "columns": {
+      "roomType": "Zimmertyp",
+      "validity": "Gültigkeit",
+      "channel": "Kanal",
+      "price": "Preis / Nacht"
+    },
+    "delete": {
+      "confirm": "Wirklich löschen?",
+      "conflict": "Dieser Preisplan wird bereits in Reservierungen verwendet und kann nicht gelöscht werden. Setzen Sie ihn stattdessen auf inaktiv."
+    },
+    "empty": {
+      "title": "Noch keine Preispläne",
+      "description": "Ohne Preisplan wird der Grundpreis des Zimmertyps herangezogen."
+    },
+    "fields": {
+      "validFrom": "Gültig ab",
+      "validTo": "Gültig bis (einschließlich)",
+      "isActive": "Aktiv"
+    },
+    "form": {
+      "createTitle": "Neuen Preisplan anlegen",
+      "editTitle": "Preisplan bearbeiten",
+      "subtitle": "Pro Zimmertyp und Kanal darf sich nur ein aktiver Plan über denselben Tag legen.",
+      "loadFailed": "Der Preisplan konnte nicht geladen werden.",
+      "selectRoomType": "Zimmertyp wählen",
+      "priceHint": "Bruttopreis je Nacht.",
+      "validToHint": "Dieser Tag zählt noch zum Zeitraum.",
+      "channelHint": "Ohne Auswahl gilt der Plan für alle Kanäle; kanalspezifische Pläne haben Vorrang.",
+      "inactiveHint": "Inaktive Pläne erzeugen keine Überschneidung und beeinflussen keine neuen Reservierungen.",
+      "overlap": "Für diesen Zimmertyp und Kanal überschneidet sich der Zeitraum mit einem aktiven Plan.",
+      "validation": {
+        "roomTypeIdRequired": "Bitte einen Zimmertyp wählen.",
+        "nameRequired": "Bitte einen Namen angeben.",
+        "priceRequired": "Bitte einen Preis angeben.",
+        "validFromRequired": "Bitte ein Startdatum angeben.",
+        "validToRequired": "Bitte ein Enddatum angeben.",
+        "channelRequired": "Bitte einen Kanal wählen.",
+        "dateFormat": "Bitte ein gültiges Datum angeben.",
+        "price": "Preis zwischen 0 und 100.000.",
+        "nameLength": "Höchstens 150 Zeichen.",
+        "validityOrder": "Das Enddatum darf nicht vor dem Startdatum liegen.",
+        "overlap": "Überschneidet sich mit einem bestehenden aktiven Plan."
+      }
     }
   }
 }

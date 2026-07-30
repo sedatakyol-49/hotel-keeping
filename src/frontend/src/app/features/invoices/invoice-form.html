@@ -1,0 +1,388 @@
+<div class="space-y-6">
+  <hc-page-header
+    [titleKey]="isEdit() ? 'invoices.form.editTitle' : 'invoices.form.createTitle'"
+    subtitleKey="invoices.form.subtitle"
+    eyebrowKey="nav.invoices"
+  />
+
+  @if (loading()) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (loadError(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'invoices.form.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <a
+          class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+          routerLink="/invoices"
+        >
+          {{ 'common.back' | translate }}
+        </a>
+      </div>
+    </div>
+  } @else if (editLocked()) {
+    <!-- Ikinci savunma hatti: kesinlesmis fatura duzenlenemez (GoBD §6.1) -->
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger" data-testid="invoice-form-locked">
+        {{ 'invoices.form.notEditable' | translate }}
+      </p>
+      <p class="mt-2 text-sm text-ink">{{ 'invoices.form.notEditableHint' | translate }}</p>
+      <div class="mt-4">
+        <a
+          class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+          [routerLink]="['/invoices', invoiceId()]"
+        >
+          {{ 'common.back' | translate }}
+        </a>
+      </div>
+    </div>
+  } @else {
+    @if (formErrorKey(); as errorKey) {
+      <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+        <p class="text-sm text-danger" data-testid="invoice-form-error">
+          {{ errorKey | translate }}
+        </p>
+        @if (serverDetail(); as detail) {
+          <p class="mt-1 font-mono text-xs text-ink" data-testid="invoice-form-detail">
+            {{ detail }}
+          </p>
+        }
+      </div>
+    }
+    @if (formErrors().length > 0) {
+      <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+        @for (message of formErrors(); track message) {
+          <p class="text-sm text-danger">{{ message }}</p>
+        }
+      </div>
+    }
+
+    <form
+      class="space-y-6"
+      [formGroup]="form"
+      novalidate
+      data-testid="invoice-form"
+      (ngSubmit)="submit()"
+    >
+      @if (!isEdit()) {
+        <!-- Iki yol birbirini disler; secim govdeyi belirler -->
+        <fieldset class="border border-rule bg-paper-raised">
+          <legend class="sr-only">{{ 'invoices.form.sourceLegend' | translate }}</legend>
+          <h2 class="border-b border-rule px-4 py-3 label-mono text-ink">
+            {{ 'invoices.form.sourceLegend' | translate }}
+          </h2>
+          <div class="flex flex-wrap gap-2 px-4 py-4">
+            <hc-button
+              [variant]="source() === 'reservation' ? 'primary' : 'secondary'"
+              data-testid="invoice-source-reservation"
+              (pressed)="setSource('reservation')"
+            >
+              {{ 'invoices.form.sourceReservation' | translate }}
+            </hc-button>
+            <hc-button
+              [variant]="source() === 'manual' ? 'primary' : 'secondary'"
+              data-testid="invoice-source-manual"
+              (pressed)="setSource('manual')"
+            >
+              {{ 'invoices.form.sourceManual' | translate }}
+            </hc-button>
+          </div>
+          <p class="border-t border-rule px-4 py-2 text-xs text-ink-muted">
+            {{
+              (source() === 'reservation'
+                ? 'invoices.form.sourceReservationHint'
+                : 'invoices.form.sourceManualHint') | translate
+            }}
+          </p>
+        </fieldset>
+      }
+
+      <!-- YOL A: rezervasyondan (satirlari sunucu uretir) -->
+      @if (!isEdit() && source() === 'reservation') {
+        <section class="border border-rule bg-paper-raised" aria-labelledby="invoice-reservation">
+          <h2 id="invoice-reservation" class="border-b border-rule px-4 py-3 label-mono text-ink">
+            {{ 'invoices.columns.reservation' | translate }}
+          </h2>
+
+          <div class="border-b border-rule px-4 py-4">
+            <label class="hc-label" for="invoice-reservation-search">
+              {{ 'invoices.form.reservationSearch' | translate }}
+            </label>
+            <div class="mt-1 flex flex-wrap gap-2">
+              <input
+                #reservationSearch
+                id="invoice-reservation-search"
+                class="hc-input sm:max-w-md"
+                type="search"
+                [placeholder]="'reservations.filters.searchPlaceholder' | translate"
+                (keydown.enter)="$event.preventDefault(); searchReservations(reservationSearch.value)"
+              />
+              <hc-button
+                variant="secondary"
+                data-testid="invoice-reservation-search"
+                [busy]="reservationSearching()"
+                (pressed)="searchReservations(reservationSearch.value)"
+              >
+                {{ 'common.search' | translate }}
+              </hc-button>
+            </div>
+          </div>
+
+          @if (selectedReservation(); as reservation) {
+            <div class="border-b border-rule bg-navy-tint px-4 py-3" data-testid="invoice-selected-reservation">
+              <p class="numeric text-ink">{{ reservation.reservationNumber }}</p>
+              <p class="mt-1 text-sm text-ink-muted">
+                {{ reservation.guestName }} ·
+                {{ reservation.checkIn | hcDate: 'medium' }} –
+                {{ reservation.checkOut | hcDate: 'medium' }} ·
+                {{ reservation.totalAmount | hcMoney: reservation.currency }}
+              </p>
+            </div>
+          }
+
+          @if (reservationResults().length > 0) {
+            <ul class="divide-y divide-rule">
+              @for (reservation of reservationResults(); track reservation.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="flex w-full touch-target items-center justify-between gap-3 px-4 py-3 text-left hover:bg-paper-sunken"
+                    [class.bg-navy-tint]="selectedReservation()?.id === reservation.id"
+                    [attr.aria-pressed]="selectedReservation()?.id === reservation.id"
+                    data-testid="invoice-reservation-option"
+                    (click)="selectReservation(reservation)"
+                  >
+                    <span class="min-w-0">
+                      <span class="block numeric text-ink">{{ reservation.reservationNumber }}</span>
+                      <span class="block truncate text-xs text-ink-faint">
+                        {{ reservation.guestName }} · {{ reservation.roomNumber }}
+                      </span>
+                    </span>
+                    <span class="shrink-0 numeric text-sm text-ink">
+                      {{ reservation.totalAmount | hcMoney: reservation.currency }}
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+
+          <p class="border-t border-rule px-4 py-2 text-xs text-ink-muted">
+            {{ 'invoices.form.reservationLinesNote' | translate }}
+          </p>
+        </section>
+      }
+
+      <!-- YOL B: elle misafir secimi -->
+      @if (!isEdit() && source() === 'manual') {
+        <section class="border border-rule bg-paper-raised" aria-labelledby="invoice-guest">
+          <h2 id="invoice-guest" class="border-b border-rule px-4 py-3 label-mono text-ink">
+            {{ 'invoices.columns.guest' | translate }}
+          </h2>
+
+          <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2">
+            <div>
+              <label class="hc-label" for="invoice-guest-search">
+                {{ 'guests.filters.search' | translate }}
+              </label>
+              <div class="mt-1 flex gap-2">
+                <input
+                  #guestSearch
+                  id="invoice-guest-search"
+                  class="hc-input"
+                  type="search"
+                  (keydown.enter)="$event.preventDefault(); searchGuests(guestSearch.value)"
+                />
+                <hc-button variant="secondary" (pressed)="searchGuests(guestSearch.value)">
+                  {{ 'common.search' | translate }}
+                </hc-button>
+              </div>
+            </div>
+
+            <div>
+              <label class="hc-label" for="invoice-guest-select">
+                {{ 'invoices.form.selectGuest' | translate }}
+              </label>
+              <select
+                id="invoice-guest-select"
+                class="hc-input mt-1"
+                data-testid="invoice-guest-select"
+                (change)="selectGuest($any($event.target).value)"
+              >
+                <option value="">{{ 'invoices.form.selectGuest' | translate }}</option>
+                @for (guest of guests.items(); track guest.id) {
+                  <option [value]="guest.id" [selected]="guest.id === selectedGuestId()">
+                    {{ guest.fullName }}
+                  </option>
+                }
+              </select>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Satirlar: yalnizca elle yol veya taslak duzenleme -->
+      @if (isEdit() || source() === 'manual') {
+        <section class="border border-rule bg-paper-raised" aria-labelledby="invoice-form-lines">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-4 py-3">
+            <h2 id="invoice-form-lines" class="label-mono text-ink">
+              {{ 'invoices.lines.title' | translate }}
+            </h2>
+            <hc-button
+              size="sm"
+              variant="secondary"
+              data-testid="invoice-add-line"
+              (pressed)="addLine()"
+            >
+              {{ 'invoices.form.addLine' | translate }}
+            </hc-button>
+          </div>
+
+          <ul class="divide-y divide-rule" formArrayName="lineItems">
+            @for (group of lineItems.controls; track $index) {
+              <li class="px-4 py-4" [formGroupName]="$index" data-testid="invoice-line-row">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
+                  <div>
+                    <label class="hc-label" [for]="'invoice-line-type-' + $index">
+                      {{ 'invoices.columns.lineType' | translate }}
+                    </label>
+                    <select
+                      [id]="'invoice-line-type-' + $index"
+                      class="hc-input mt-1"
+                      formControlName="type"
+                      required
+                    >
+                      @for (type of lineTypes; track type) {
+                        <option [value]="type">{{ lineTypeLabelKeys[type] | translate }}</option>
+                      }
+                    </select>
+                  </div>
+
+                  <div class="xl:col-span-2">
+                    <label class="hc-label" [for]="'invoice-line-description-' + $index">
+                      {{ 'invoices.columns.description' | translate }}
+                    </label>
+                    <input
+                      [id]="'invoice-line-description-' + $index"
+                      class="hc-input mt-1"
+                      type="text"
+                      formControlName="description"
+                      required
+                      [maxlength]="limits.descriptionMaxLength"
+                      [attr.aria-invalid]="lineErrorKey($index, 'description') ? 'true' : null"
+                    />
+                    @if (lineErrorKey($index, 'description'); as errorKey) {
+                      <p class="mt-1 text-xs text-danger" data-testid="invoice-line-description-error">
+                        {{ errorKey | translate }}
+                      </p>
+                    }
+                  </div>
+
+                  <div>
+                    <label class="hc-label" [for]="'invoice-line-quantity-' + $index">
+                      {{ 'invoices.columns.quantity' | translate }}
+                    </label>
+                    <input
+                      [id]="'invoice-line-quantity-' + $index"
+                      class="hc-input mt-1"
+                      type="number"
+                      inputmode="numeric"
+                      step="0.01"
+                      formControlName="quantity"
+                      required
+                      [min]="limits.quantityMin"
+                      [max]="limits.quantityMax"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="hc-label" [for]="'invoice-line-price-' + $index">
+                      {{ 'invoices.columns.unitPrice' | translate }}
+                    </label>
+                    <input
+                      [id]="'invoice-line-price-' + $index"
+                      class="hc-input mt-1"
+                      type="text"
+                      inputmode="decimal"
+                      formControlName="unitPrice"
+                      required
+                      [attr.aria-invalid]="lineErrorKey($index, 'unitPrice') ? 'true' : null"
+                    />
+                    <p class="mt-1 text-xs text-ink-muted">
+                      {{ 'invoices.form.grossHint' | translate }}
+                    </p>
+                    @if (lineErrorKey($index, 'unitPrice'); as errorKey) {
+                      <p class="mt-1 text-xs text-danger">{{ errorKey | translate }}</p>
+                    }
+                  </div>
+
+                  <div>
+                    <label class="hc-label" [for]="'invoice-line-date-' + $index">
+                      {{ 'invoices.columns.serviceDate' | translate }}
+                    </label>
+                    <input
+                      [id]="'invoice-line-date-' + $index"
+                      class="hc-input mt-1"
+                      type="date"
+                      formControlName="serviceDate"
+                    />
+                  </div>
+                </div>
+
+                @if (lineItems.length > 1) {
+                  <div class="mt-3">
+                    <hc-button
+                      size="sm"
+                      variant="ghost"
+                      data-testid="invoice-remove-line"
+                      (pressed)="removeLine($index)"
+                    >
+                      {{ 'invoices.form.removeLine' | translate }}
+                    </hc-button>
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+
+          <!-- Onizleme: KDV kirilimi ve nihai toplam SUNUCUDA hesaplanir -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-t border-rule px-4 py-3">
+            <p class="text-xs text-ink-muted">{{ 'invoices.form.totalNote' | translate }}</p>
+            <p class="numeric text-ink" data-testid="invoice-preview-gross">
+              {{ 'invoices.form.previewGross' | translate }}: {{ previewGross() | hcMoney }}
+            </p>
+          </div>
+        </section>
+      }
+
+      <section class="border border-rule bg-paper-raised">
+        <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2">
+          <div>
+            <label class="hc-label" for="invoice-culture">
+              {{ 'invoices.fields.culture' | translate }}
+            </label>
+            <select id="invoice-culture" class="hc-input mt-1" formControlName="culture">
+              <option value="">{{ 'invoices.form.cultureDefault' | translate }}</option>
+              @for (culture of cultures; track culture) {
+                <option [value]="culture">{{ 'language.' + culture | translate }}</option>
+              }
+            </select>
+            <p class="mt-1 text-xs text-ink-muted">{{ 'invoices.form.cultureHint' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+          <hc-button type="submit" data-testid="invoice-save" [busy]="saving()">
+            {{ (isEdit() ? 'common.save' : 'invoices.form.createDraft') | translate }}
+          </hc-button>
+          <hc-button variant="secondary" (pressed)="cancel()">
+            {{ 'common.cancel' | translate }}
+          </hc-button>
+          <p class="ml-auto text-xs text-ink-muted">{{ 'invoices.form.draftNote' | translate }}</p>
+        </div>
+      </section>
+    </form>
+  }
+</div>

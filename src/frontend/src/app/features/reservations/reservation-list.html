@@ -1,0 +1,432 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="reservations.title"
+    subtitleKey="reservations.subtitle"
+    eyebrowKey="nav.section.operations"
+  >
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/reservations/occupancy"
+        data-testid="reservations-to-occupancy"
+      >
+        {{ 'reservations.actions.occupancy' | translate }}
+      </a>
+      <a
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/reservations/guests"
+        data-testid="reservations-to-guests"
+      >
+        {{ 'reservations.actions.guests' | translate }}
+      </a>
+      <a
+        *hcHasPermission="ratesViewPermission"
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/reservations/rate-plans"
+        data-testid="reservations-to-rate-plans"
+      >
+        {{ 'reservations.actions.ratePlans' | translate }}
+      </a>
+      <a
+        *hcHasPermission="createPermission"
+        class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+        routerLink="/reservations/new"
+        data-testid="reservations-create"
+      >
+        {{ 'reservations.actions.create' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  <!-- Sozlesmede bilincli bir karar: yari acik aralik + kesisim filtresi -->
+  <p
+    class="border-l-2 border-brass bg-brass-tint px-3 py-2 text-sm text-ink"
+    data-testid="reservations-range-note"
+  >
+    {{ 'reservations.rangeNote' | translate }}
+  </p>
+
+  @if (query().guestId; as guestId) {
+    <div
+      class="flex flex-wrap items-center gap-3 border border-navy bg-navy-tint px-4 py-2"
+      data-testid="reservations-guest-filter"
+    >
+      <p class="label-mono text-navy">{{ 'reservations.filters.guestActive' | translate }}</p>
+      <span class="numeric text-xs text-ink-muted">{{ guestId }}</span>
+      <hc-button size="sm" variant="ghost" (pressed)="clearGuestFilter()">
+        {{ 'reservations.filters.clearGuest' | translate }}
+      </hc-button>
+    </div>
+  }
+
+  <!-- Filtreler: degerler URL sorgu parametrelerinden okunur -->
+  <form
+    class="border border-rule bg-paper-raised"
+    aria-labelledby="reservations-filter-heading"
+    novalidate
+    (ngSubmit)="
+      applyFromForm(
+        statusSelect.value,
+        channelSelect.value,
+        roomSelect.value,
+        fromInput.value,
+        toInput.value,
+        searchInput.value
+      )
+    "
+  >
+    <h2
+      id="reservations-filter-heading"
+      class="border-b border-rule px-4 py-3 label-mono text-ink"
+    >
+      {{ 'reservations.filters.legend' | translate }}
+    </h2>
+
+    <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div>
+        <label class="hc-label" for="reservations-filter-search">
+          {{ 'reservations.filters.search' | translate }}
+        </label>
+        <input
+          #searchInput
+          id="reservations-filter-search"
+          class="hc-input mt-1"
+          type="search"
+          name="search"
+          [value]="query().search ?? ''"
+          [placeholder]="'reservations.filters.searchPlaceholder' | translate"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="reservations-filter-status">
+          {{ 'common.status' | translate }}
+        </label>
+        <select
+          #statusSelect
+          id="reservations-filter-status"
+          class="hc-input mt-1"
+          name="status"
+          [value]="query().status ?? ''"
+          (change)="
+            applyFromForm(
+              statusSelect.value,
+              channelSelect.value,
+              roomSelect.value,
+              fromInput.value,
+              toInput.value,
+              searchInput.value
+            )
+          "
+        >
+          <option value="">{{ 'reservations.filters.allStatuses' | translate }}</option>
+          @for (status of statuses; track status) {
+            <option [value]="status" [selected]="status === query().status">
+              {{ statusLabelKeys[status] | translate }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="hc-label" for="reservations-filter-channel">
+          {{ 'reservations.filters.channel' | translate }}
+        </label>
+        <select
+          #channelSelect
+          id="reservations-filter-channel"
+          class="hc-input mt-1"
+          name="channel"
+          [value]="query().channel ?? ''"
+          (change)="
+            applyFromForm(
+              statusSelect.value,
+              channelSelect.value,
+              roomSelect.value,
+              fromInput.value,
+              toInput.value,
+              searchInput.value
+            )
+          "
+        >
+          <option value="">{{ 'reservations.filters.allChannels' | translate }}</option>
+          @for (channel of channels; track channel) {
+            <option [value]="channel" [selected]="channel === query().channel">
+              {{ channelLabelKeys[channel] | translate }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="hc-label" for="reservations-filter-room">
+          {{ 'reservations.filters.room' | translate }}
+        </label>
+        <select
+          #roomSelect
+          id="reservations-filter-room"
+          class="hc-input mt-1"
+          name="roomId"
+          [value]="query().roomId ?? ''"
+          (change)="
+            applyFromForm(
+              statusSelect.value,
+              channelSelect.value,
+              roomSelect.value,
+              fromInput.value,
+              toInput.value,
+              searchInput.value
+            )
+          "
+        >
+          <option value="">{{ 'reservations.filters.allRooms' | translate }}</option>
+          @for (room of rooms.options(); track room.id) {
+            <option [value]="room.id" [selected]="room.id === query().roomId">
+              {{ room.number }} · {{ room.roomTypeCode }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="hc-label" for="reservations-filter-from">{{ 'common.from' | translate }}</label>
+        <input
+          #fromInput
+          id="reservations-filter-from"
+          class="hc-input mt-1"
+          type="date"
+          name="from"
+          [value]="query().from ?? ''"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="reservations-filter-to">{{ 'common.to' | translate }}</label>
+        <input
+          #toInput
+          id="reservations-filter-to"
+          class="hc-input mt-1"
+          type="date"
+          name="to"
+          [value]="query().to ?? ''"
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 border-t border-rule px-4 py-3">
+      <hc-button type="submit">{{ 'reservations.filters.apply' | translate }}</hc-button>
+      @if (store.hasFilters()) {
+        <hc-button variant="ghost" (pressed)="resetFilters()">
+          {{ 'reservations.filters.reset' | translate }}
+        </hc-button>
+      }
+      <p class="ml-auto eyebrow" aria-live="polite">
+        {{ 'reservations.count' | translate: { count: store.totalCount() } }}
+      </p>
+    </div>
+  </form>
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'reservations.list.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      [titleKey]="
+        store.hasFilters() ? 'reservations.emptyFiltered.title' : 'reservations.empty.title'
+      "
+      [descriptionKey]="
+        store.hasFilters()
+          ? 'reservations.emptyFiltered.description'
+          : 'reservations.empty.description'
+      "
+    >
+      @if (store.hasFilters()) {
+        <hc-button variant="secondary" (pressed)="resetFilters()">
+          {{ 'reservations.filters.reset' | translate }}
+        </hc-button>
+      }
+    </hc-empty-state>
+  } @else {
+    <!-- Masaustu: yogun tablo -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="reservations.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'reservations.columns.number' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'reservations.columns.guest' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'reservations.columns.stay' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'reservations.columns.nights' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'reservations.columns.room' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'reservations.columns.channel' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'common.status' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'reservations.columns.total' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (reservation of store.items(); track reservation.id) {
+            <tr data-testid="reservation-row">
+              <th scope="row" class="px-4 py-3 text-left font-normal">
+                <a
+                  class="numeric text-navy underline-offset-2 hover:underline"
+                  [routerLink]="['/reservations', reservation.id]"
+                  data-testid="reservation-link"
+                >
+                  {{ reservation.reservationNumber }}
+                </a>
+              </th>
+              <td class="px-4 py-3 text-ink">
+                {{ reservation.guestName }}
+                @if (reservation.guestEmail) {
+                  <span class="block text-xs text-ink-faint">{{ reservation.guestEmail }}</span>
+                }
+              </td>
+              <td class="px-4 py-3 numeric text-ink">
+                {{ reservation.checkIn | hcDate: 'medium' }} –
+                {{ reservation.checkOut | hcDate: 'medium' }}
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink" data-testid="reservation-nights">
+                {{ reservation.nights }}
+              </td>
+              <td class="px-4 py-3 numeric text-ink">
+                {{ reservation.roomNumber }}
+                <span class="block eyebrow">{{ reservation.roomTypeCode }}</span>
+              </td>
+              <td class="px-4 py-3 text-sm text-ink-muted">
+                {{ channelLabelKeys[reservation.channel] | translate }}
+              </td>
+              <td class="px-4 py-3">
+                <hc-reservation-status [status]="reservation.status" />
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink" data-testid="reservation-total">
+                {{ reservation.totalAmount | hcMoney: reservation.currency }}
+                @if (reservation.ratePlanName) {
+                  <span class="block text-xs text-ink-faint">{{ reservation.ratePlanName }}</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil: ayni store, kart yerlesimi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (reservation of store.items(); track reservation.id) {
+        <li>
+          <a class="block px-4 py-4" [routerLink]="['/reservations', reservation.id]">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-serif text-xl leading-tight text-ink">
+                  {{ reservation.guestName }}
+                </p>
+                <p class="mt-1 numeric text-sm text-ink">
+                  {{ reservation.checkIn | hcDate: 'medium' }} –
+                  {{ reservation.checkOut | hcDate: 'medium' }}
+                </p>
+                <p class="mt-1 eyebrow">
+                  {{ reservation.reservationNumber }} · {{ 'reservations.columns.room' | translate }}
+                  {{ reservation.roomNumber }} ·
+                  {{ 'reservations.nightsCount' | translate: { count: reservation.nights } }}
+                </p>
+              </div>
+              <hc-reservation-status [status]="reservation.status" />
+            </div>
+            <p class="mt-2 numeric text-ink">
+              {{ reservation.totalAmount | hcMoney: reservation.currency }}
+              <span class="ml-2 text-xs text-ink-faint">
+                {{ channelLabelKeys[reservation.channel] | translate }}
+              </span>
+            </p>
+          </a>
+        </li>
+      }
+    </ul>
+
+    <!-- Sayfalama -->
+    <div
+      class="flex flex-col gap-3 border border-rule bg-paper-raised px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="eyebrow">
+        {{
+          'reservations.pagination.range'
+            | translate
+              : { from: store.rangeStart(), to: store.rangeEnd(), total: store.totalCount() }
+        }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <label
+          class="flex items-center gap-2 label-mono text-ink-muted"
+          for="reservations-page-size"
+        >
+          {{ 'common.rowsPerPage' | translate }}
+          <select
+            id="reservations-page-size"
+            class="hc-input w-auto"
+            [value]="query().pageSize"
+            (change)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === query().pageSize">{{ size }}</option>
+            }
+          </select>
+        </label>
+
+        <nav class="flex items-center gap-2" [attr.aria-label]="'common.page' | translate">
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasPreviousPage()"
+            (pressed)="goToPage(store.page() - 1)"
+          >
+            {{ 'common.previous' | translate }}
+          </hc-button>
+          <span class="numeric text-sm text-ink" aria-live="polite">
+            {{
+              'reservations.pagination.page'
+                | translate: { page: store.page(), pages: store.totalPages() }
+            }}
+          </span>
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasNextPage()"
+            (pressed)="goToPage(store.page() + 1)"
+          >
+            {{ 'common.next' | translate }}
+          </hc-button>
+        </nav>
+      </div>
+    </div>
+  }
+</div>

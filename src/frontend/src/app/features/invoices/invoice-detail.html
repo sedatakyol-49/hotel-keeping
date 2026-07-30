@@ -1,0 +1,629 @@
+<div class="space-y-6">
+  @if (store.loading() && store.invoice() === null) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'invoices.detail.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4 flex flex-wrap gap-2">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+        <a
+          class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+          routerLink="/invoices"
+        >
+          {{ 'invoices.detail.backToList' | translate }}
+        </a>
+      </div>
+    </div>
+  } @else if (store.invoice(); as invoice) {
+    <hc-page-header titleKey="invoices.detail.title" eyebrowKey="nav.invoices">
+      <div slot="actions" class="flex flex-wrap items-center gap-2">
+        <a
+          class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+          routerLink="/invoices"
+        >
+          {{ 'invoices.detail.backToList' | translate }}
+        </a>
+
+        <!--
+          Duzenleme YALNIZCA taslakta gorunur (GoBD §6.1). Kesinlesmis faturada
+          bu baglanti hic olusmaz.
+        -->
+        @if (store.isEditable()) {
+          <a
+            *hcHasPermission="createPermission"
+            class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+            [routerLink]="['/invoices', invoice.id, 'edit']"
+            data-testid="invoice-edit"
+          >
+            {{ 'common.edit' | translate }}
+          </a>
+        }
+
+        <!--
+          PDF: `GET /invoices/{id}/pdf` bu fazda 501 doner. Dugme devre disidir,
+          istek hic gonderilmez ve neden acikca yazilir; sahte indirme yapilmaz.
+        -->
+        <span class="inline-flex flex-col items-start">
+          <button
+            type="button"
+            class="inline-flex touch-target cursor-not-allowed items-center justify-center border border-rule px-4 py-2 label-mono text-ink-faint"
+            disabled
+            aria-disabled="true"
+            data-testid="invoice-pdf"
+            [attr.aria-describedby]="'invoice-pdf-note'"
+          >
+            {{ 'invoices.actions.pdf' | translate }}
+          </button>
+          <span id="invoice-pdf-note" class="mt-1 text-xs text-ink-faint">
+            {{ 'invoices.pdfUnavailable' | translate }}
+          </span>
+        </span>
+      </div>
+    </hc-page-header>
+
+    <!-- Kunye -->
+    <section class="border border-rule bg-paper-raised" aria-labelledby="invoice-summary">
+      <header
+        class="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-4 py-3"
+      >
+        <div class="min-w-0">
+          <h2 id="invoice-summary" class="numeric text-2xl text-ink">
+            @if (invoice.invoiceNumber) {
+              {{ invoice.invoiceNumber }}
+            } @else {
+              <span class="label-mono text-brass" data-testid="invoice-detail-no-number">
+                {{ 'invoices.noNumber' | translate }}
+              </span>
+            }
+          </h2>
+          <p class="mt-1 eyebrow">
+            @if (invoice.issuedAt) {
+              {{ 'invoices.columns.issuedAt' | translate }}:
+              {{ invoice.issuedAt | hcDate: 'medium' }}
+            } @else {
+              {{ 'invoices.draftNoIssueDate' | translate }}
+            }
+          </p>
+        </div>
+        <hc-invoice-status [status]="invoice.status" />
+      </header>
+
+      <dl class="grid grid-cols-1 gap-x-6 gap-y-4 px-4 py-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <dt class="eyebrow">{{ 'invoices.columns.guest' | translate }}</dt>
+          <dd class="text-ink">{{ invoice.guestName }}</dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'invoices.columns.reservation' | translate }}</dt>
+          <dd class="numeric text-ink">
+            @if (invoice.reservationId) {
+              <a
+                class="text-navy underline-offset-2 hover:underline"
+                [routerLink]="['/reservations', invoice.reservationId]"
+                data-testid="invoice-reservation-link"
+              >
+                {{ invoice.reservationNumber || invoice.reservationId }}
+              </a>
+            } @else {
+              <span class="text-ink-faint">—</span>
+            }
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'invoices.fields.culture' | translate }}</dt>
+          <dd class="label-mono text-ink">{{ invoice.culture }}</dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'invoices.fields.createdAt' | translate }}</dt>
+          <dd class="numeric text-sm text-ink-muted">{{ invoice.createdAt | hcDate: 'medium' }}</dd>
+        </div>
+      </dl>
+
+      <!-- Storno <-> orijinal karsilikli baglanti -->
+      @if (invoice.cancelsInvoiceId) {
+        <p
+          class="border-t border-rule bg-danger-tint px-4 py-3 text-sm text-ink"
+          data-testid="invoice-cancels-link"
+        >
+          {{ 'invoices.storno.cancelsPrefix' | translate }}
+          <a
+            class="ml-1 numeric text-navy underline-offset-2 hover:underline"
+            [routerLink]="['/invoices', invoice.cancelsInvoiceId]"
+          >
+            {{ 'invoices.storno.openOriginal' | translate }}
+          </a>
+        </p>
+      }
+      @if (invoice.cancelledByInvoiceId) {
+        <p
+          class="border-t border-rule bg-danger-tint px-4 py-3 text-sm text-ink"
+          data-testid="invoice-cancelled-by-link"
+        >
+          {{ 'invoices.storno.cancelledByPrefix' | translate }}
+          <a
+            class="ml-1 numeric text-navy underline-offset-2 hover:underline"
+            [routerLink]="['/invoices', invoice.cancelledByInvoiceId]"
+          >
+            {{ 'invoices.storno.openCancellation' | translate }}
+          </a>
+        </p>
+      }
+    </section>
+
+    @if (store.lastAction(); as lastAction) {
+      <div class="border border-success bg-success-tint px-4 py-3" role="status">
+        <p class="text-sm text-success" data-testid="invoice-action-success">
+          {{ 'invoices.actions.success.' + lastAction | translate }}
+        </p>
+        @if (store.cancellationInvoiceId(); as stornoId) {
+          <p class="mt-1 text-sm text-ink">
+            {{ 'invoices.storno.created' | translate }}
+            <a
+              class="ml-1 numeric text-navy underline-offset-2 hover:underline"
+              [routerLink]="['/invoices', stornoId]"
+              data-testid="invoice-storno-link"
+            >
+              {{ 'invoices.storno.openCancellation' | translate }}
+            </a>
+          </p>
+        }
+        <div class="mt-2">
+          <hc-button size="sm" variant="ghost" (pressed)="dismissLastAction()">
+            {{ 'common.close' | translate }}
+          </hc-button>
+        </div>
+      </div>
+    }
+
+    @if (actionErrorKey(); as errorKey) {
+      <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+        <p class="text-sm text-danger" data-testid="invoice-action-error">
+          {{ errorKey | translate }}
+        </p>
+        @if (store.actionError()?.detail; as detail) {
+          <p class="mt-1 font-mono text-xs text-ink" data-testid="invoice-action-detail">
+            {{ detail }}
+          </p>
+        }
+      </div>
+    }
+
+    <!-- Aksiyonlar: durum makinesi ∧ izin -->
+    <section class="border border-rule bg-paper-raised" aria-labelledby="invoice-actions">
+      <h2 id="invoice-actions" class="border-b border-rule px-4 py-3 label-mono text-ink">
+        {{ 'invoices.detail.actions' | translate }}
+      </h2>
+
+      @switch (panel()) {
+        @case ('finalize') {
+          <!-- Geri alinamaz olduguna dair acik onay adimi -->
+          <div class="space-y-3 px-4 py-4" data-testid="invoice-finalize-panel">
+            <p class="text-sm text-ink">{{ 'invoices.finalize.confirm' | translate }}</p>
+            <p class="text-sm text-danger">{{ 'invoices.finalize.irreversible' | translate }}</p>
+            <div class="flex flex-wrap gap-2">
+              <hc-button
+                data-testid="invoice-finalize-confirm"
+                [busy]="store.pendingAction() === 'finalize'"
+                (pressed)="finalize()"
+              >
+                {{ 'invoices.actions.finalize' | translate }}
+              </hc-button>
+              <hc-button variant="ghost" (pressed)="closePanel()">
+                {{ 'common.cancel' | translate }}
+              </hc-button>
+            </div>
+          </div>
+        }
+
+        @case ('cancel') {
+          <!--
+            Onay metni duruma gore dallanir:
+            taslak → dogrudan iptal, storno YOK;
+            kesinlesmis/odenmis → orijinal korunur + Stornorechnung kesilir.
+          -->
+          <div class="space-y-3 px-4 py-4" data-testid="invoice-cancel-panel">
+            <p class="text-sm text-ink" data-testid="invoice-cancel-confirm-text">
+              {{ cancelConfirmKey() | translate }}
+            </p>
+            <label class="hc-label" for="invoice-cancel-reason">
+              {{ 'invoices.cancel.reason' | translate }}
+            </label>
+            <textarea
+              #cancelReason
+              id="invoice-cancel-reason"
+              class="hc-input"
+              rows="2"
+              [attr.maxlength]="limits.reasonMaxLength"
+              data-testid="invoice-cancel-reason"
+              [placeholder]="'invoices.cancel.reasonPlaceholder' | translate"
+            ></textarea>
+            <p class="text-xs text-ink-muted">{{ 'invoices.cancel.auditNote' | translate }}</p>
+            <div class="flex flex-wrap gap-2">
+              <hc-button
+                variant="danger"
+                data-testid="invoice-cancel-confirm"
+                [busy]="store.pendingAction() === 'cancel'"
+                (pressed)="cancel(cancelReason.value)"
+              >
+                {{ 'invoices.actions.cancel' | translate }}
+              </hc-button>
+              <hc-button variant="ghost" (pressed)="closePanel()">
+                {{ 'common.cancel' | translate }}
+              </hc-button>
+            </div>
+          </div>
+        }
+
+        @case ('payment') {
+          <form
+            class="space-y-4 px-4 py-4"
+            [formGroup]="paymentForm"
+            novalidate
+            data-testid="invoice-payment-panel"
+            (ngSubmit)="recordPayment()"
+          >
+            <p class="numeric text-sm text-ink" data-testid="invoice-outstanding-hint">
+              {{ 'invoices.payment.outstanding' | translate }}:
+              {{ store.outstanding() | hcMoney: invoice.currency }}
+            </p>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div>
+                <label class="hc-label" for="invoice-payment-method">
+                  {{ 'invoices.payment.method' | translate }}
+                </label>
+                <select
+                  id="invoice-payment-method"
+                  class="hc-input mt-1"
+                  formControlName="method"
+                  required
+                >
+                  @for (method of paymentMethods; track method) {
+                    <option [value]="method">{{ paymentMethodLabelKeys[method] | translate }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="hc-label" for="invoice-payment-amount">
+                  {{ 'invoices.payment.amount' | translate }}
+                </label>
+                <input
+                  id="invoice-payment-amount"
+                  class="hc-input mt-1"
+                  type="text"
+                  inputmode="decimal"
+                  formControlName="amount"
+                  required
+                  [attr.aria-invalid]="amountErrorKey() ? 'true' : null"
+                />
+                @if (amountErrorKey(); as errorKey) {
+                  <p class="mt-1 text-xs text-danger" data-testid="invoice-payment-amount-error">
+                    {{ errorKey | translate }}
+                  </p>
+                }
+                @if (store.actionError()?.detail; as detail) {
+                  <p class="mt-1 font-mono text-xs text-ink-muted">{{ detail }}</p>
+                }
+              </div>
+
+              <div>
+                <label class="hc-label" for="invoice-payment-date">
+                  {{ 'invoices.payment.paidAt' | translate }}
+                </label>
+                <input
+                  id="invoice-payment-date"
+                  class="hc-input mt-1"
+                  type="datetime-local"
+                  formControlName="paidAt"
+                />
+                <p class="mt-1 text-xs text-ink-muted">
+                  {{ 'invoices.payment.paidAtHint' | translate }}
+                </p>
+              </div>
+
+              <div>
+                <label class="hc-label" for="invoice-payment-reference">
+                  {{ 'invoices.payment.reference' | translate }}
+                </label>
+                <input
+                  id="invoice-payment-reference"
+                  class="hc-input mt-1"
+                  type="text"
+                  formControlName="reference"
+                  [maxlength]="limits.referenceMaxLength"
+                />
+              </div>
+            </div>
+
+            <p class="text-xs text-ink-muted">{{ 'invoices.payment.paidHint' | translate }}</p>
+
+            <div class="flex flex-wrap gap-2">
+              <hc-button
+                type="submit"
+                data-testid="invoice-payment-submit"
+                [busy]="store.pendingAction() === 'payment'"
+              >
+                {{ 'invoices.actions.addPayment' | translate }}
+              </hc-button>
+              <hc-button variant="ghost" (pressed)="closePanel()">
+                {{ 'common.cancel' | translate }}
+              </hc-button>
+            </div>
+          </form>
+        }
+
+        @default {
+          <div class="flex flex-wrap items-center gap-2 px-4 py-4">
+            @if (store.canFinalize()) {
+              <hc-button
+                *hcHasPermission="approvePermission"
+                data-testid="invoice-finalize"
+                (pressed)="openPanel('finalize')"
+              >
+                {{ 'invoices.actions.finalize' | translate }}
+              </hc-button>
+            }
+            @if (store.canPay()) {
+              <hc-button
+                *hcHasPermission="createPermission"
+                variant="secondary"
+                data-testid="invoice-add-payment"
+                (pressed)="openPanel('payment')"
+              >
+                {{ 'invoices.actions.addPayment' | translate }}
+              </hc-button>
+            }
+            @if (store.canCancel()) {
+              <hc-button
+                *hcHasPermission="cancelPermission"
+                variant="danger"
+                data-testid="invoice-cancel"
+                (pressed)="openPanel('cancel')"
+              >
+                {{ 'invoices.actions.cancel' | translate }}
+              </hc-button>
+            }
+            @if (!store.canFinalize() && !store.canPay() && !store.canCancel()) {
+              <p class="text-sm text-ink-muted" data-testid="invoice-no-actions">
+                {{ 'invoices.actions.none' | translate }}
+              </p>
+            }
+          </div>
+
+          @if (store.isEditable()) {
+            <p class="border-t border-rule px-4 py-2 text-xs text-ink-muted">
+              {{ 'invoices.draftHint' | translate }}
+            </p>
+          }
+        }
+      }
+    </section>
+
+    <!-- Satirlar -->
+    <section class="space-y-3" aria-labelledby="invoice-lines">
+      <h2 id="invoice-lines" class="font-serif text-2xl text-ink">
+        {{ 'invoices.lines.title' | translate }}
+      </h2>
+
+      <div class="hidden lg:block">
+        <hc-table-shell captionKey="invoices.lines.tableCaption">
+          <thead class="border-b border-rule">
+            <tr>
+              <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+                {{ 'invoices.columns.lineType' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+                {{ 'invoices.columns.description' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+                {{ 'invoices.columns.serviceDate' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                {{ 'invoices.columns.quantity' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                {{ 'invoices.columns.unitPrice' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                {{ 'invoices.columns.vatRate' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                {{ 'invoices.columns.lineNet' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                {{ 'invoices.columns.lineVat' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                {{ 'invoices.columns.lineGross' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rule">
+            @for (line of invoice.lineItems; track line.id) {
+              <tr data-testid="invoice-line">
+                <td class="px-4 py-3 label-mono text-ink-muted">
+                  {{ lineTypeLabelKeys[line.type] | translate }}
+                </td>
+                <th scope="row" class="px-4 py-3 text-left font-normal text-ink">
+                  {{ line.description }}
+                </th>
+                <td class="px-4 py-3 numeric text-ink-muted">
+                  {{ line.serviceDate | hcDate: 'medium' }}
+                </td>
+                <td class="px-4 py-3 text-right numeric text-ink">{{ line.quantity }}</td>
+                <td class="px-4 py-3 text-right numeric text-ink">
+                  {{ line.unitPrice | hcMoney: invoice.currency }}
+                </td>
+                <td class="px-4 py-3 text-right numeric text-ink-muted">{{ line.vatRate }} %</td>
+                <td class="px-4 py-3 text-right numeric text-ink">
+                  {{ line.lineNet | hcMoney: invoice.currency }}
+                </td>
+                <td class="px-4 py-3 text-right numeric text-ink">
+                  {{ line.lineVat | hcMoney: invoice.currency }}
+                </td>
+                <td class="px-4 py-3 text-right numeric text-ink">
+                  {{ line.lineGross | hcMoney: invoice.currency }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </hc-table-shell>
+      </div>
+
+      <!-- Mobil -->
+      <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+        @for (line of invoice.lineItems; track line.id) {
+          <li class="px-4 py-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-ink">{{ line.description }}</p>
+                <p class="mt-1 eyebrow">
+                  {{ lineTypeLabelKeys[line.type] | translate }} ·
+                  {{ line.serviceDate | hcDate: 'medium' }}
+                </p>
+              </div>
+              <p class="shrink-0 numeric text-ink">
+                {{ line.lineGross | hcMoney: invoice.currency }}
+              </p>
+            </div>
+            <p class="mt-1 numeric text-xs text-ink-muted">
+              {{ line.quantity }} × {{ line.unitPrice | hcMoney: invoice.currency }} ·
+              {{ 'invoices.columns.vatRate' | translate }} {{ line.vatRate }} %
+            </p>
+          </li>
+        }
+      </ul>
+
+      <!--
+        KDV kirilimi ve Kurtaxe AYRI gosterilir:
+        Kurtaxe (durchlaufender Posten) KDV matrahina girmez ve `netAmount`'a
+        dahil degildir; brut = net + KDV + Kurtaxe.
+      -->
+      <dl
+        class="grid grid-cols-2 gap-px border border-rule bg-rule sm:grid-cols-4"
+        data-testid="invoice-totals"
+      >
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'invoices.totals.net' | translate }}</dt>
+          <dd class="mt-1 numeric text-ink">{{ invoice.netAmount | hcMoney: invoice.currency }}</dd>
+        </div>
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'invoices.totals.vat' | translate }}</dt>
+          <dd class="mt-1 numeric text-ink">{{ invoice.vatAmount | hcMoney: invoice.currency }}</dd>
+        </div>
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'invoices.totals.cityTax' | translate }}</dt>
+          <dd class="mt-1 numeric text-ink" data-testid="invoice-city-tax">
+            {{ invoice.cityTaxAmount | hcMoney: invoice.currency }}
+          </dd>
+          <dd class="mt-1 text-xs text-ink-faint">{{ 'invoices.totals.cityTaxNote' | translate }}</dd>
+        </div>
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'invoices.totals.gross' | translate }}</dt>
+          <dd class="mt-1 numeric text-lg text-navy" data-testid="invoice-detail-gross">
+            {{ invoice.grossAmount | hcMoney: invoice.currency }}
+          </dd>
+        </div>
+      </dl>
+
+      <dl class="grid grid-cols-2 gap-px border border-rule bg-rule">
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'invoices.totals.paid' | translate }}</dt>
+          <dd class="mt-1 numeric text-ink">{{ invoice.paidAmount | hcMoney: invoice.currency }}</dd>
+        </div>
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'invoices.totals.outstanding' | translate }}</dt>
+          <dd
+            class="mt-1 numeric text-lg"
+            [class]="invoice.outstandingAmount > 0 ? 'text-copper' : 'text-success'"
+            data-testid="invoice-detail-outstanding"
+          >
+            {{ invoice.outstandingAmount | hcMoney: invoice.currency }}
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- Odemeler -->
+    <section class="space-y-3" aria-labelledby="invoice-payments">
+      <h2 id="invoice-payments" class="font-serif text-2xl text-ink">
+        {{ 'invoices.payments.title' | translate }}
+      </h2>
+
+      @if (!store.hasPayments()) {
+        <p
+          class="border border-dashed border-rule-strong bg-paper px-4 py-4 text-sm text-ink-muted"
+          data-testid="invoice-payments-empty"
+        >
+          {{ 'invoices.payments.empty' | translate }}
+        </p>
+      } @else {
+        <ul class="divide-y divide-rule border border-rule bg-paper-raised">
+          @for (payment of invoice.payments; track payment.id) {
+            <li class="flex flex-wrap items-center justify-between gap-3 px-4 py-3" data-testid="invoice-payment">
+              <div class="min-w-0">
+                <p class="label-mono text-ink">
+                  {{ paymentMethodLabelKeys[payment.method] | translate }}
+                </p>
+                <p class="mt-1 numeric text-xs text-ink-faint">
+                  {{ payment.paidAt | hcDate: 'medium' }} {{ payment.paidAt | hcDate: 'time' }}
+                  @if (payment.reference) {
+                    · {{ payment.reference }}
+                  }
+                </p>
+              </div>
+              <p class="numeric text-ink">{{ payment.amount | hcMoney: invoice.currency }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <!-- Denetim izi: kim / ne zaman / ne (GoBD §6.3, append-only) -->
+    <section class="space-y-3" aria-labelledby="invoice-audit">
+      <h2 id="invoice-audit" class="font-serif text-2xl text-ink">
+        {{ 'invoices.audit.title' | translate }}
+      </h2>
+      <p class="text-sm text-ink-muted">{{ 'invoices.audit.description' | translate }}</p>
+
+      <ol class="divide-y divide-rule border border-rule bg-paper-raised">
+        @for (entry of invoice.auditTrail; track entry.id) {
+          <li class="px-4 py-3" data-testid="invoice-audit-entry">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <p class="label-mono text-ink" [attr.data-action]="entry.action">
+                @if (auditLabelKey(entry.action); as labelKey) {
+                  {{ labelKey | translate }}
+                } @else {
+                  <!-- Bilinmeyen eylem: uydurma etiket uretilmez, ham deger gosterilir -->
+                  {{ entry.action }}
+                }
+              </p>
+              <p class="numeric text-xs text-ink-faint">
+                {{ entry.performedAt | hcDate: 'medium' }} {{ entry.performedAt | hcDate: 'time' }}
+              </p>
+            </div>
+            @if (entry.performedByUserId) {
+              <p class="mt-1 numeric text-xs text-ink-muted">
+                {{ 'invoices.audit.by' | translate }}: {{ entry.performedByUserId }}
+              </p>
+            }
+            @if (entry.details) {
+              <p class="mt-1 overflow-x-auto font-mono text-xs text-ink-muted">{{ entry.details }}</p>
+            }
+          </li>
+        }
+      </ol>
+
+      <p class="text-xs text-ink-muted">{{ 'invoices.audit.limitNote' | translate }}</p>
+    </section>
+  }
+</div>

@@ -96,7 +96,31 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         path: '/reservations',
         labelKey: 'nav.reservations',
         permissions: [PERMISSIONS.ReservationsView],
-        hub: { descriptionKey: 'hub.cards.reservations.description', planned: true },
+        // Backend uclari hazir (GET/POST/PUT /reservations, check-in/out,
+        // cancel, no-show, folio).
+        hub: { descriptionKey: 'hub.cards.reservations.description' },
+      },
+      {
+        path: '/reservations/occupancy',
+        labelKey: 'nav.occupancy',
+        permissions: [PERMISSIONS.ReservationsView],
+        // Backend ucu hazir (GET /occupancy — oda × gun matrisi, en fazla 92 gun).
+        hub: { descriptionKey: 'hub.cards.occupancy.description' },
+      },
+      {
+        path: '/reservations/guests',
+        labelKey: 'nav.guests',
+        // Misafir icin ayri izin anahtari YOKTUR (sozlesme karari): misafir
+        // verisi rezervasyon modulunun parcasidir.
+        permissions: [PERMISSIONS.ReservationsView],
+        hub: { descriptionKey: 'hub.cards.guests.description' },
+      },
+      {
+        path: '/reservations/rate-plans',
+        labelKey: 'nav.ratePlans',
+        permissions: [PERMISSIONS.RatesView],
+        // Backend uclari hazir (GET/POST/PUT/DELETE /rate-plans).
+        hub: { descriptionKey: 'hub.cards.ratePlans.description' },
       },
       {
         path: '/housekeeping',
@@ -155,7 +179,9 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         path: '/invoices',
         labelKey: 'nav.invoices',
         permissions: [PERMISSIONS.InvoicesView],
-        hub: { descriptionKey: 'hub.cards.invoices.description', planned: true },
+        // Backend uclari hazir (GET/POST/PUT /invoices, finalize, cancel,
+        // payments). PDF ucu 501 dondugu icin ekranda devre disidir.
+        hub: { descriptionKey: 'hub.cards.invoices.description' },
       },
       {
         path: '/reports',

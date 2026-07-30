@@ -79,7 +79,10 @@
     "timeTracking": "Time tracking",
     "shifts": "Shifts",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "occupancy": "Occupancy plan",
+    "guests": "Guests",
+    "ratePlans": "Rate plans"
   },
   "auth": {
     "title": "Sign in",
@@ -193,6 +196,15 @@
       },
       "settings": {
         "description": "Hotel profile, tax profile and permissions."
+      },
+      "occupancy": {
+        "description": "Room × day: arrivals, departures and options at a glance."
+      },
+      "guests": {
+        "description": "Guest master data for reservations and invoices."
+      },
+      "ratePlans": {
+        "description": "Season and channel pricing per room type."
       }
     },
     "empty": {
@@ -362,10 +374,158 @@
   },
   "reservations": {
     "title": "Reservations",
-    "subtitle": "Keep the occupancy grid, arrivals and departures in view.",
+    "subtitle": "Keep track of arrivals, departures and the status of every booking.",
     "empty": {
-      "title": "No reservations in the selected period",
-      "description": "The occupancy grid shows option, confirmation, check-in and check-out per room and day."
+      "title": "No reservations yet",
+      "description": "Create a reservation — the wizard collects room, guest and dates step by step."
+    },
+    "rangeNote": "A stay is half-open: check-in counts, check-out does not — the departure day is not charged. The date filter shows every stay that overlaps the range.",
+    "count": "{{count}} reservations",
+    "nightsCount": "{{count}} nights",
+    "tableCaption": "List of reservations with number, guest, stay, nights, room, channel, status and amount",
+    "loadFailed": "The reservations could not be loaded.",
+    "list": {
+      "loadFailed": "The reservations could not be loaded."
+    },
+    "emptyFiltered": {
+      "title": "No matches for these filters",
+      "description": "Adjust the date range, status or search term."
+    },
+    "actions": {
+      "create": "New reservation",
+      "occupancy": "Occupancy plan",
+      "guests": "Guests",
+      "ratePlans": "Rate plans",
+      "checkIn": "Check in",
+      "checkOut": "Check out",
+      "cancel": "Cancel",
+      "noShow": "No-show",
+      "conflict": "This step is not possible in the current status. The server message names the attempted transition.",
+      "finalState": "This reservation is closed — no further status changes are possible.",
+      "cancelReason": "Cancellation reason (optional)",
+      "cancelReasonPlaceholder": "e.g. guest cancelled",
+      "cancelHint": "The reason is appended to the reservation notes with a timestamp.",
+      "checkInNote": "Check-in before the arrival date is not possible; a later check-in is allowed.",
+      "checkOutDirtyNote": "Note: check-out automatically marks the room as dirty, and it appears in housekeeping.",
+      "checkOutDirtyDone": "The room was automatically marked as dirty.",
+      "success": {
+        "check-in": "Check-in completed.",
+        "check-out": "Check-out completed.",
+        "cancel": "The reservation was cancelled.",
+        "no-show": "Recorded as a no-show."
+      }
+    },
+    "filters": {
+      "legend": "Filters",
+      "search": "Search",
+      "searchPlaceholder": "Reservation number or guest name",
+      "allStatuses": "All statuses",
+      "channel": "Channel",
+      "allChannels": "All channels",
+      "room": "Room",
+      "allRooms": "All rooms",
+      "apply": "Apply filters",
+      "reset": "Reset filters",
+      "guestActive": "Filtered by guest",
+      "clearGuest": "Remove guest filter"
+    },
+    "columns": {
+      "number": "Number",
+      "guest": "Guest",
+      "stay": "Stay",
+      "nights": "Nights",
+      "room": "Room",
+      "channel": "Channel",
+      "total": "Amount"
+    },
+    "status": {
+      "option": "Option",
+      "confirmed": "Confirmed",
+      "checkedIn": "Checked in",
+      "checkedOut": "Checked out",
+      "cancelled": "Cancelled",
+      "noShow": "No-show"
+    },
+    "channel": {
+      "direct": "Direct",
+      "phone": "Phone",
+      "walkIn": "Walk-in",
+      "bookingCom": "Booking.com",
+      "hrs": "HRS",
+      "expedia": "Expedia",
+      "corporate": "Corporate"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}"
+    },
+    "fields": {
+      "checkIn": "Arrival",
+      "checkOut": "Departure",
+      "roomType": "Room type",
+      "room": "Room",
+      "guest": "Guest",
+      "stay": "Stay",
+      "occupancy": "Occupancy",
+      "adults": "Adults",
+      "children": "Children",
+      "channel": "Channel",
+      "depositPercent": "Deposit (%)",
+      "deposit": "Deposit",
+      "ratePlan": "Rate plan",
+      "timestamps": "Timestamps"
+    },
+    "detail": {
+      "title": "Reservation",
+      "loadFailed": "The reservation could not be loaded.",
+      "backToList": "Back to list",
+      "actions": "Actions",
+      "people": "{{adults}} adults · {{children}} children",
+      "createInvoice": "Create invoice"
+    },
+    "folio": {
+      "title": "Folio",
+      "open": "Open",
+      "closed": "Closed",
+      "empty": "No charges have been posted to this folio yet.",
+      "loadFailed": "The folio could not be loaded.",
+      "tableCaption": "Folio lines with type, description, quantity, price, VAT rate, net and VAT",
+      "grossNote": "All prices are gross (VAT included); net and VAT are derived from the gross amount."
+    },
+    "wizard": {
+      "title": "New reservation",
+      "subtitle": "Pick the dates, take a free room, assign the guest.",
+      "step": {
+        "dates": "Dates",
+        "room": "Room",
+        "guest": "Guest",
+        "details": "Details"
+      },
+      "checkOutHint": "The departure day is not charged.",
+      "allRoomTypes": "All room types",
+      "searchAvailability": "Check availability",
+      "availabilityFailed": "Availability could not be loaded.",
+      "availableCount": "{{available}} of {{total}} rooms free · {{outOfOrder}} out of order",
+      "noRooms": "No room is free for every night in this range.",
+      "floor": "Floor {{floor}}",
+      "capacity": "for {{count}} people",
+      "priceNote": "Availability deliberately contains no prices — the amount is calculated per night on the server when you save.",
+      "newGuest": "Create new guest",
+      "saveGuest": "Save guest",
+      "statusHint": "An option holds the room without commitment; it blocks the calendar like a confirmation.",
+      "amountNote": "The total is calculated by the server (channel rate plan → all-channel rate plan → room type base price) and shown after saving.",
+      "submit": "Save reservation",
+      "created": "Reservation created",
+      "openDetail": "Open reservation",
+      "backToList": "Back to list",
+      "serverCalculated": "Amount and deposit were calculated per night on the server.",
+      "basePriceUsed": "Room type base price",
+      "conflict": "The room is no longer free for this period.",
+      "validation": {
+        "stayTooShort": "Departure must be after arrival (at least one night).",
+        "stayTooLong": "A stay may not exceed {{max}} nights.",
+        "capacity": "Room {{room}} has a capacity of {{capacity}} people."
+      }
     }
   },
   "housekeeping": {
@@ -401,10 +561,194 @@
   },
   "invoices": {
     "title": "Invoices",
-    "subtitle": "GoBD-compliant invoices: draft, finalisation and cancellation.",
+    "subtitle": "GoBD-compliant invoices: draft, finalization and cancellation.",
     "empty": {
       "title": "No invoices yet",
-      "description": "Finalised invoices are immutable; corrections are made exclusively via a cancellation invoice."
+      "description": "Create a draft from a reservation or with manually entered line items."
+    },
+    "gobdNote": "Finalized invoices are immutable (GoBD). Corrections are made only via a cancellation invoice; the original document is preserved.",
+    "count": "{{count}} invoices",
+    "tableCaption": "List of invoices with number, invoice date, guest, reservation, status, gross amount and outstanding amount",
+    "noNumber": "Draft without number",
+    "cancellationInvoice": "Cancellation invoice",
+    "draftNoIssueDate": "Draft — number and invoice date are assigned on finalization.",
+    "draftHint": "While the invoice is a draft it can be edited freely; it is not yet a document.",
+    "pdfUnavailable": "Document generation is not available yet.",
+    "loadFailed": "The invoices could not be loaded.",
+    "emptyFiltered": {
+      "title": "No matches for these filters",
+      "description": "Adjust status, date range or search term."
+    },
+    "actions": {
+      "create": "New invoice",
+      "finalize": "Finalize",
+      "cancel": "Cancel",
+      "addPayment": "Record payment",
+      "pdf": "PDF",
+      "conflict": "The operation is not possible in the current invoice status.",
+      "none": "No further operations are possible for this invoice.",
+      "success": {
+        "finalize": "The invoice was finalized.",
+        "cancel": "The invoice was cancelled.",
+        "payment": "The payment was recorded."
+      }
+    },
+    "filters": {
+      "legend": "Filters",
+      "search": "Search",
+      "searchPlaceholder": "Invoice number or guest name",
+      "allStatuses": "All statuses",
+      "apply": "Apply filters",
+      "draftsHidden": "With a date filter set, drafts are not listed — they have no invoice date.",
+      "reservationActive": "Filtered by reservation",
+      "guestActive": "Filtered by guest",
+      "clear": "Remove filter"
+    },
+    "columns": {
+      "number": "Number",
+      "issuedAt": "Invoice date",
+      "guest": "Guest",
+      "reservation": "Reservation",
+      "gross": "Gross",
+      "outstanding": "Outstanding",
+      "lineType": "Type",
+      "description": "Description",
+      "serviceDate": "Service date",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "vatRate": "VAT rate",
+      "lineNet": "Net",
+      "lineVat": "VAT",
+      "lineGross": "Gross"
+    },
+    "status": {
+      "draft": "Draft",
+      "finalized": "Finalized",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "lineType": {
+      "roomCharge": "Accommodation",
+      "extra": "Extra",
+      "cityTax": "City tax"
+    },
+    "paymentMethod": {
+      "cash": "Cash",
+      "card": "Card",
+      "transfer": "Bank transfer"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}"
+    },
+    "fields": {
+      "culture": "Invoice language",
+      "createdAt": "Created on"
+    },
+    "detail": {
+      "title": "Invoice",
+      "loadFailed": "The invoice could not be loaded.",
+      "backToList": "Back to list",
+      "actions": "Operations"
+    },
+    "lines": {
+      "title": "Line items",
+      "tableCaption": "Invoice line items with type, description, service date, quantity, unit price, VAT rate, net, VAT and gross"
+    },
+    "totals": {
+      "net": "Net",
+      "vat": "VAT",
+      "cityTax": "City tax",
+      "cityTaxNote": "Pass-through item — not part of the VAT base.",
+      "gross": "Gross",
+      "paid": "Paid",
+      "outstanding": "Outstanding"
+    },
+    "payments": {
+      "title": "Payments",
+      "empty": "No payment has been recorded for this invoice yet."
+    },
+    "payment": {
+      "method": "Payment method",
+      "amount": "Amount",
+      "paidAt": "Payment time",
+      "paidAtHint": "Left empty the server time is used; a date in the future is rejected.",
+      "reference": "Reference",
+      "outstanding": "Outstanding",
+      "paidHint": "Partial payments are allowed; once the gross amount is reached the status becomes “Paid”.",
+      "overpayment": "The amount exceeds the outstanding balance. Overpayments are not part of the invoice.",
+      "validation": {
+        "amountRequired": "Please enter an amount.",
+        "amount": "The amount must be greater than 0."
+      }
+    },
+    "finalize": {
+      "confirm": "Finalizing assigns a sequential number and an invoice date.",
+      "irreversible": "This step is irreversible: a finalized invoice can afterwards only be corrected with a cancellation invoice."
+    },
+    "cancel": {
+      "confirmDraft": "This draft is cancelled directly. No cancellation invoice is created, because a draft is not a document; no gap appears in the invoice number sequence.",
+      "confirmStorno": "The original invoice is preserved in full. In addition a cancellation invoice with its own number and negative amounts is issued, so both documents net to zero.",
+      "reason": "Cancellation reason (optional)",
+      "reasonPlaceholder": "e.g. wrong room type charged",
+      "auditNote": "The reason is recorded in the audit trail."
+    },
+    "storno": {
+      "cancelsPrefix": "This cancellation invoice reverses another invoice.",
+      "cancelledByPrefix": "This invoice was reversed by a cancellation invoice.",
+      "openOriginal": "Open original invoice",
+      "openCancellation": "Open cancellation invoice",
+      "created": "A cancellation invoice was created."
+    },
+    "audit": {
+      "title": "Audit trail",
+      "description": "Append-only trail per GoBD: who, when and what — entries are never changed or deleted.",
+      "by": "User",
+      "limitNote": "Draft edits are not recorded (a draft is not a document); partial payments appear as a payment entry.",
+      "action": {
+        "created": "Created",
+        "finalized": "Finalized",
+        "paid": "Paid",
+        "cancelled": "Cancelled",
+        "updated": "Updated",
+        "paymentRecorded": "Payment recorded"
+      }
+    },
+    "form": {
+      "createTitle": "New invoice",
+      "editTitle": "Edit draft",
+      "subtitle": "Invoices start as a draft without a number.",
+      "loadFailed": "The invoice could not be loaded.",
+      "notEditable": "This invoice can no longer be edited.",
+      "notEditableHint": "Only drafts can be changed. For a finalized invoice a cancellation invoice is the intended path.",
+      "sourceLegend": "Basis of the invoice",
+      "sourceReservation": "From reservation",
+      "sourceManual": "Manual line items",
+      "sourceReservationHint": "Accommodation, open folio lines and city tax are generated on the server.",
+      "sourceManualHint": "You enter every line item yourself; a guest is mandatory.",
+      "reservationSearch": "Search reservation",
+      "reservationLinesNote": "Line items are generated from the reservation and can be adjusted afterwards while the invoice is a draft.",
+      "selectGuest": "Select guest",
+      "addLine": "Add line item",
+      "removeLine": "Remove line item",
+      "grossHint": "Gross price (VAT included).",
+      "totalNote": "VAT rate, net and VAT are determined on the server — the client sends neither tax rate nor totals.",
+      "previewGross": "Preview gross",
+      "createDraft": "Create draft",
+      "draftNote": "The draft receives a number only on finalization.",
+      "cultureDefault": "Default (guest or hotel)",
+      "cultureHint": "Determines the language of the later document.",
+      "conflict": "A non-cancelled invoice already exists for this reservation.",
+      "validation": {
+        "reservationRequired": "Please select a reservation.",
+        "guestRequired": "Please select a guest.",
+        "lineRequired": "Please enter at least one complete line item.",
+        "typeRequired": "Please select a type.",
+        "descriptionRequired": "Please enter a description.",
+        "quantityRequired": "Please enter a quantity.",
+        "unitPriceRequired": "Please enter a unit price.",
+        "descriptionLength": "At most 500 characters."
+      }
     }
   },
   "employees": {
@@ -849,6 +1193,178 @@
       "email": "Please enter a valid email address.",
       "currency": "Exactly three letters (ISO 4217), e.g. EUR.",
       "percent": "Value between 0 and 100."
+    }
+  },
+  "occupancy": {
+    "title": "Occupancy plan",
+    "subtitle": "Room × day — arrivals, departures and options at a glance.",
+    "tableCaption": "Occupancy per room and day; one bar equals one stay",
+    "loadFailed": "The occupancy plan could not be loaded.",
+    "rangeTooLong": "The range is too long. The server allows at most 92 days.",
+    "outOfOrder": "out of order",
+    "roomFree": "No occupancy in the selected range.",
+    "noStays": "There is no occupancy in this range — the grid stays visible for planning.",
+    "legend": "Dashed = option (non-binding). An open bar edge means the stay extends beyond the selected range.",
+    "empty": {
+      "title": "No rooms available",
+      "description": "Create rooms first so the occupancy plan can be filled."
+    },
+    "actions": {
+      "toList": "Back to list"
+    },
+    "range": {
+      "navLabel": "Select range",
+      "nights": "{{count}} nights",
+      "previous": "Previous",
+      "next": "Next",
+      "widthLabel": "Range length",
+      "widthOption": "{{count}} days",
+      "clamped": "The range was shortened to {{max}} days — the server does not allow more for the occupancy plan."
+    },
+    "bar": {
+      "continuesBefore": "The stay starts before this range.",
+      "continuesAfter": "The stay ends after this range.",
+      "nights": "{{count}} nights"
+    },
+    "free": {
+      "createAria": "Book room {{room}} for {{date}}"
+    },
+    "columns": {
+      "room": "Room"
+    },
+    "summary": {
+      "rooms": "Rooms",
+      "roomNights": "Room nights",
+      "occupied": "Occupied",
+      "rate": "Occupancy"
+    }
+  },
+  "guests": {
+    "title": "Guests",
+    "subtitle": "Guest master data for reservations and invoices.",
+    "count": "{{count}} guests",
+    "tableCaption": "List of guests with name, email, phone and city",
+    "truncated": "Only the first matches are shown — please narrow your search.",
+    "stayCount": "Completed stays: {{count}}",
+    "loadFailed": "The guests could not be loaded.",
+    "columns": {
+      "location": "City"
+    },
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Name or email"
+    },
+    "actions": {
+      "create": "New guest",
+      "toReservations": "To reservations",
+      "reservations": "Reservations"
+    },
+    "delete": {
+      "confirm": "Really delete?",
+      "conflict": "This guest has an active or future reservation and therefore cannot be deleted."
+    },
+    "empty": {
+      "title": "No guests recorded yet",
+      "description": "Guests can be created here or directly in the reservation wizard."
+    },
+    "emptyFiltered": {
+      "title": "No matches",
+      "description": "No guest was found for this search."
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}"
+    },
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "nationality": "Nationality",
+      "culture": "Correspondence language",
+      "cultureHint": "Language used for invoices and correspondence.",
+      "addressLine": "Street and number",
+      "postalCode": "Postcode",
+      "city": "City",
+      "birthDate": "Date of birth"
+    },
+    "form": {
+      "createTitle": "Create guest",
+      "editTitle": "Edit guest",
+      "subtitle": "Identical names are allowed — there is deliberately no uniqueness check.",
+      "loadFailed": "The guest could not be loaded.",
+      "section": {
+        "person": "Person",
+        "address": "Address"
+      },
+      "validation": {
+        "firstNameRequired": "Please enter a first name.",
+        "lastNameRequired": "Please enter a last name.",
+        "email": "Please enter a valid email address.",
+        "dateFormat": "Please enter a valid date.",
+        "tooLong": "The value is too long."
+      }
+    }
+  },
+  "ratePlans": {
+    "title": "Rate plans",
+    "subtitle": "Season and channel pricing per room type.",
+    "rangeNote": "Validity is a closed range: the last day counts. A stay, by contrast, is half-open — the departure day is not charged.",
+    "count": "{{count}} rate plans · {{active}} active",
+    "tableCaption": "List of rate plans with name, room type, validity, channel, price and status",
+    "allChannels": "All channels",
+    "active": "Active",
+    "inactive": "Inactive",
+    "loadFailed": "The rate plans could not be loaded.",
+    "actions": {
+      "create": "New rate plan"
+    },
+    "filters": {
+      "roomType": "Room type",
+      "allRoomTypes": "All room types",
+      "date": "Valid on"
+    },
+    "columns": {
+      "roomType": "Room type",
+      "validity": "Validity",
+      "channel": "Channel",
+      "price": "Price / night"
+    },
+    "delete": {
+      "confirm": "Really delete?",
+      "conflict": "This rate plan is already used by reservations and cannot be deleted. Set it to inactive instead."
+    },
+    "empty": {
+      "title": "No rate plans yet",
+      "description": "Without a rate plan the room type base price is used."
+    },
+    "fields": {
+      "validFrom": "Valid from",
+      "validTo": "Valid to (inclusive)",
+      "isActive": "Active"
+    },
+    "form": {
+      "createTitle": "Create rate plan",
+      "editTitle": "Edit rate plan",
+      "subtitle": "Only one active plan may cover the same day per room type and channel.",
+      "loadFailed": "The rate plan could not be loaded.",
+      "selectRoomType": "Select room type",
+      "priceHint": "Gross price per night.",
+      "validToHint": "This day still belongs to the range.",
+      "channelHint": "Without a selection the plan applies to all channels; channel plans take precedence.",
+      "inactiveHint": "Inactive plans cause no overlap and do not affect new reservations.",
+      "overlap": "For this room type and channel the range overlaps an active plan.",
+      "validation": {
+        "roomTypeIdRequired": "Please select a room type.",
+        "nameRequired": "Please enter a name.",
+        "priceRequired": "Please enter a price.",
+        "validFromRequired": "Please enter a start date.",
+        "validToRequired": "Please enter an end date.",
+        "channelRequired": "Please select a channel.",
+        "dateFormat": "Please enter a valid date.",
+        "price": "Price between 0 and 100,000.",
+        "nameLength": "At most 150 characters.",
+        "validityOrder": "The end date must not be before the start date.",
+        "overlap": "Overlaps an existing active plan."
+      }
     }
   }
 }

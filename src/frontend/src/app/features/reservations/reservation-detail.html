@@ -1,0 +1,435 @@
+<div class="space-y-6">
+  @if (store.loading() && store.reservation() === null) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'reservations.detail.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4 flex flex-wrap gap-2">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+        <a
+          class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+          routerLink="/reservations"
+        >
+          {{ 'reservations.detail.backToList' | translate }}
+        </a>
+      </div>
+    </div>
+  } @else if (store.reservation(); as reservation) {
+    <hc-page-header
+      titleKey="reservations.detail.title"
+      eyebrowKey="nav.reservations"
+    >
+      <div slot="actions" class="flex flex-wrap items-center gap-2">
+        <a
+          class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+          routerLink="/reservations"
+        >
+          {{ 'reservations.detail.backToList' | translate }}
+        </a>
+        @if (canCreateInvoice()) {
+          <a
+            class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+            routerLink="/invoices/new"
+            [queryParams]="{ reservationId: reservation.id }"
+            data-testid="reservation-create-invoice"
+          >
+            {{ 'reservations.detail.createInvoice' | translate }}
+          </a>
+        }
+      </div>
+    </hc-page-header>
+
+    <!-- Kunye -->
+    <section class="border border-rule bg-paper-raised" aria-labelledby="reservation-summary">
+      <header
+        class="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-4 py-3"
+      >
+        <div class="min-w-0">
+          <h2 id="reservation-summary" class="numeric text-2xl text-ink">
+            {{ reservation.reservationNumber }}
+          </h2>
+          <p class="mt-1 eyebrow">
+            {{ channelLabelKeys[reservation.channel] | translate }}
+          </p>
+        </div>
+        <hc-reservation-status [status]="reservation.status" />
+      </header>
+
+      <dl class="grid grid-cols-1 gap-x-6 gap-y-4 px-4 py-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.guest' | translate }}</dt>
+          <dd class="text-ink">
+            {{ reservation.guestName }}
+            @if (reservation.guestEmail) {
+              <span class="block text-xs text-ink-faint">{{ reservation.guestEmail }}</span>
+            }
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.room' | translate }}</dt>
+          <dd class="numeric text-ink">
+            {{ reservation.roomNumber }}
+            <span class="block eyebrow">{{ reservation.roomTypeCode }}</span>
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.stay' | translate }}</dt>
+          <dd class="numeric text-ink">
+            {{ reservation.checkIn | hcDate: 'medium' }} –
+            {{ reservation.checkOut | hcDate: 'medium' }}
+            <span class="block eyebrow">
+              {{ 'reservations.nightsCount' | translate: { count: reservation.nights } }}
+            </span>
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.occupancy' | translate }}</dt>
+          <dd class="numeric text-ink">
+            {{
+              'reservations.detail.people'
+                | translate: { adults: reservation.adults, children: reservation.children }
+            }}
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.columns.total' | translate }}</dt>
+          <dd class="numeric text-lg text-navy" data-testid="reservation-detail-total">
+            {{ reservation.totalAmount | hcMoney: reservation.currency }}
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.deposit' | translate }}</dt>
+          <dd class="numeric text-ink">
+            {{ reservation.depositAmount | hcMoney: reservation.currency }}
+            <span class="text-xs text-ink-faint">({{ reservation.depositPercent }} %)</span>
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.ratePlan' | translate }}</dt>
+          <dd class="text-ink" data-testid="reservation-rate-plan">
+            {{ reservation.ratePlanName || ('reservations.wizard.basePriceUsed' | translate) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">{{ 'reservations.fields.timestamps' | translate }}</dt>
+          <dd class="numeric text-xs text-ink-muted">
+            @if (reservation.checkedInAt) {
+              <span class="block">
+                {{ 'reservations.actions.checkIn' | translate }}:
+                {{ reservation.checkedInAt | hcDate: 'medium' }}
+              </span>
+            }
+            @if (reservation.checkedOutAt) {
+              <span class="block">
+                {{ 'reservations.actions.checkOut' | translate }}:
+                {{ reservation.checkedOutAt | hcDate: 'medium' }}
+              </span>
+            }
+            @if (!reservation.checkedInAt && !reservation.checkedOutAt) {
+              <span class="text-ink-faint">—</span>
+            }
+          </dd>
+        </div>
+      </dl>
+
+      @if (reservation.notes) {
+        <p class="border-t border-rule px-4 py-3 text-sm text-ink-muted">{{ reservation.notes }}</p>
+      }
+    </section>
+
+    <!-- Aksiyon sonucu bildirimi (check-out yan etkisi burada da hatirlatilir) -->
+    @if (store.lastAction(); as lastAction) {
+      <div class="border border-success bg-success-tint px-4 py-3" role="status">
+        <p class="text-sm text-success" data-testid="reservation-action-success">
+          {{ 'reservations.actions.success.' + lastAction | translate }}
+        </p>
+        @if (lastAction === 'check-out') {
+          <p class="mt-1 text-sm text-ink" data-testid="reservation-checkout-dirty">
+            {{ 'reservations.actions.checkOutDirtyDone' | translate }}
+          </p>
+        }
+        <div class="mt-2">
+          <hc-button size="sm" variant="ghost" (pressed)="dismissLastAction()">
+            {{ 'common.close' | translate }}
+          </hc-button>
+        </div>
+      </div>
+    }
+
+    @if (actionErrorKey(); as errorKey) {
+      <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+        <p class="text-sm text-danger" data-testid="reservation-action-error">
+          {{ errorKey | translate }}
+        </p>
+        @if (store.actionError()?.detail; as detail) {
+          <!-- Sunucu hangi gecisin denendigini burada soyler -->
+          <p class="mt-1 font-mono text-xs text-ink" data-testid="reservation-action-detail">
+            {{ detail }}
+          </p>
+        }
+        <div class="mt-2">
+          <hc-button size="sm" variant="ghost" (pressed)="store.clearActionError()">
+            {{ 'common.close' | translate }}
+          </hc-button>
+        </div>
+      </div>
+    }
+
+    <!--
+      Aksiyonlar. Gorunurluk = durum makinesi ∧ izin.
+      Gecersiz gecisin dugmesi hic render edilmez.
+    -->
+    <section class="border border-rule bg-paper-raised" aria-labelledby="reservation-actions">
+      <h2 id="reservation-actions" class="border-b border-rule px-4 py-3 label-mono text-ink">
+        {{ 'reservations.detail.actions' | translate }}
+      </h2>
+
+      @if (isFinal()) {
+        <p class="px-4 py-4 text-sm text-ink-muted" data-testid="reservation-final-note">
+          {{ 'reservations.actions.finalState' | translate }}
+        </p>
+      } @else if (cancelPanelOpen()) {
+        <div class="space-y-3 px-4 py-4">
+          <label class="hc-label" for="reservation-cancel-reason">
+            {{ 'reservations.actions.cancelReason' | translate }}
+          </label>
+          <textarea
+            #cancelReason
+            id="reservation-cancel-reason"
+            class="hc-input"
+            rows="2"
+            [attr.maxlength]="reasonMaxLength"
+            data-testid="reservation-cancel-reason"
+            [placeholder]="'reservations.actions.cancelReasonPlaceholder' | translate"
+          ></textarea>
+          <p class="text-sm text-ink-muted">{{ 'reservations.actions.cancelHint' | translate }}</p>
+          <div class="flex flex-wrap gap-2">
+            <hc-button
+              variant="danger"
+              data-testid="reservation-cancel-confirm"
+              [busy]="store.pendingAction() === 'cancel'"
+              (pressed)="run('cancel', cancelReason.value)"
+            >
+              {{ 'reservations.actions.cancel' | translate }}
+            </hc-button>
+            <hc-button variant="ghost" (pressed)="closeCancelPanel()">
+              {{ 'common.cancel' | translate }}
+            </hc-button>
+          </div>
+        </div>
+      } @else {
+        <div class="flex flex-wrap items-center gap-2 px-4 py-4">
+          @if (hasCheckInOutActions()) {
+            <span *hcHasPermission="checkInOutPermission" class="flex flex-wrap items-center gap-2">
+              @if (store.canCheckIn()) {
+                <hc-button
+                  data-testid="reservation-check-in"
+                  [busy]="store.pendingAction() === 'check-in'"
+                  (pressed)="run('check-in')"
+                >
+                  {{ 'reservations.actions.checkIn' | translate }}
+                </hc-button>
+              }
+              @if (store.canCheckOut()) {
+                <hc-button
+                  data-testid="reservation-check-out"
+                  [busy]="store.pendingAction() === 'check-out'"
+                  (pressed)="run('check-out')"
+                >
+                  {{ 'reservations.actions.checkOut' | translate }}
+                </hc-button>
+              }
+              @if (store.canMarkNoShow()) {
+                <hc-button
+                  variant="secondary"
+                  data-testid="reservation-no-show"
+                  [busy]="store.pendingAction() === 'no-show'"
+                  (pressed)="run('no-show')"
+                >
+                  {{ 'reservations.actions.noShow' | translate }}
+                </hc-button>
+              }
+            </span>
+          }
+
+          @if (store.canCancel()) {
+            <hc-button
+              *hcHasPermission="createPermission"
+              variant="danger"
+              data-testid="reservation-cancel"
+              (pressed)="openCancelPanel()"
+            >
+              {{ 'reservations.actions.cancel' | translate }}
+            </hc-button>
+          }
+        </div>
+
+        @if (store.canCheckOut()) {
+          <!-- Check-out odayi otomatik `Dirty` yapar (mimari §5) -->
+          <p
+            class="border-t border-rule px-4 py-2 text-xs text-ink-muted"
+            data-testid="reservation-checkout-note"
+          >
+            {{ 'reservations.actions.checkOutDirtyNote' | translate }}
+          </p>
+        }
+        @if (store.canCheckIn()) {
+          <p class="border-t border-rule px-4 py-2 text-xs text-ink-muted">
+            {{ 'reservations.actions.checkInNote' | translate }}
+          </p>
+        }
+      }
+    </section>
+
+    <!-- Folio: acik hesap satirlari + KDV kirilimi -->
+    <section class="space-y-3" aria-labelledby="reservation-folio">
+      <div class="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 id="reservation-folio" class="font-serif text-2xl text-ink">
+          {{ 'reservations.folio.title' | translate }}
+        </h2>
+        @if (store.folio(); as folio) {
+          <p class="eyebrow" data-testid="folio-state">
+            {{
+              (folio.isClosed ? 'reservations.folio.closed' : 'reservations.folio.open') | translate
+            }}
+          </p>
+        }
+      </div>
+
+      @if (store.folioError(); as error) {
+        <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+          <p class="text-sm text-danger">{{ 'reservations.folio.loadFailed' | translate }}</p>
+          <p class="mt-1 text-sm text-ink">{{ error.messageKey | translate }}</p>
+        </div>
+      } @else if (!store.hasFolioLines()) {
+        <p
+          class="border border-dashed border-rule-strong bg-paper px-4 py-4 text-sm text-ink-muted"
+          data-testid="folio-empty"
+        >
+          {{ 'reservations.folio.empty' | translate }}
+        </p>
+      } @else if (store.folio(); as folio) {
+        <!-- Masaustu: satir tablosu -->
+        <div class="hidden lg:block">
+          <hc-table-shell captionKey="reservations.folio.tableCaption">
+            <thead class="border-b border-rule">
+              <tr>
+                <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+                  {{ 'invoices.columns.lineType' | translate }}
+                </th>
+                <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+                  {{ 'invoices.columns.description' | translate }}
+                </th>
+                <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+                  {{ 'invoices.columns.serviceDate' | translate }}
+                </th>
+                <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                  {{ 'invoices.columns.quantity' | translate }}
+                </th>
+                <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                  {{ 'invoices.columns.unitPrice' | translate }}
+                </th>
+                <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                  {{ 'invoices.columns.vatRate' | translate }}
+                </th>
+                <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                  {{ 'invoices.columns.lineNet' | translate }}
+                </th>
+                <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                  {{ 'invoices.columns.lineVat' | translate }}
+                </th>
+                <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+                  {{ 'invoices.columns.lineGross' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rule">
+              @for (line of folio.lines; track line.id) {
+                <tr data-testid="folio-line">
+                  <td class="px-4 py-3 label-mono text-ink-muted">
+                    {{ folioTypeLabelKeys[line.type] | translate }}
+                  </td>
+                  <th scope="row" class="px-4 py-3 text-left font-normal text-ink">
+                    {{ line.description }}
+                  </th>
+                  <td class="px-4 py-3 numeric text-ink-muted">
+                    {{ line.serviceDate | hcDate: 'medium' }}
+                  </td>
+                  <td class="px-4 py-3 text-right numeric text-ink">{{ line.quantity }}</td>
+                  <td class="px-4 py-3 text-right numeric text-ink">
+                    {{ line.unitPrice | hcMoney: folio.currency }}
+                  </td>
+                  <td class="px-4 py-3 text-right numeric text-ink-muted">{{ line.vatRate }} %</td>
+                  <td class="px-4 py-3 text-right numeric text-ink">
+                    {{ line.lineNet | hcMoney: folio.currency }}
+                  </td>
+                  <td class="px-4 py-3 text-right numeric text-ink">
+                    {{ line.lineVat | hcMoney: folio.currency }}
+                  </td>
+                  <td class="px-4 py-3 text-right numeric text-ink">
+                    {{ line.lineGross | hcMoney: folio.currency }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </hc-table-shell>
+        </div>
+
+        <!-- Mobil: satir kartlari -->
+        <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+          @for (line of folio.lines; track line.id) {
+            <li class="px-4 py-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-ink">{{ line.description }}</p>
+                  <p class="mt-1 eyebrow">
+                    {{ folioTypeLabelKeys[line.type] | translate }} ·
+                    {{ line.serviceDate | hcDate: 'medium' }}
+                  </p>
+                </div>
+                <p class="shrink-0 numeric text-ink">
+                  {{ line.lineGross | hcMoney: folio.currency }}
+                </p>
+              </div>
+              <p class="mt-1 numeric text-xs text-ink-muted">
+                {{ line.quantity }} × {{ line.unitPrice | hcMoney: folio.currency }} ·
+                {{ 'invoices.columns.vatRate' | translate }} {{ line.vatRate }} %
+              </p>
+            </li>
+          }
+        </ul>
+
+        <!-- KDV kirilimi gorunur: net + KDV = brut -->
+        <dl
+          class="grid grid-cols-3 gap-px border border-rule bg-rule"
+          data-testid="folio-totals"
+        >
+          <div class="bg-paper-raised px-4 py-3">
+            <dt class="eyebrow">{{ 'invoices.totals.net' | translate }}</dt>
+            <dd class="mt-1 numeric text-ink">{{ folio.totalNet | hcMoney: folio.currency }}</dd>
+          </div>
+          <div class="bg-paper-raised px-4 py-3">
+            <dt class="eyebrow">{{ 'invoices.totals.vat' | translate }}</dt>
+            <dd class="mt-1 numeric text-ink">{{ folio.totalVat | hcMoney: folio.currency }}</dd>
+          </div>
+          <div class="bg-paper-raised px-4 py-3">
+            <dt class="eyebrow">{{ 'invoices.totals.gross' | translate }}</dt>
+            <dd class="mt-1 numeric text-lg text-navy" data-testid="folio-gross">
+              {{ folio.totalGross | hcMoney: folio.currency }}
+            </dd>
+          </div>
+        </dl>
+
+        <p class="text-xs text-ink-muted">{{ 'reservations.folio.grossNote' | translate }}</p>
+      }
+    </section>
+  }
+</div>

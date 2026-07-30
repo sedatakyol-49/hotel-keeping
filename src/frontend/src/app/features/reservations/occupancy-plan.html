@@ -1,0 +1,342 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="occupancy.title"
+    subtitleKey="occupancy.subtitle"
+    eyebrowKey="nav.section.operations"
+  >
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/reservations"
+        data-testid="occupancy-to-list"
+      >
+        {{ 'occupancy.actions.toList' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  <!-- Tarih araligi gezinmesi: pencere URL'de tutulur (?from=&to=) -->
+  <nav
+    class="flex flex-col gap-3 border border-rule bg-paper-raised px-4 py-3 lg:flex-row lg:items-center lg:justify-between"
+    [attr.aria-label]="'occupancy.range.navLabel' | translate"
+  >
+    <div class="min-w-0">
+      <p class="numeric text-lg text-ink" data-testid="occupancy-range-label">
+        {{ range().from | hcDate: 'medium' }} – {{ lastNight() | hcDate: 'medium' }}
+      </p>
+      <p class="mt-1 eyebrow" data-testid="occupancy-range-nights">
+        {{ 'occupancy.range.nights' | translate: { count: nights() } }}
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <hc-button
+        size="sm"
+        variant="secondary"
+        data-testid="occupancy-prev"
+        (pressed)="shift(-1)"
+      >
+        {{ 'occupancy.range.previous' | translate }}
+      </hc-button>
+      <hc-button
+        size="sm"
+        variant="secondary"
+        data-testid="occupancy-today"
+        [disabled]="isAtToday()"
+        (pressed)="goToToday()"
+      >
+        {{ 'common.today' | translate }}
+      </hc-button>
+      <hc-button size="sm" variant="secondary" data-testid="occupancy-next" (pressed)="shift(1)">
+        {{ 'occupancy.range.next' | translate }}
+      </hc-button>
+
+      <span class="mx-1 hidden h-6 w-px bg-rule sm:block" aria-hidden="true"></span>
+
+      <div
+        class="flex flex-wrap items-center gap-1"
+        role="group"
+        [attr.aria-label]="'occupancy.range.widthLabel' | translate"
+      >
+        @for (option of rangeOptions; track option) {
+          <hc-button
+            size="sm"
+            [variant]="nights() === option ? 'primary' : 'ghost'"
+            [attr.data-testid]="'occupancy-width-' + option"
+            (pressed)="resize(option)"
+          >
+            {{ 'occupancy.range.widthOption' | translate: { count: option } }}
+          </hc-button>
+        }
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sunucu tavani asildi: aralik istemcide kirpildi, istek hic gonderilmedi -->
+  @if (range().clamped) {
+    <p
+      class="border-l-2 border-brass bg-brass-tint px-3 py-2 text-sm text-ink"
+      role="status"
+      data-testid="occupancy-clamped"
+    >
+      {{ 'occupancy.range.clamped' | translate: { max: maxDays } }}
+    </p>
+  }
+
+  @if (store.loading() && store.dayCount() === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'occupancy.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state titleKey="occupancy.empty.title" descriptionKey="occupancy.empty.description" />
+  } @else {
+    @if (store.hasNoStays()) {
+      <p
+        class="border border-dashed border-rule-strong bg-paper px-4 py-3 text-sm text-ink-muted"
+        data-testid="occupancy-no-stays"
+      >
+        {{ 'occupancy.noStays' | translate }}
+      </p>
+    }
+
+    <!--
+      Masaustu izgarasi.
+
+      Teknik not: gun basligi ve oda satirlari **ayni** tabloda durur (ayni yatay
+      kaydirma kabi) ve sutun genislikleri `table-fixed` + `colgroup` ile birebir
+      esitlenir; oda etiketi sutunu ve baslik satiri sticky'dir. Aksi halde
+      cubuklar tarihten kayardi.
+
+      Bir konaklama tek bir `<td [attr.colspan]>` hucresidir: cubuk bolunmez,
+      araya cetvel cizgisi girmez.
+    -->
+    <div class="hidden border border-rule bg-paper-raised lg:block">
+      <div class="overflow-x-auto overscroll-x-contain">
+        <table class="w-full min-w-[64rem] table-fixed border-collapse text-left text-sm">
+          <caption class="sr-only">
+            {{
+              'occupancy.tableCaption' | translate
+            }}
+          </caption>
+          <colgroup>
+            <col class="w-40" />
+            @for (day of store.days(); track day) {
+              <col />
+            }
+          </colgroup>
+          <thead>
+            <tr>
+              <th
+                scope="col"
+                class="hc-sticky-head sticky left-0 z-3 border-b border-r border-rule bg-paper px-3 py-2 label-mono text-ink-muted"
+              >
+                {{ 'occupancy.columns.room' | translate }}
+              </th>
+              @for (day of store.days(); track day) {
+                <th
+                  scope="col"
+                  class="hc-sticky-head border-b border-r border-rule px-1 py-2 text-center label-mono text-ink-muted last:border-r-0"
+                  data-testid="occupancy-day-head"
+                  [attr.data-date]="day"
+                >
+                  <span class="block">{{ day | hcDate: 'weekdayShort' }}</span>
+                  <span class="block numeric text-xs text-ink-faint">
+                    {{ day | hcDate: 'dayMonth' }}
+                  </span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rule">
+            @for (row of store.rows(); track row.room.roomId) {
+              <tr data-testid="occupancy-row" [attr.data-room]="row.room.roomNumber">
+                <th
+                  scope="row"
+                  class="sticky left-0 z-2 border-r border-rule bg-paper-raised px-3 py-2 text-left font-normal text-ink"
+                >
+                  <span class="numeric">{{ row.room.roomNumber }}</span>
+                  <span class="block eyebrow">
+                    {{ row.room.roomTypeCode }}
+                    @if (row.room.isOutOfOrder) {
+                      · {{ 'occupancy.outOfOrder' | translate }}
+                    }
+                  </span>
+                </th>
+
+                @for (segment of row.segments; track segment.startIndex) {
+                  @if (isBar(segment)) {
+                    <!--
+                      Kesintisiz cubuk: ardisik geceler tek hucrede birlesir.
+                      Kirpilmis uclarda kenarlik kaldirilir (konaklama devam ediyor).
+                    -->
+                    <td
+                      class="border-r border-rule p-0.5 align-middle last:border-r-0"
+                      [attr.colspan]="segment.nights"
+                      data-testid="occupancy-bar-cell"
+                      [attr.data-reservation]="segment.reservationNumber"
+                      [attr.data-nights]="segment.nights"
+                    >
+                      <a
+                        class="flex min-h-9 w-full items-center gap-2 overflow-hidden border px-2 py-1 text-left"
+                        [class]="barClass(segment)"
+                        [routerLink]="['/reservations', segment.reservationId]"
+                        [attr.data-testid]="'occupancy-bar'"
+                        [attr.data-starts]="segment.startsInRange"
+                        [attr.data-ends]="segment.endsInRange"
+                      >
+                        @if (!segment.startsInRange) {
+                          <span class="label-mono text-xs" aria-hidden="true">‹</span>
+                          <span class="sr-only">
+                            {{ 'occupancy.bar.continuesBefore' | translate }}
+                          </span>
+                        }
+                        <span class="min-w-0 flex-1 truncate label-mono">
+                          {{ segment.guestName }}
+                        </span>
+                        @if (segment.nights > 2) {
+                          <span class="shrink-0 numeric text-xs opacity-70">
+                            {{ segment.reservationNumber }}
+                          </span>
+                        }
+                        @if (!segment.endsInRange) {
+                          <span class="label-mono text-xs" aria-hidden="true">›</span>
+                          <span class="sr-only">
+                            {{ 'occupancy.bar.continuesAfter' | translate }}
+                          </span>
+                        }
+                      </a>
+                    </td>
+                  } @else {
+                    <!-- Bos gece: tek hucre kalir; yazma izniyle sihirbaza gider -->
+                    <td
+                      class="border-r border-rule p-0.5 text-center last:border-r-0"
+                      data-testid="occupancy-free-cell"
+                      [attr.data-date]="segment.date"
+                    >
+                      @if (canCreate() && !row.room.isOutOfOrder) {
+                        <a
+                          class="flex min-h-9 w-full items-center justify-center border border-transparent text-ink-faint hover:border-dashed hover:border-rule-strong hover:text-ink"
+                          routerLink="/reservations/new"
+                          [queryParams]="newReservationParams(row.room.roomId, segment.date)"
+                          [attr.aria-label]="
+                            'occupancy.free.createAria'
+                              | translate
+                                : { room: row.room.roomNumber, date: segment.date | hcDate: 'long' }
+                          "
+                          data-testid="occupancy-free-link"
+                        >
+                          ·
+                        </a>
+                      } @else {
+                        <span
+                          class="flex min-h-9 w-full items-center justify-center text-ink-faint"
+                          aria-hidden="true"
+                        >
+                          ·
+                        </span>
+                      }
+                    </td>
+                  }
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mobil: ayni store, oda bazli liste (izgara 375px'e sigmaz) -->
+    <ul class="space-y-4 lg:hidden">
+      @for (row of store.rows(); track row.room.roomId) {
+        <li class="border border-rule bg-paper-raised">
+          <div class="flex items-baseline justify-between gap-3 border-b border-rule px-4 py-2">
+            <p class="numeric text-ink">{{ row.room.roomNumber }}</p>
+            <p class="eyebrow">
+              {{ row.room.roomTypeCode }}
+              @if (row.room.isOutOfOrder) {
+                · {{ 'occupancy.outOfOrder' | translate }}
+              }
+            </p>
+          </div>
+
+          @if (row.barCount === 0) {
+            <p class="px-4 py-3 text-sm text-ink-muted">{{ 'occupancy.roomFree' | translate }}</p>
+          } @else {
+            <ul class="divide-y divide-rule">
+              @for (segment of row.segments; track segment.startIndex) {
+                @if (isBar(segment)) {
+                  <li>
+                    <a
+                      class="flex items-center justify-between gap-3 px-4 py-3"
+                      [routerLink]="['/reservations', segment.reservationId]"
+                      data-testid="occupancy-mobile-bar"
+                    >
+                      <span class="min-w-0">
+                        <span class="block truncate text-ink">{{ segment.guestName }}</span>
+                        <span class="mt-1 block numeric text-xs text-ink-faint">
+                          {{ segment.firstDate | hcDate: 'medium' }} –
+                          {{ segment.lastDate | hcDate: 'medium' }}
+                          ·
+                          {{ 'occupancy.bar.nights' | translate: { count: segment.nights } }}
+                        </span>
+                      </span>
+                      <span
+                        class="shrink-0 border px-2 py-0.5 label-mono"
+                        [class]="barClass(segment)"
+                      >
+                        {{ segment.reservationNumber }}
+                      </span>
+                    </a>
+                  </li>
+                }
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+
+    <!-- Ozet: sunucunun hesapladigi degerler (istemci yeniden hesaplamaz) -->
+    <dl
+      class="grid grid-cols-2 gap-px border border-rule bg-rule sm:grid-cols-4"
+      data-testid="occupancy-summary"
+    >
+      <div class="bg-paper-raised px-4 py-3">
+        <dt class="eyebrow">{{ 'occupancy.summary.rooms' | translate }}</dt>
+        <dd class="mt-1 numeric text-lg text-ink">{{ store.summary().roomCount }}</dd>
+      </div>
+      <div class="bg-paper-raised px-4 py-3">
+        <dt class="eyebrow">{{ 'occupancy.summary.roomNights' | translate }}</dt>
+        <dd class="mt-1 numeric text-lg text-ink">{{ store.summary().roomNights }}</dd>
+      </div>
+      <div class="bg-paper-raised px-4 py-3">
+        <dt class="eyebrow">{{ 'occupancy.summary.occupied' | translate }}</dt>
+        <dd class="mt-1 numeric text-lg text-ink">{{ store.summary().occupiedRoomNights }}</dd>
+      </div>
+      <div class="bg-paper-raised px-4 py-3">
+        <dt class="eyebrow">{{ 'occupancy.summary.rate' | translate }}</dt>
+        <dd class="mt-1 numeric text-lg text-navy" data-testid="occupancy-rate">
+          {{ store.summary().occupancyRate }} %
+        </dd>
+      </div>
+    </dl>
+
+    <!-- Gosterim anahtari: renk tek basina anlam tasimasin (WCAG) -->
+    <p class="text-xs text-ink-muted" data-testid="occupancy-legend">
+      {{ 'occupancy.legend' | translate }}
+    </p>
+  }
+</div>

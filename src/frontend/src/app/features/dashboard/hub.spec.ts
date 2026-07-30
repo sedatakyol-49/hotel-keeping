@@ -139,20 +139,39 @@ describe('HubPage — modul kart izgarasi', () => {
   });
 
   it('hazir olmayan modulleri isaretler, calisan modulu isaretlemez', async () => {
-    const fixture = render([PERMISSIONS.RoomsView, PERMISSIONS.ReservationsView]);
+    // Rezervasyon ve faturalama uclari yayina alindiktan sonra `planned`
+    // isaretini yalnizca Raporlar tasir.
+    const fixture = render([PERMISSIONS.RoomsView, PERMISSIONS.ReportsView]);
     http.expectOne((request) => request.url === `${baseUrl}/rooms`).flush(ROOM_PAGE);
     await fixture.whenStable();
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
     const rooms = element.querySelector<HTMLElement>('[data-path="/rooms"]');
-    const reservations = element.querySelector<HTMLElement>('[data-path="/reservations"]');
+    const reports = element.querySelector<HTMLElement>('[data-path="/reports"]');
 
     expect(rooms?.dataset['planned']).toBe('false');
-    expect(reservations?.dataset['planned']).toBe('true');
+    expect(reports?.dataset['planned']).toBe('true');
     // Hazir olmayan modul de tiklanabilir kalir (iskelet sayfaya gider).
-    expect(reservations?.querySelector('a')?.getAttribute('href')).toBe('/reservations');
-    expect(reservations?.textContent).toContain('hub.status.planned');
+    expect(reports?.querySelector('a')?.getAttribute('href')).toBe('/reports');
+    expect(reports?.textContent).toContain('hub.status.planned');
+  });
+
+  it('yayina alinan rezervasyon ve fatura modullerini `planned` isaretlemez', async () => {
+    const fixture = render([PERMISSIONS.ReservationsView, PERMISSIONS.InvoicesView]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(
+      element.querySelector<HTMLElement>('[data-path="/reservations"]')?.dataset['planned'],
+    ).toBe('false');
+    expect(element.querySelector<HTMLElement>('[data-path="/invoices"]')?.dataset['planned']).toBe(
+      'false',
+    );
+    // Yeni alt kalemler de hub kart izgarasinda yer alir.
+    expect(cardPaths(fixture)).toContain('/reservations/occupancy');
+    expect(cardPaths(fixture)).toContain('/reservations/guests');
   });
 
   it('kart baglantisi aciklama ve ozet satirini `aria-describedby` ile duyurur', async () => {

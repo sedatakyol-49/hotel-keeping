@@ -1,0 +1,287 @@
+<div class="space-y-6">
+  <hc-page-header titleKey="guests.title" subtitleKey="guests.subtitle" eyebrowKey="nav.reservations">
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/reservations"
+      >
+        {{ 'guests.actions.toReservations' | translate }}
+      </a>
+      <a
+        *hcHasPermission="writePermission"
+        class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+        routerLink="/reservations/guests/new"
+        data-testid="guests-create"
+      >
+        {{ 'guests.actions.create' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  <form
+    class="flex flex-wrap items-end gap-3 border border-rule bg-paper-raised px-4 py-3"
+    novalidate
+    (ngSubmit)="applySearch(searchInput.value)"
+  >
+    <div class="min-w-0 flex-1">
+      <label class="hc-label" for="guests-search">{{ 'guests.filters.search' | translate }}</label>
+      <input
+        #searchInput
+        id="guests-search"
+        class="hc-input mt-1"
+        type="search"
+        name="search"
+        [value]="query().search ?? ''"
+        [placeholder]="'guests.filters.searchPlaceholder' | translate"
+      />
+    </div>
+    <hc-button type="submit">{{ 'common.search' | translate }}</hc-button>
+    @if (store.hasFilters()) {
+      <hc-button variant="ghost" (pressed)="resetFilters()">
+        {{ 'common.reset' | translate }}
+      </hc-button>
+    }
+    <p class="ml-auto eyebrow" aria-live="polite">
+      {{ 'guests.count' | translate: { count: store.totalCount() } }}
+    </p>
+  </form>
+
+  @if (deleteErrorKey(); as errorKey) {
+    <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+      <p class="text-sm text-danger" data-testid="guest-delete-error">{{ errorKey | translate }}</p>
+      @if (store.deleteError()?.detail; as detail) {
+        <p class="mt-1 font-mono text-xs text-ink">{{ detail }}</p>
+      }
+      <div class="mt-2">
+        <hc-button size="sm" variant="ghost" (pressed)="store.clearDeleteError()">
+          {{ 'common.close' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  }
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'guests.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      [titleKey]="store.hasFilters() ? 'guests.emptyFiltered.title' : 'guests.empty.title'"
+      [descriptionKey]="
+        store.hasFilters() ? 'guests.emptyFiltered.description' : 'guests.empty.description'
+      "
+    >
+      @if (store.hasFilters()) {
+        <hc-button variant="secondary" (pressed)="resetFilters()">
+          {{ 'common.reset' | translate }}
+        </hc-button>
+      }
+    </hc-empty-state>
+  } @else {
+    <!-- Masaustu: yogun tablo. `stayCount` listede null geldigi icin sutunu yok. -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="guests.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'common.name' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'common.email' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'common.phone' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'guests.columns.location' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (guest of store.items(); track guest.id) {
+            <tr
+              data-testid="guest-row"
+              [class.opacity-40]="store.deletingId() === guest.id"
+            >
+              <th scope="row" class="px-4 py-3 text-left font-normal text-ink">
+                {{ guest.fullName }}
+              </th>
+              <td class="px-4 py-3 text-sm text-ink-muted">{{ guest.email || '—' }}</td>
+              <td class="px-4 py-3 numeric text-sm text-ink-muted">{{ guest.phone || '—' }}</td>
+              <td class="px-4 py-3 text-sm text-ink-muted">
+                {{ guest.city || '—' }}
+                @if (guest.nationality) {
+                  <span class="ml-1 eyebrow">{{ guest.nationality }}</span>
+                }
+              </td>
+              <td class="px-4 py-3 text-right">
+                @if (confirmingId() === guest.id) {
+                  <div class="flex flex-wrap justify-end gap-2">
+                    <span class="self-center text-xs text-ink-muted">
+                      {{ 'guests.delete.confirm' | translate }}
+                    </span>
+                    <hc-button
+                      size="sm"
+                      variant="danger"
+                      data-testid="guest-delete-confirm"
+                      [busy]="store.deletingId() === guest.id"
+                      (pressed)="remove(guest)"
+                    >
+                      {{ 'common.delete' | translate }}
+                    </hc-button>
+                    <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                      {{ 'common.cancel' | translate }}
+                    </hc-button>
+                  </div>
+                } @else {
+                  <span class="inline-flex flex-wrap items-center justify-end gap-2">
+                    <a
+                      class="inline-flex min-h-9 items-center border border-rule-strong px-3 py-1.5 label-mono text-ink hover:bg-paper-sunken"
+                      [routerLink]="['/reservations']"
+                      [queryParams]="{ guestId: guest.id }"
+                      data-testid="guest-reservations"
+                    >
+                      {{ 'guests.actions.reservations' | translate }}
+                    </a>
+                    <a
+                      *hcHasPermission="writePermission"
+                      class="inline-flex min-h-9 items-center border border-rule-strong px-3 py-1.5 label-mono text-ink hover:bg-paper-sunken"
+                      [routerLink]="['/reservations/guests', guest.id, 'edit']"
+                      data-testid="guest-edit"
+                    >
+                      {{ 'common.edit' | translate }}
+                    </a>
+                    <hc-button
+                      *hcHasPermission="writePermission"
+                      size="sm"
+                      variant="ghost"
+                      data-testid="guest-delete"
+                      (pressed)="askDelete(guest)"
+                    >
+                      {{ 'common.delete' | translate }}
+                    </hc-button>
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil: ayni store, kart yerlesimi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (guest of store.items(); track guest.id) {
+        <li class="px-4 py-4" [class.opacity-40]="store.deletingId() === guest.id">
+          <p class="font-serif text-xl leading-tight text-ink">{{ guest.fullName }}</p>
+          @if (guest.email) {
+            <p class="mt-1 text-sm text-ink-muted">{{ guest.email }}</p>
+          }
+          @if (guest.phone) {
+            <p class="mt-1 numeric text-sm text-ink-muted">{{ guest.phone }}</p>
+          }
+          @if (guest.city || guest.nationality) {
+            <p class="mt-1 eyebrow">{{ guest.city }} {{ guest.nationality }}</p>
+          }
+          <div class="mt-3 flex flex-wrap gap-2">
+            <a
+              class="inline-flex min-h-touch items-center border border-rule-strong px-3 py-2 label-mono text-ink"
+              [routerLink]="['/reservations']"
+              [queryParams]="{ guestId: guest.id }"
+            >
+              {{ 'guests.actions.reservations' | translate }}
+            </a>
+            <a
+              *hcHasPermission="writePermission"
+              class="inline-flex min-h-touch items-center border border-rule-strong px-3 py-2 label-mono text-ink"
+              [routerLink]="['/reservations/guests', guest.id, 'edit']"
+            >
+              {{ 'common.edit' | translate }}
+            </a>
+            @if (confirmingId() === guest.id) {
+              <hc-button
+                size="sm"
+                variant="danger"
+                data-testid="guest-delete-confirm"
+                [busy]="store.deletingId() === guest.id"
+                (pressed)="remove(guest)"
+              >
+                {{ 'guests.delete.confirm' | translate }}
+              </hc-button>
+            } @else {
+              <hc-button
+                *hcHasPermission="writePermission"
+                size="sm"
+                variant="ghost"
+                (pressed)="askDelete(guest)"
+              >
+                {{ 'common.delete' | translate }}
+              </hc-button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+
+    <div
+      class="flex flex-col gap-3 border border-rule bg-paper-raised px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="eyebrow">
+        {{
+          'guests.pagination.range'
+            | translate
+              : { from: store.rangeStart(), to: store.rangeEnd(), total: store.totalCount() }
+        }}
+      </p>
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 label-mono text-ink-muted" for="guests-page-size">
+          {{ 'common.rowsPerPage' | translate }}
+          <select
+            id="guests-page-size"
+            class="hc-input w-auto"
+            [value]="query().pageSize"
+            (change)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === query().pageSize">{{ size }}</option>
+            }
+          </select>
+        </label>
+        <nav class="flex items-center gap-2" [attr.aria-label]="'common.page' | translate">
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasPreviousPage()"
+            (pressed)="goToPage(store.page() - 1)"
+          >
+            {{ 'common.previous' | translate }}
+          </hc-button>
+          <span class="numeric text-sm text-ink" aria-live="polite">
+            {{ 'guests.pagination.page' | translate: { page: store.page(), pages: store.totalPages() } }}
+          </span>
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasNextPage()"
+            (pressed)="goToPage(store.page() + 1)"
+          >
+            {{ 'common.next' | translate }}
+          </hc-button>
+        </nav>
+      </div>
+    </div>
+  }
+</div>

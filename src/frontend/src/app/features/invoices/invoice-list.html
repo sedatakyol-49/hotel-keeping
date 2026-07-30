@@ -1,0 +1,348 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="invoices.title"
+    subtitleKey="invoices.subtitle"
+    eyebrowKey="nav.section.finance"
+  >
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        *hcHasPermission="createPermission"
+        class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+        routerLink="/invoices/new"
+        data-testid="invoices-create"
+      >
+        {{ 'invoices.actions.create' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  <!-- GoBD: kesinlesmis fatura degistirilemez -->
+  <p
+    class="border-l-2 border-brass bg-brass-tint px-3 py-2 text-sm text-ink"
+    data-testid="invoices-gobd-note"
+  >
+    {{ 'invoices.gobdNote' | translate }}
+  </p>
+
+  @if (query().reservationId; as reservationId) {
+    <div
+      class="flex flex-wrap items-center gap-3 border border-navy bg-navy-tint px-4 py-2"
+      data-testid="invoices-reservation-filter"
+    >
+      <p class="label-mono text-navy">{{ 'invoices.filters.reservationActive' | translate }}</p>
+      <span class="numeric text-xs text-ink-muted">{{ reservationId }}</span>
+      <hc-button size="sm" variant="ghost" (pressed)="clearReservationFilter()">
+        {{ 'invoices.filters.clear' | translate }}
+      </hc-button>
+    </div>
+  }
+  @if (query().guestId; as guestId) {
+    <div
+      class="flex flex-wrap items-center gap-3 border border-navy bg-navy-tint px-4 py-2"
+      data-testid="invoices-guest-filter"
+    >
+      <p class="label-mono text-navy">{{ 'invoices.filters.guestActive' | translate }}</p>
+      <span class="numeric text-xs text-ink-muted">{{ guestId }}</span>
+      <hc-button size="sm" variant="ghost" (pressed)="clearGuestFilter()">
+        {{ 'invoices.filters.clear' | translate }}
+      </hc-button>
+    </div>
+  }
+
+  <form
+    class="border border-rule bg-paper-raised"
+    aria-labelledby="invoices-filter-heading"
+    novalidate
+    (ngSubmit)="
+      applyFromForm(statusSelect.value, fromInput.value, toInput.value, searchInput.value)
+    "
+  >
+    <h2 id="invoices-filter-heading" class="border-b border-rule px-4 py-3 label-mono text-ink">
+      {{ 'invoices.filters.legend' | translate }}
+    </h2>
+
+    <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div>
+        <label class="hc-label" for="invoices-filter-search">
+          {{ 'invoices.filters.search' | translate }}
+        </label>
+        <input
+          #searchInput
+          id="invoices-filter-search"
+          class="hc-input mt-1"
+          type="search"
+          name="search"
+          [value]="query().search ?? ''"
+          [placeholder]="'invoices.filters.searchPlaceholder' | translate"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="invoices-filter-status">
+          {{ 'common.status' | translate }}
+        </label>
+        <select
+          #statusSelect
+          id="invoices-filter-status"
+          class="hc-input mt-1"
+          name="status"
+          [value]="query().status ?? ''"
+          (change)="
+            applyFromForm(statusSelect.value, fromInput.value, toInput.value, searchInput.value)
+          "
+        >
+          <option value="">{{ 'invoices.filters.allStatuses' | translate }}</option>
+          @for (status of statuses; track status) {
+            <option [value]="status" [selected]="status === query().status">
+              {{ statusLabelKeys[status] | translate }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="hc-label" for="invoices-filter-from">{{ 'common.from' | translate }}</label>
+        <input
+          #fromInput
+          id="invoices-filter-from"
+          class="hc-input mt-1"
+          type="date"
+          name="from"
+          [value]="query().from ?? ''"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="invoices-filter-to">{{ 'common.to' | translate }}</label>
+        <input
+          #toInput
+          id="invoices-filter-to"
+          class="hc-input mt-1"
+          type="date"
+          name="to"
+          [value]="query().to ?? ''"
+        />
+      </div>
+    </div>
+
+    @if (store.draftsHidden()) {
+      <!-- Sozlesme: tarih filtresi verildiginde taslaklar listelenmez -->
+      <p class="px-4 pb-3 text-xs text-ink-muted" data-testid="invoices-drafts-hidden">
+        {{ 'invoices.filters.draftsHidden' | translate }}
+      </p>
+    }
+
+    <div class="flex flex-wrap items-center gap-2 border-t border-rule px-4 py-3">
+      <hc-button type="submit">{{ 'invoices.filters.apply' | translate }}</hc-button>
+      @if (store.hasFilters()) {
+        <hc-button variant="ghost" (pressed)="resetFilters()">
+          {{ 'common.reset' | translate }}
+        </hc-button>
+      }
+      <p class="ml-auto eyebrow" aria-live="polite">
+        {{ 'invoices.count' | translate: { count: store.totalCount() } }}
+      </p>
+    </div>
+  </form>
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'invoices.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      [titleKey]="store.hasFilters() ? 'invoices.emptyFiltered.title' : 'invoices.empty.title'"
+      [descriptionKey]="
+        store.hasFilters() ? 'invoices.emptyFiltered.description' : 'invoices.empty.description'
+      "
+    >
+      @if (store.hasFilters()) {
+        <hc-button variant="secondary" (pressed)="resetFilters()">
+          {{ 'common.reset' | translate }}
+        </hc-button>
+      }
+    </hc-empty-state>
+  } @else {
+    <!-- Masaustu: yogun tablo -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="invoices.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'invoices.columns.number' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'invoices.columns.issuedAt' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'invoices.columns.guest' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'invoices.columns.reservation' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'common.status' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'invoices.columns.gross' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'invoices.columns.outstanding' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (invoice of store.items(); track invoice.id) {
+            <tr data-testid="invoice-row">
+              <th scope="row" class="px-4 py-3 text-left font-normal">
+                <a
+                  class="numeric text-navy underline-offset-2 hover:underline"
+                  [routerLink]="['/invoices', invoice.id]"
+                  data-testid="invoice-link"
+                >
+                  @if (invoice.invoiceNumber) {
+                    {{ invoice.invoiceNumber }}
+                  } @else {
+                    <!-- Taslakta numara yoktur; bos hucre birakilmaz -->
+                    <span class="label-mono text-brass" data-testid="invoice-no-number">
+                      {{ 'invoices.noNumber' | translate }}
+                    </span>
+                  }
+                </a>
+                @if (invoice.isCancellationInvoice) {
+                  <span class="mt-1 block eyebrow text-danger">
+                    {{ 'invoices.cancellationInvoice' | translate }}
+                  </span>
+                }
+              </th>
+              <td class="px-4 py-3 numeric text-ink">
+                @if (invoice.issuedAt) {
+                  {{ invoice.issuedAt | hcDate: 'medium' }}
+                } @else {
+                  <span class="text-ink-faint">—</span>
+                }
+              </td>
+              <td class="px-4 py-3 text-ink">{{ invoice.guestName }}</td>
+              <td class="px-4 py-3 numeric text-sm text-ink-muted">
+                {{ invoice.reservationNumber || '—' }}
+              </td>
+              <td class="px-4 py-3">
+                <hc-invoice-status [status]="invoice.status" />
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink" data-testid="invoice-gross">
+                {{ invoice.grossAmount | hcMoney: invoice.currency }}
+              </td>
+              <td class="px-4 py-3 text-right numeric" data-testid="invoice-outstanding">
+                <span [class]="invoice.outstandingAmount > 0 ? 'text-copper' : 'text-ink-faint'">
+                  {{ invoice.outstandingAmount | hcMoney: invoice.currency }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil: ayni store, kart yerlesimi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (invoice of store.items(); track invoice.id) {
+        <li>
+          <a class="block px-4 py-4" [routerLink]="['/invoices', invoice.id]">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-serif text-xl leading-tight text-ink">{{ invoice.guestName }}</p>
+                <p class="mt-1 numeric text-sm text-ink">
+                  @if (invoice.invoiceNumber) {
+                    {{ invoice.invoiceNumber }}
+                  } @else {
+                    <span class="label-mono text-brass">{{ 'invoices.noNumber' | translate }}</span>
+                  }
+                  @if (invoice.issuedAt) {
+                    · {{ invoice.issuedAt | hcDate: 'medium' }}
+                  }
+                </p>
+                @if (invoice.reservationNumber) {
+                  <p class="mt-1 eyebrow">{{ invoice.reservationNumber }}</p>
+                }
+              </div>
+              <hc-invoice-status [status]="invoice.status" />
+            </div>
+            <p class="mt-2 numeric text-ink">
+              {{ invoice.grossAmount | hcMoney: invoice.currency }}
+              @if (invoice.outstandingAmount > 0) {
+                <span class="ml-2 text-xs text-copper">
+                  {{ 'invoices.columns.outstanding' | translate }}:
+                  {{ invoice.outstandingAmount | hcMoney: invoice.currency }}
+                </span>
+              }
+            </p>
+          </a>
+        </li>
+      }
+    </ul>
+
+    <div
+      class="flex flex-col gap-3 border border-rule bg-paper-raised px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="eyebrow">
+        {{
+          'invoices.pagination.range'
+            | translate
+              : { from: store.rangeStart(), to: store.rangeEnd(), total: store.totalCount() }
+        }}
+      </p>
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 label-mono text-ink-muted" for="invoices-page-size">
+          {{ 'common.rowsPerPage' | translate }}
+          <select
+            id="invoices-page-size"
+            class="hc-input w-auto"
+            [value]="query().pageSize"
+            (change)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === query().pageSize">{{ size }}</option>
+            }
+          </select>
+        </label>
+        <nav class="flex items-center gap-2" [attr.aria-label]="'common.page' | translate">
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasPreviousPage()"
+            (pressed)="goToPage(store.page() - 1)"
+          >
+            {{ 'common.previous' | translate }}
+          </hc-button>
+          <span class="numeric text-sm text-ink" aria-live="polite">
+            {{
+              'invoices.pagination.page'
+                | translate: { page: store.page(), pages: store.totalPages() }
+            }}
+          </span>
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasNextPage()"
+            (pressed)="goToPage(store.page() + 1)"
+          >
+            {{ 'common.next' | translate }}
+          </hc-button>
+        </nav>
+      </div>
+    </div>
+  }
+</div>
