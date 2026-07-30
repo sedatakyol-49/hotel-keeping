@@ -200,23 +200,36 @@ alanında birlikte döner; liste yanıtında dönmez.
 
 | GET | `/occupancy?from=&to=` | `Reservations.View` (doluluk grid'i — rezervasyon modülüyle gelecek) |
 
-### Reservations
-| Method | Path | İzin |
-|---|---|---|
-| GET | `/reservations` | `Reservations.View` |
-| POST | `/reservations` | `Reservations.Create` (rezervasyon sihirbazı) |
-| POST | `/reservations/{id}/check-in` | `Reservations.CheckInOut` |
-| POST | `/reservations/{id}/check-out` | `Reservations.CheckInOut` |
-| GET | `/reservations/{id}/folio` | `Reservations.View` (detay çekmecesi) |
+### Rezervasyon (Guest / RatePlan / Availability / Reservation) — **uygulandı**
 
-### Invoices (GoBD)
-| Method | Path | İzin |
-|---|---|---|
-| GET | `/invoices` | `Invoices.View` |
-| POST | `/invoices` | `Invoices.Create` (Draft) |
-| POST | `/invoices/{id}/finalize` | `Invoices.Approve` (→ Finalized, değiştirilemez) |
-| POST | `/invoices/{id}/cancel` | `Invoices.Cancel` (→ Stornorechnung) |
-| GET | `/invoices/{id}/pdf` | `Invoices.View` |
+Bu modülün sözleşmesi kendi dosyasındadır: **[api-contracts-reservations.md](api-contracts-reservations.md)**
+(misafir, fiyat planı, müsaitlik, doluluk planı, rezervasyon yaşam döngüsü, folio).
+
+Bilinmesi gereken kararlar:
+- Çakışma **yarı açık aralık** `[checkIn, checkOut)` üzerinden hesaplanır — bir odanın çıkış günü
+  aynı gün başka bir rezervasyonun giriş günü **olabilir**.
+- `totalAmount` **sunucuda** hesaplanır ve her gece ayrı fiyatlanır; istemciden gelen tutar yok
+  sayılır. Gece başına öncelik: kanala özel plan → tüm kanallar planı → `RoomType.BasePrice`.
+- Check-out oda durumunu **otomatik `Dirty`** yapar (architecture.md §5), aynı transaction'da.
+- `ReservationNumber` (`RES-2026-00001`) **fatura numarası değildir**; GoBD kesintisizliği yalnızca
+  faturaya özgüdür, burada boşluk kabul edilir.
+- Doluluk planı en fazla **92 gün** ister (aşınca 400).
+
+### Faturalama (GoBD) — **uygulandı**
+
+Bu modülün sözleşmesi kendi dosyasındadır: **[api-contracts-invoices.md](api-contracts-invoices.md)**
+(taslak, kesinleştirme, Stornorechnung, ödeme, denetim izi).
+
+Bilinmesi gereken kararlar:
+- Fatura numarası **yalnızca kesinleştirme anında** atanır ve otel + yıl bazında kesintisizdir;
+  yarışı kaybeden istek **numara tüketmez** (409 alır).
+- Kesinleşmiş fatura **değiştirilemez** (PUT → 409); düzeltme Stornorechnung ile yapılır, orijinal
+  aynen korunur.
+- KDV oranları `Hotel.TaxProfile`'dan okunur: konaklama indirimli oran, ekstralar standart oran,
+  **Kurtaxe KDV dışıdır** (belediye vergisi, otel yalnızca tahsil eder).
+- Birim fiyatlar **brüt** kabul edilir; yuvarlama satır bazında 2 ondalık, `net + vat == gross`
+  her zaman korunur.
+- `GET /invoices/{id}/pdf` → **501**: belge üretimi bu fazda yok, sahte PDF döndürülmez.
 
 ### Personel (Employees & Departments) — **uygulandı**
 
