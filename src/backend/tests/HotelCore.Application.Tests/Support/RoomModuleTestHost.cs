@@ -138,6 +138,36 @@ internal sealed class RoomModuleTestHost : ApplicationTestHost
         return reservation;
     }
 
+    /// <summary>
+    /// Rezervasyona <b>yururlukteki belge</b> niteliginde bir fatura baglar: numarali,
+    /// <c>IssuedAt</c> damgali, iptal edilmemis ve storno degil.
+    /// <para>
+    /// "Faturalanmis" tanimi budur (<c>InvoiceEffectiveness</c>); oda silme kurali buna bakar:
+    /// faturalanmamis rezervasyonu olan oda silinemez (GoBD / AO §147 — kayit erisilebilir
+    /// kalmalidir). Taslak fatura yeterli DEGILDIR, cunku taslak henuz belge degildir.
+    /// </para>
+    /// </summary>
+    public async Task<Invoice> AddIssuedInvoiceAsync(Reservation reservation)
+    {
+        ArgumentNullException.ThrowIfNull(reservation);
+
+        var invoice = new Invoice
+        {
+            HotelId = reservation.HotelId,
+            GuestId = reservation.GuestId,
+            ReservationId = reservation.Id,
+            Currency = "EUR"
+        };
+
+        // GoBD guard'i yalnizca Modified/Deleted'i engeller; Added bir Finalized fatura yazilabilir.
+        invoice.MarkFinalized($"T-{Guid.NewGuid().ToString("N")[..8]}", Clock.UtcNow);
+
+        Database.Invoices.Add(invoice);
+        await SaveAndDetachAsync();
+
+        return invoice;
+    }
+
     /// <summary>Oda tipi icin dinamik icerik cevirisi ekler (architecture.md §4.6).</summary>
     public async Task AddTranslationAsync(Guid roomTypeId, string culture, string field, string text)
     {

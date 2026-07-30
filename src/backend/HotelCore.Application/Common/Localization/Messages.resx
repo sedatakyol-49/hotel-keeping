@@ -419,6 +419,9 @@
   <data name="Conflict_RoomHasFutureReservations" xml:space="preserve">
     <value>Für dieses Zimmer bestehen zukünftige Reservierungen; stornieren Sie diese zuerst oder verlegen Sie sie in ein anderes Zimmer.</value>
   </data>
+  <data name="Conflict_RoomHasUnbilledReservation" xml:space="preserve">
+    <value>Für dieses Zimmer besteht eine noch nicht abgerechnete Reservierung ({0}, {1} bis {2}). Rechnen Sie die Reservierung ab oder stornieren Sie sie, bevor Sie das Zimmer löschen.</value>
+  </data>
 
   <!-- ================= Schichten / Vardiyalar ================= -->
   <data name="Conflict_ShiftAlreadyExists" xml:space="preserve">

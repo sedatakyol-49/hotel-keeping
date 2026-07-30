@@ -296,6 +296,41 @@ Geçersiz geçiş **409** ve mesaj **hangi geçişin denendiğini** söyler:
 `PUT` (içerik değişikliği) yalnızca `Option`, `Confirmed`, `CheckedIn` durumlarında serbesttir
 (konaklama uzatma/oda değişikliği meşrudur); nihai durumlarda **409**.
 
+#### `Cancelled` / `NoShow` durumunun faturaya etkisi — Kurtaxe doğmaz
+
+Bu iki durumdaki bir rezervasyondan fatura üretildiğinde **`CityTax` (Kurtaxe) satırı hiç
+oluşturulmaz** ve `cityTaxAmount = 0.00` olur; konaklama satırı faturada kalır.
+
+Kurtaxe/Kurbeitrag belediye tüzükleriyle (*Kurbeitragssatzung*) düzenlenir ve vergiyi doğuran olay
+(*Steuertatbestand*) **fiilen gerçekleşen konaklamadır** (*Übernachtung*) — vergi kişi ve geçirilen
+**gece** başına doğar. Konaklama gerçekleşmediyse vergi de doğmaz; otel belediye adına tahsil edip
+aktaracağı tutarı misafirden isteyemez (*durchlaufender Posten*, UStG §10 Abs. 1 Satz 5).
+Ayrıntı ve mali onay notları: `docs/api-contracts-invoices.md` → "Kurtaxe ve gerçekleşmeyen
+konaklama".
+
+> **Erken çıkış bu fazda kapsam dışıdır:** gece sayısı hâlâ `checkIn`/`checkOut` aralığından gelir.
+> `checkedInAt`/`checkedOutAt` UTC **an** damgasıdır ve otelin saat dilimi modellenmediği için
+> fiilî gece sayısı gün sınırında kayabilir — şema ihtiyacı olarak açık bırakıldı.
+
+#### Rezervasyonun oda silmeye etkisi (GoBD / AO §147)
+
+`DELETE /api/v1/rooms/{id}` iki bağımsız nedenle **409** döner:
+
+| # | Koşul | Mesaj |
+|---|---|---|
+| 1 | Odanın **gelecek tarihli** (`checkOut >= bugün`), iptal edilmemiş rezervasyonu var | "gelecek tarihli rezervasyonu var …" |
+| 2 | Odanın **iptal edilmemiş** ve **henüz faturalanmamış** rezervasyonu var (tarihi geçmiş olsa bile) | "… henüz faturalanmamış bir rezervasyonu var (**RES-…**, tarih aralığı) …" |
+
+- **"Faturalanmış" = yürürlükteki belge:** fatura *iptal edilmemiş*, *kendisi Stornorechnung değil*
+  ve *numara almış* (`issuedAt != null`). Yani **taslak fatura saymaz** — taslağı olan bir
+  rezervasyonun odası da silinemez.
+- **Neden:** oda soft-delete edilince rezervasyonun zorunlu oda navigasyonu global query filter'a
+  takılır; rezervasyon liste ve detaydan **404** olur ve bir daha **faturalanamaz** — tutarı
+  raporlarda `unbilledRoomRevenueGross` altında asılı kalır. GoBD ve **AO §147** ticari kayıtların
+  10 yıl boyunca *erişilebilir* ve *makine ile değerlendirilebilir* kalmasını ister.
+- **Engel kaldırılabilir:** rezervasyon faturalanır (veya iptal edilir), sonra oda silinir.
+  İptal edilmiş rezervasyon her iki kuralı da tetiklemez.
+
 ### Check-in / check-out kuralları
 
 - **Check-in (409 halleri):** giriş tarihinden **önce** (`bugün < checkIn`); oda `isOutOfOrder`;

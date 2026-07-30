@@ -218,6 +218,28 @@ describe('Sidebar — daraltilmis (rail) mod', () => {
     expect(toggle?.getAttribute('title')).toBe('nav.section.operations');
   });
 
+  it('rail modunda marka isaretini cizer, tam adi `sr-only` birakir', async () => {
+    const { element, fixture, state } = await render('/dashboard', ALL);
+    const brandBlock = element.querySelector('nav > div');
+
+    // Genis moddayken de isaret vardir; ad ise gorunur metindir.
+    expect(brandBlock?.querySelector('[data-testid="brand-mark"]')).not.toBeNull();
+    expect(brandBlock?.querySelector('.sr-only')).toBeNull();
+
+    state.toggleCollapsed();
+    fixture.detectChanges();
+
+    const rail = element.querySelector('nav > div');
+    const mark = rail?.querySelector('[data-testid="brand-mark"]');
+
+    expect(mark).not.toBeNull();
+    // Isaret susleme; ad ekran okuyucuya `sr-only` metinle verilir.
+    expect(mark?.getAttribute('aria-hidden')).toBe('true');
+    expect(rail?.querySelector('.sr-only')?.textContent?.trim()).toBe('common.appName');
+    // Eski tek harfli "H" gosterimi kalmamali.
+    expect(rail?.textContent?.replace(/\s/g, '')).toBe('common.appName');
+  });
+
   it('mobil cekmecede daraltma devre disi kalir', async () => {
     const { fixture, state } = await render('/dashboard', ALL);
 

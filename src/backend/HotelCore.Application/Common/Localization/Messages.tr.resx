@@ -394,6 +394,9 @@
   <data name="Conflict_RoomHasFutureReservations" xml:space="preserve">
     <value>Bu odanın gelecek tarihli rezervasyonu var; önce rezervasyonları iptal edin veya başka odaya taşıyın.</value>
   </data>
+  <data name="Conflict_RoomHasUnbilledReservation" xml:space="preserve">
+    <value>Bu odanın henüz faturalanmamış bir rezervasyonu var ({0}, {1} - {2}). Odayı silmeden önce rezervasyonu faturalayın veya iptal edin.</value>
+  </data>
 
   <data name="Conflict_ShiftAlreadyExists" xml:space="preserve">
     <value>Bu çalışanın {0} günü için zaten bir vardiyası var; mevcut vardiyayı güncelleyin.</value>

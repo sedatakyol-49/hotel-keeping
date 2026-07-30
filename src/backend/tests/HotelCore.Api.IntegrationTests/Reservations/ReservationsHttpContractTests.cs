@@ -256,11 +256,16 @@ public sealed class ReservationsHttpContractTests(PostgresFixture fixture)
         using var client = scenario.CreateClient(
             [Permissions.ReservationsView, Permissions.RoomsManage]);
 
-        // Odasi silinecek rezervasyon GECMISTE olmalidir: DeleteRoomHandler yalnizca gelecek
-        // tarihli rezervasyonu olan odayi reddeder.
-        await scenario.CreateReservationAsync(
+        // Odasi silinecek rezervasyon GECMISTE olmali (gelecek tarihli rezervasyonu olan oda
+        // silinemez) ve ARTIK FATURALANMIS olmalidir: GoBD / AO §147 geregi faturalanmamis
+        // rezervasyonu olan oda da silinemez. Bu testin konusu sayfalama tutarliligidir;
+        // oda silme yalnizca "odasi gorunmeyen rezervasyon" durumunu uretmenin araci.
+        var past = await scenario.CreateReservationAsync(
             scenario.Today.AddDays(-10),
             scenario.Today.AddDays(-8));
+
+        var draft = await scenario.CreateReservationInvoiceAsync(past.Id);
+        await scenario.FinalizeInvoiceAsync(draft.Id);
 
         // Gorunur kalacak iki rezervasyon (baska bir odada, ust uste binmeyen tarihlerde).
         var start = scenario.Today.AddDays(10);

@@ -374,6 +374,18 @@ public static class Messages
 
     public static string RoomHasFutureReservations => Text("Conflict_RoomHasFutureReservations");
 
+    /// <summary>
+    /// Oda silme reddi: odanın yürürlükteki (iptal edilmemiş) ve <b>henüz faturalanmamış</b> bir
+    /// rezervasyonu var. Hangi rezervasyon olduğu mesajda açıkça yazar — aksi hâlde kullanıcı
+    /// engeli kaldıracak eylemi bulamaz. Dayanak: GoBD / AO §147 (kayıtların 10 yıl erişilebilir
+    /// ve makineyle değerlendirilebilir kalması).
+    /// </summary>
+    public static string RoomHasUnbilledReservation(
+        string reservationNumber,
+        DateOnly checkIn,
+        DateOnly checkOut) =>
+        Format("Conflict_RoomHasUnbilledReservation", reservationNumber, Iso(checkIn), Iso(checkOut));
+
     // ---------------------------------------------------------------------------------------
     // Vardiyalar
     // ---------------------------------------------------------------------------------------

@@ -46,7 +46,7 @@ gerekçeleri [docs/architecture.md](docs/architecture.md) §10 karar günlüğü
   `IInvoiceExporter` zemini hazırdır.
 
 ### Canlıya çıkmadan mali onay isteyen kararlar
-Aşağıdaki üç karar kodda uygulanmış ve tek noktada toplanmış durumda, ancak **mali müşavir
+Aşağıdaki dört karar kodda uygulanmış ve tek noktada toplanmış durumda, ancak **mali müşavir
 onayı** alınmadan üretimde kullanılmamalı:
 
 | Karar | Uygulanan varsayım | Değişecek tek yer |
@@ -54,11 +54,48 @@ onayı** alınmadan üretimde kullanılmamalı:
 | Fiyat tabanı | Birim fiyatlar **brüt**; KDV içinden çıkarılır (PAngV + `Reservation.TotalAmount` brüt tanımı) | `InvoiceAmounts.ComputeLine` |
 | Kurtaxe ve KDV | Şehir vergisi **KDV dışı** (belediyenin misafirden aldığı, otelin yalnızca tahsil ettiği tutar) | `InvoiceAmounts.ResolveVatRate` |
 | KDV oranı eşlemesi | Konaklama **indirimli** oran, ekstralar **standart** oran (kahvaltı Aufteilungsgebot gereği indirimli orandan yararlanmaz) | aynı yer |
+| No-show / iptal bedelinin KDV'si | No-show faturasında konaklama satırı **korunur** ve **%7 indirimli oranla** KDV'lenir (satır türü `RoomCharge` kaldığı için). Kurtaxe satırı ise **hiç üretilmez** | `InvoiceAmounts.ResolveVatRate` + satır türü |
 
 Bazı şehirlerin "Bettensteuer" uygulamasında idare şehir vergisini bedelin parçası sayabiliyor;
 bu belediye bazında değerlendirilmelidir. Kurtaxe **çocuk muafiyeti** otel bazında açılabilir
 (`TaxProfile.CityTaxExemptChildren`); rezervasyon yalnızca yetişkin/çocuk **sayısı** tuttuğu için
 yaş sınırı hesaba girmez, hukuki dayanağı belgelemek için saklanır.
+
+**No-show / iptal bedeli: KDV'ye tabi mi?** Bugünkü davranış (konaklama satırının %7 ile
+faturalanması) **muhtemelen yanlıştır** ve canlıya çıkmadan mali müşavire sorulmalıdır.
+
+- **Baskın Alman görüşü:** misafirin gelmemesi veya iptali hâlinde alınan bedel **gerçek
+  tazminattır** (*echter Schadensersatz*) ve **KDV'ye tabi değildir**, çünkü karşılığında bir
+  teslim/hizmet yoktur — UStG §1 Abs. 1 Nr. 1 anlamında bir *Leistungsaustausch* doğmaz. Bu görüş
+  uygulanırsa satır **KDV'siz** kesilmeli, belgede tazminat olduğu belirtilmeli ve satır
+  **`RoomCharge` olarak kalmamalıdır** — aksi hâlde indirimli oranın konaklama gerekçesi
+  (UStG §12 Abs. 2 Nr. 11) belgeyle çelişir.
+- **Karşı görüş:** garantili/ön ödemeli rezervasyonlarda otelin odayı hazır tutması başlı başına
+  bir edim sayılabilir; o zaman bedel bir hizmetin karşılığı olur ve KDV'ye tabi olur. Hangi oranın
+  uygulanacağı ayrıca tartışmalıdır.
+- **Ayrım kriteri sözleşmedir:** bedelin *tazminat* mı *bedel* mi olduğu otelin AGB'sindeki ifadeye
+  ve garantinin niteliğine bağlıdır. HotelCore bu fazda **hiçbir varsayımı zorlamaz**.
+- **Kurtaxe bundan bağımsızdır ve kapatılmıştır:** `NoShow`/`Cancelled` rezervasyonda Kurtaxe satırı
+  **hiç üretilmez** — Kurbeitragssatzung'ların vergiyi doğuran olayı fiilî *Übernachtung*'dur ve otel
+  belediye adına tahsil ettiği tutarı (UStG §10 Abs. 1 Satz 5, *durchlaufender Posten*) misafirden
+  isteyemez.
+
+### §14 UStG zorunlu fatura içeriği — bilinen eksikler
+Fatura verisi §14 Abs. 4 UStG'ye karşı denetlendi. **Orana göre ayrıştırılmış tutarlar** (Nr. 8),
+düzenleyen/alıcı künyesi (Nr. 1), vergi numarası (Nr. 2) ve hizmet dönemi (Nr. 6) eklendi. Şema
+gerektirdiği için **yapılmayanlar**, belge (PDF) üretimine geçmeden önce kapatılmalıdır:
+
+- `Guest` adresinde **ülke** yok (`Nationality` uyrukluktur, adres ülkesi değildir).
+- `Hotel.TaxNumber` tek serbest metin: **Steuernummer** ile **USt-IdNr.** ayrılmıyor (§14 Abs. 4
+  Nr. 2; AB içi hizmetlerde §14a UStG USt-IdNr. zorunlu kılar).
+- **Künye dondurulmuyor:** otel/misafir adresi değişirse eski faturalar yeni adresle görünür — GoBD
+  *Unveränderbarkeit* riski.
+- **İndirim alanı** (Nr. 7) ve **vergi muafiyeti sebebi** (Nr. 8) modellenmedi.
+- **§33 UStDV** (Kleinbetragsrechnung, 250 €) modellenmedi; eşik bir mevzuat parametresi olduğu için
+  koda gömülmemeli, yapılandırmadan gelmelidir.
+- Erken çıkışta Kurtaxe **fiilî geceye** göre hesaplanmalıdır; bunun için rezervasyonda fiilî
+  giriş/çıkış **takvim günü** ve otelde **saat dilimi** tutulması gerekir (UTC anını güne indirgemek
+  gün sınırında bir geceyi kaydırır ve yanlış beyan üretir).
 
 ## Multi-Agent Yapı
 Proje `.claude/` altında ajan ve skill tanımlarıyla organize edilmiştir:

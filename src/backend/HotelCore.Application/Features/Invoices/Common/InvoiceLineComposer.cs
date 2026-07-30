@@ -79,7 +79,9 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
     ///   <c>CityTaxPerPersonNight</c>, <c>Type = CityTax</c> ve <b>KDV'siz</b>. Vergiye tabi kişi
     ///   sayısı <b>domain'de</b> hesaplanır (<see cref="TaxProfile.CountTaxablePersons"/>): otel
     ///   çocuk muafiyetini açtıysa yalnızca yetişkinler sayılır, aksi hâlde yetişkin + çocuk.
-    ///   Kurtaxe folio'da tutulmadığı için tek üretim yeri burasıdır.</item>
+    ///   Kurtaxe folio'da tutulmadığı için tek üretim yeri burasıdır.
+    ///   <b>Konaklama gerçekleşmediyse (NoShow / Cancelled) satır hiç üretilmez</b> — vergiyi
+    ///   doğuran olay yoktur; bkz. <see cref="CityTaxLiability"/>.</item>
     /// </list>
     /// </summary>
     public async Task<ReservationCharges> BuildFromReservationAsync(
@@ -100,6 +102,7 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
                 reservation.CheckOut,
                 reservation.Adults,
                 reservation.Children,
+                reservation.Status,
                 reservation.Room.Number,
                 reservation.Room.RoomType.Code,
                 reservation.TotalAmount,
@@ -189,9 +192,18 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
         }
 
         // Kurtaxe (City Tax) — otelde etkinse. KDV'ye TABI DEGILDIR (bkz. InvoiceAmounts §3).
-        // Vergiye tabi kisi kalmadiysa (muafiyet acik + yalnizca cocuk) satir HIC uretilmez:
+        //
+        // VERGIYI DOGURAN OLAY FIILI KONAKLAMADIR (Kurbeitragssatzung / Satzung uber die Erhebung
+        // einer Kurtaxe; vergi kisi ve GECIRILEN GECE basina dogar). Misafir hic konaklamadiysa
+        // (NoShow) veya rezervasyon iptal edildiyse fiili gece sayisi SIFIRDIR: vergi dogmaz ve
+        // otel belediye adina tahsil edecegi tutari misafirden isteyemez (durchlaufender Posten,
+        // UStG §10 Abs. 1 Satz 5). Tanim tek yerdedir: CityTaxLiability.
+        //
+        // Vergiye tabi kisi kalmadiysa (muafiyet acik + yalnizca cocuk) satir yine HIC uretilmez:
         // sifir tutarli kalem faturayi kirletir.
-        if (tax.CityTaxEnabled && tax.CityTaxPerPersonNight > 0m && taxablePersons > 0)
+        var cityTaxArises = CityTaxLiability.ArisesFrom(source.Status);
+
+        if (cityTaxArises && tax.CityTaxEnabled && tax.CityTaxPerPersonNight > 0m && taxablePersons > 0)
         {
             var cityTax = new InvoiceLineItem
             {
@@ -371,6 +383,7 @@ internal sealed record ReservationChargeSource(
     DateOnly CheckOut,
     int Adults,
     int Children,
+    ReservationStatus Status,
     string RoomNumber,
     string RoomTypeCode,
     decimal TotalAmount,

@@ -74,10 +74,36 @@ public sealed class DeleteRoomHandlerTests
     }
 
     [Fact]
-    public async Task Room_with_only_past_reservations_can_be_deleted()
+    public async Task Room_with_only_past_and_already_invoiced_reservations_can_be_deleted()
     {
         await using var host = await RoomModuleTestHost.CreateAsync();
         var room = await host.AddRoomAsync(host.HotelId, host.RoomTypeId, "204");
+        var reservation = await host.AddReservationAsync(
+            host.HotelId,
+            room.Id,
+            host.Clock.Today.AddDays(-10),
+            host.Clock.Today.AddDays(-1),
+            ReservationStatus.CheckedOut);
+
+        // GoBD / AO §147: faturalanmamis konaklama erisilemez hale getirilemez.
+        // Faturalandiktan sonra odayi silmek kaydi erisilemez birakmaz.
+        await host.AddIssuedInvoiceAsync(reservation);
+
+        await host.Dispatcher.Send(new DeleteRoomRequest(room.Id));
+
+        (await host.FindRoomIncludingDeletedAsync(room.Id))!.IsDeleted.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Kuralin kendisini kilitler: gecmis tarihli olsa bile <b>faturalanmamis</b> rezervasyonu
+    /// olan oda silinemez. Silinseydi rezervasyon zorunlu <c>Room</c> navigasyonu yuzunden
+    /// listeden ve detaydan kaybolur, bir daha faturalanamaz ve tutari raporda askida kalirdi.
+    /// </summary>
+    [Fact]
+    public async Task Room_with_a_past_but_unbilled_reservation_cannot_be_deleted()
+    {
+        await using var host = await RoomModuleTestHost.CreateAsync();
+        var room = await host.AddRoomAsync(host.HotelId, host.RoomTypeId, "206");
         await host.AddReservationAsync(
             host.HotelId,
             room.Id,
@@ -85,9 +111,10 @@ public sealed class DeleteRoomHandlerTests
             host.Clock.Today.AddDays(-1),
             ReservationStatus.CheckedOut);
 
-        await host.Dispatcher.Send(new DeleteRoomRequest(room.Id));
+        var act = async () => await host.Dispatcher.Send(new DeleteRoomRequest(room.Id));
 
-        (await host.FindRoomIncludingDeletedAsync(room.Id))!.IsDeleted.Should().BeTrue();
+        await act.Should().ThrowAsync<ConflictException>();
+        (await host.FindRoomIncludingDeletedAsync(room.Id))!.IsDeleted.Should().BeFalse();
     }
 
     [Fact]

@@ -1,4 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="HotelCore">
-  <rect width="512" height="512" fill="#1f3a5f"/>
-  <text x="256" y="318" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="180" fill="#f4f1ea">HC</text>
+<!--
+  Maskable ikon: platform bunu daire/squircle maskeyle kirpar. Kare cerceve
+  guvenli bolgeye (merkezdeki %80 daire) sigmadigi icin bu varyantta cerceve
+  cizilmez — lacivert zemin zaten "plaka" gorevini gorur. Isaret %70 olcekle
+  ortalandi: koseleri de dahil tum cizim guvenli daire icinde kalir.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="512" height="512" role="img" aria-labelledby="hc-icon-maskable-title">
+  <title id="hc-icon-maskable-title">HotelCore</title>
+  <rect width="32" height="32" fill="#1f3a5f"/>
+  <g transform="translate(4.8 4.625) scale(0.7)">
+    <path d="M3 4.5h3v20H3zM11.5 4.5h3v20h-3zM3 13h11.5v3H3z" fill="#f4f1ea"/>
+    <path d="M26.73 7.81A4.25 4.25 0 1 0 23.25 14.5a4.25 4.25 0 1 1-3.48 6.69" fill="none" stroke="#f4f1ea" stroke-width="3"/>
+    <rect x="3" y="26.5" width="26" height="1.5" fill="#c07b3c"/>
+  </g>
 </svg>

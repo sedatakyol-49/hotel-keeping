@@ -3,13 +3,31 @@
   [class.hc-rail]="collapsed()"
   [attr.aria-label]="'nav.mainNavigation' | translate"
 >
-  <div class="border-b border-rule py-4" [class.px-4]="!collapsed()" [class.px-2]="collapsed()">
+  <!--
+    Marka blogu. `relative`: rail modundaki `sr-only` marka adi kabugun kirpma
+    cercevesine bagli kalsin (bkz. shell.html aciklamasi ve shell.spec.ts).
+  -->
+  <div
+    class="relative border-b border-rule py-4"
+    [class.px-4]="!collapsed()"
+    [class.px-2]="collapsed()"
+  >
     @if (collapsed()) {
-      <p class="text-center font-serif text-2xl leading-none text-ink" aria-hidden="true">H</p>
+      <!-- Rail: yalnizca isaret sigar; ad ekran okuyucuda kalir. -->
+      <div class="flex justify-center text-ink">
+        <hc-brand-mark [size]="32" />
+      </div>
       <span class="sr-only">{{ 'common.appName' | translate }}</span>
     } @else {
-      <p class="font-serif text-2xl leading-none text-ink">{{ 'common.appName' | translate }}</p>
-      <p class="mt-1 eyebrow">{{ 'common.tagline' | translate }}</p>
+      <div class="flex items-center gap-3 text-ink">
+        <hc-brand-mark [size]="32" />
+        <div class="min-w-0">
+          <p class="truncate font-serif text-2xl leading-none text-ink">
+            {{ 'common.appName' | translate }}
+          </p>
+          <p class="mt-1 eyebrow">{{ 'common.tagline' | translate }}</p>
+        </div>
+      </div>
     }
   </div>
 

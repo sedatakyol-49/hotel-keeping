@@ -15,6 +15,7 @@ import { filter } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { AuthStore } from '../../core/state/auth.store';
+import { BrandMark } from '../../shared/ui/brand-mark/brand-mark';
 import { NAV_SECTIONS, filterNavSections, type NavItem } from '../navigation';
 import { SidebarState } from '../sidebar-state';
 
@@ -56,7 +57,7 @@ interface SidebarGroup {
 @Component({
   selector: 'hc-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslatePipe],
+  imports: [RouterLink, TranslatePipe, BrandMark],
   templateUrl: './sidebar.html',
   styles: `
     /*

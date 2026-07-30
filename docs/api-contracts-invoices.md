@@ -57,8 +57,34 @@ Draft ──finalize──► Finalized ──ödeme tamamlanınca──► Paid
   "isCancellationInvoice":false,
   "createdAt":"2026-07-30T12:33:33.7+00:00" }
 
-// InvoiceDetailResponse  (GET /invoices/{id}) — yukarıdaki tüm alanlar + üç koleksiyon
+// InvoiceDetailResponse  (GET /invoices/{id}) — yukarıdaki tüm alanlar
+//   + §14 UStG zorunlu belge içeriği (issuer / recipient / servicePeriod / vatBreakdown)
+//   + üç koleksiyon (lineItems / payments / auditTrail)
 { "...": "InvoiceResponse alanlarının tamamı",
+
+  // §14 Abs. 4 Nr. 1-2: düzenleyenin tam adı/adresi + Steuernummer veya USt-IdNr.
+  "issuer":{ "hotelId":"guid", "name":"HotelCore Berlin Mitte",
+    "addressLine":"Musterstraße 1", "postalCode":"10117", "city":"Berlin", "country":"DE",
+    "taxNumber":"DE123456789|null",   // TEK alan: Steuernummer mi USt-IdNr. mi ayırt EDİLMEZ
+    "phone":"+49 30 1234567", "email":"info@hotelcore.local" },
+
+  // §14 Abs. 4 Nr. 1: alıcının tam adı/adresi. Adresin ÜLKESİ domainde YOK (bkz. "Bilinen
+  // eksikler"); guest.nationality uyrukluktur ve buraya eşlenmez.
+  "recipient":{ "guestId":"guid", "name":"Jürgen Groß",
+    "addressLine":"Kurfürstendamm 12", "postalCode":"10719", "city":"Berlin" },
+
+  // §14 Abs. 4 Nr. 6 (Zeitpunkt der Leistung): konaklamada hizmet zamanı bir ARALIKTIR.
+  // Rezervasyon faturasında checkIn/checkOut'tan gelir, satır serviceDate'leriyle genişletilir;
+  // elle kesilen faturada yalnızca satır tarihlerinden türetilir. Kaynak yoksa null.
+  "servicePeriodFrom":"2026-08-10", "servicePeriodTo":"2026-08-12",
+
+  // §14 Abs. 4 Nr. 8: matrah KDV ORANINA GÖRE ayrıştırılır (tek toplam yetmez).
+  // Orana göre artan sırada. Kurtaxe DÂHİL DEĞİL (durchlaufender Posten).
+  // Σ netAmount == invoice.netAmount ve Σ vatAmount == invoice.vatAmount her zaman tutar.
+  "vatBreakdown":[
+    { "vatRate":7.00,  "netAmount":205.61, "vatAmount":14.39, "grossAmount":220.00 },
+    { "vatRate":19.00, "netAmount":31.93,  "vatAmount":6.07,  "grossAmount":38.00 } ],
+
   "lineItems":[
     { "id":"guid", "type":"RoomCharge",        // RoomCharge | Extra | CityTax
       "description":"Room charge 2026-08-01 - 2026-08-04 (3 x night, room 201/DBL)",
@@ -142,6 +168,8 @@ Draft ──finalize──► Finalized ──ödeme tamamlanınca──► Paid
 4. **Kurtaxe** folio'da tutulmaz; her zaman fatura üretiminde eklenir:
    `(vergiye tabi kişi × gece) × cityTaxPerPersonNight`, `type = CityTax`, `vatRate = 0`,
    `cityTaxAmount`'ta ayrı gösterilir ve `netAmount`'a **dâhil edilmez**.
+   **`NoShow` ve `Cancelled` rezervasyonda Kurtaxe satırı hiç üretilmez** (bkz. "Kurtaxe ve
+   gerçekleşmeyen konaklama").
 
 > **Garanti:** rezervasyondan üretilen bir faturada oda ücreti **tam olarak bir kez** yer alır ve
 > toplamı `reservation.totalAmount`'a **kuruşu kuruşuna** eşittir.
@@ -225,11 +253,79 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
    - Muafiyet **opt-in**'dir: alan varsayılan `false` olduğu için mevcut oteller etkilenmez.
      Otel muafiyeti açtığında **çocuklu rezervasyonların Kurtaxe tutarı düşer** — bu bilinçli
      bir davranış değişikliğidir. Alanlar `PUT /hotels/{id}/settings` ile yönetilir.
+   - **Konaklama gerçekleşmediyse Kurtaxe hiç doğmaz** — bkz. bir sonraki bölüm.
 4. **Yuvarlama:** 2 ondalık, **kaufmännisch** (yarım yukarı) ve **satır bazında**. Fatura
    toplamları yuvarlanmış satır tutarlarının toplamıdır (yazdırılan satırlar toplamla birebir
    uyuşur). Negatif tutarlarda simetriktir → storno orijinali **tam olarak** sıfırlar.
 5. İstemci `vatRate`, `lineNet`, `lineVat` veya fatura toplamı **gönderemez** (alanlar
    sözleşmede yoktur) — vergi matrahı manipüle edilemez.
+
+#### Kurtaxe ve gerçekleşmeyen konaklama (no-show / iptal)
+
+**Kural:** rezervasyonun durumu `NoShow` **veya** `Cancelled` ise, o rezervasyondan üretilen
+faturada **`CityTax` satırı hiç oluşturulmaz** ve `cityTaxAmount = 0.00` olur. Diğer durumlarda
+(`Option`, `Confirmed`, `CheckedIn`, `CheckedOut`) davranış **değişmez**.
+
+**Hukuki dayanak.** Kurtaxe / Kurbeitrag / Übernachtungsteuer federal bir vergi değildir; belediye
+tüzükleriyle (*Kurbeitragssatzung*, *Satzung über die Erhebung einer Kurtaxe*) konur ve tüzüklerin
+ortak vergiyi doğuran olayı (*Steuertatbestand*) **fiilen gerçekleşen konaklamadır**
+(*Übernachtung*) — vergi kişi ve **geçirilen gece** başına doğar. Misafir hiç konaklamadıysa
+vergiyi doğuran olay yoktur; otel, belediye adına tahsil edip aktaracağı bir tutarı misafirden
+**isteyemez**. Otelin buradaki rolü tahsil aracılığıdır: tutar otelin bedelinin (*Entgelt*) parçası
+değil, *durchlaufender Posten*'dir (UStG §10 Abs. 1 Satz 5).
+
+**Kapsam dışı bırakılanlar (bilinçli):**
+- `Option` durumu konaklamanın *gerçekleşmeyeceğini* söylemez (henüz kesinleşmemiş bir taleptir);
+  davranışı değiştirilmedi.
+- **Erken çıkış** (planlanan 3 gece, fiilen 2 gece) bu fazda ele alınmadı: gece sayısı hâlâ
+  `checkIn`/`checkOut` aralığından gelir. Fiilî geceyi güvenilir hesaplamak için otel **yerel takvim
+  gününe** göre fiilî giriş/çıkış tarihi gerekir; `checkedInAt`/`checkedOutAt` UTC *an* damgasıdır ve
+  `Hotel` üzerinde saat dilimi alanı yoktur — gün sınırında bir gece kayarak yanlış Kurtaxe beyanı
+  üretebilir. **Şema ihtiyacı** olarak açık bırakıldı; **mali müşavir + belediye tüzüğü onayı gerekir.**
+
+**No-show ücretinin kendisi ayrı bir konudur.** Bu kural yalnızca Kurtaxe satırını kaldırır;
+konaklama satırı faturada **olduğu gibi** kalır ve bugün **%7 indirimli oranla** KDV'lenir. Bunun
+doğru olup olmadığı bir ürün + mali müşavir kararıdır (README, "Canlıya çıkmadan mali onay isteyen
+kararlar").
+
+**Denetim izi.** Rezervasyondan üretilen faturanın `Created` kaydına `reservationStatus` ve
+`cityTaxLevied` alanları yazılır; böylece sıfır Kurtaxe "unutulmuş" değil **karar verilmiş** olarak
+belgelenir. Elle kesilen faturada iki alan da `null`'dır.
+
+#### §14 UStG zorunlu fatura içeriği — kapsam ve bilinen eksikler
+
+`GET /invoices/{id}` yanıtı, §14 Abs. 4 UStG'nin saydığı zorunlu alanları **veri olarak** taşımak
+zorundadır: belge (PDF/ZUGFeRD) üretimi bu fazda yok, ama üretici katman veriyi buradan alacak —
+**veri yanıtta eksikse belge geldiğinde de eksik olur.**
+
+| §14 Abs. 4 UStG | Zorunlu içerik | Durum | Nerede |
+|---|---|:--:|---|
+| Nr. 1 | Düzenleyenin tam adı ve adresi | ✅ | `issuer.name/addressLine/postalCode/city/country` |
+| Nr. 1 | Alıcının tam adı ve adresi | ⚠️ | `recipient.*` — **adres ülkesi yok**, alanlar zorunlu değil |
+| Nr. 2 | Steuernummer **veya** USt-IdNr. | ⚠️ | `issuer.taxNumber` — tek alan, **hangisi olduğu ayırt edilemez** |
+| Nr. 3 | Düzenleme tarihi (*Ausstellungsdatum*) | ✅ | `issuedAt` (taslakta null) |
+| Nr. 4 | Tek ve ardışık fatura numarası | ✅ | `invoiceNumber` (GoBD §6.2 sekansı) |
+| Nr. 5 | Teslim/hizmetin **cinsi ve miktarı** | ✅ | `lineItems[].type/description/quantity` |
+| Nr. 6 | Teslim/hizmet **tarihi** (*Leistungsdatum*) | ✅ | `lineItems[].serviceDate` + `servicePeriodFrom/To` |
+| Nr. 7 | Önceden kararlaştırılmış **indirim** | ❌ | Domainde indirim/anlaşma modeli **yok** |
+| Nr. 8 | **Orana göre ayrıştırılmış** matrah + oran + vergi | ✅ | `vatBreakdown[]` |
+| Nr. 8 | Vergi **muafiyeti sebebi** | ❌ | Muafiyet kodu/metni domainde **yok** |
+| Nr. 10 | *Gutschrift* ibaresi | — | Bu fazda self-billing yok |
+
+- **Kurtaxe `vatBreakdown`'a girmez.** Otelin bedelinin parçası olmadığı için (durchlaufender
+  Posten, UStG §10 Abs. 1 Satz 5) KDV matrahında yer almaz; belge üzerinde `cityTaxAmount` olarak
+  ayrı durur. Ayrıştırma satırı **türe** göre eler (`CityTax`), **orana** göre değil — böylece oranı
+  gerçekten %0 olan bir *hizmet* satırı listede kendi satırıyla görünür.
+- **§33 UStDV (Kleinbetragsrechnung, brüt ≤ 250 €)** basitleştirmesi API'de **modellenmedi**: eşik
+  bir mevzuat parametresidir ve oranlar gibi konfigürasyonda tutulmalıdır (koda gömülmez). PDF fazına
+  kadar açık bırakıldı.
+- **Künye dondurulmaz:** `issuer`/`recipient` **güncel** otel/misafir kaydından okunur. Otelin veya
+  misafirin adresi sonradan değişirse **eski faturalar yeni adresle** görünür. GoBD
+  *Unveränderbarkeit* açısından bu bir risktir; belge anındaki künyeyi faturaya kopyalamak bir
+  **şema değişikliği** gerektirir. **Mali müşavir onayı gerekir.**
+- **Finalize adres denetimi yok:** adresi olmayan bir misafir için §14 Abs. 4 Nr. 1'i sağlamayan bir
+  belge kesilebilir. Doğrulamayı eklemek ürün kararıdır (250 € altı için §33 UStDV istisnası
+  nedeniyle koşulsuz zorunlu kılmak da yanlış olurdu).
 
 #### Fatura numarası (GoBD §6.2 — kesintisiz sekans)
 
@@ -288,7 +384,7 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
 
 | `action` | Ne zaman | `details` (özet) |
 |---|---|---|
-| `Created` | Taslak veya Stornorechnung oluşturuldu | kaynak (manual/reservation), satır sayısı, tutarlar, uygulanan oranlar |
+| `Created` | Taslak veya Stornorechnung oluşturuldu | kaynak (manual/reservation), `reservationStatus`, `cityTaxLevied`, satır sayısı, tutarlar, uygulanan oranlar |
 | `Updated` | **Taslak** güncellendi (`PUT /invoices/{id}`) | `changedFields` + `guestId/culture/lineCount` ve `net/vat/cityTax/gross` için `{old,new}` |
 | `Finalized` | Numara atandı, belge kilitlendi | `invoiceNumber`, `issuedAt`, tutarlar, satır sayısı |
 | `PaymentRecorded` | **Her** ödeme (kısmi dâhil) | `paymentId`, `method`, `amount`, `paidAt`, `reference`, `totalPaid`, `outstandingAmount` |
@@ -334,6 +430,8 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
   bırakırdı.
 - Kurtaxe: `type = CityTax`, kişi sayısı otelin çocuk muafiyetine göre belirlenir
   (bkz. "Tutar hesabı" §3). Muafiyet açıkken açıklamaya muafiyet notu eklenir.
+  Rezervasyon `NoShow`/`Cancelled` ise **satır hiç üretilmez** (bkz. "Kurtaxe ve gerçekleşmeyen
+  konaklama").
 - Satır açıklamaları şu an **dil-nötr ASCII** üretilir (`"Room charge ..."`, `"City tax (Kurtaxe) ..."`);
   yerelleştirme fatura PDF/exporter fazında yapılacaktır.
 

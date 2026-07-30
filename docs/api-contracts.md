@@ -145,7 +145,7 @@ harf (ISO 4217) · `defaultCulture` ∈ `de|en|tr` · `country` enum adı · `va
 | GET | `/rooms/{id}` | `Rooms.View` | |
 | POST | `/rooms` | `Rooms.Manage` | 201 + `Location` |
 | PUT | `/rooms/{id}` | `Rooms.Manage` | |
-| DELETE | `/rooms/{id}` | `Rooms.Manage` | Soft-delete. Gelecek rezervasyon varsa **409** |
+| DELETE | `/rooms/{id}` | `Rooms.Manage` | Soft-delete. Gelecek rezervasyon **veya faturalanmamış rezervasyon** varsa **409** (GoBD / AO §147) |
 | GET | `/rooms/board` | `Housekeeping.View` | Kat bazlı pano — **finansal alan İÇERMEZ** |
 | PATCH | `/rooms/{id}/housekeeping` | `Housekeeping.Update` | |
 

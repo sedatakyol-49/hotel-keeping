@@ -393,6 +393,9 @@
   <data name="Conflict_RoomHasFutureReservations" xml:space="preserve">
     <value>This room has future reservations; cancel them first or move them to another room.</value>
   </data>
+  <data name="Conflict_RoomHasUnbilledReservation" xml:space="preserve">
+    <value>This room has a reservation that has not been invoiced yet ({0}, {1} to {2}). Invoice or cancel the reservation before deleting the room.</value>
+  </data>
 
   <data name="Conflict_ShiftAlreadyExists" xml:space="preserve">
     <value>This employee already has a shift on {0}; edit the existing shift.</value>

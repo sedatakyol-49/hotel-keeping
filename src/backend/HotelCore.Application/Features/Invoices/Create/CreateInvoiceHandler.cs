@@ -49,6 +49,12 @@ internal sealed class CreateInvoiceHandler(
         List<InvoiceLineItem> folioLines;
         string? guestCulture;
 
+        // Denetim izine yazilir: Kurtaxe satirinin VARLIGI/YOKLUGU rezervasyon durumuna baglidir
+        // (bkz. CityTaxLiability). Durum kaydedilmezse "bu faturada neden Kurtaxe yok?" sorusu
+        // yalnizca rezervasyonun O ANKI durumuna bakarak cevaplanabilirdi — GoBD
+        // Nachvollziehbarkeit bunu belgenin kendi izinde bekler.
+        ReservationStatus? reservationStatus = null;
+
         if (request.ReservationId is Guid reservationId)
         {
             var charges = await composer
@@ -57,6 +63,7 @@ internal sealed class CreateInvoiceHandler(
 
             invoice.ReservationId = charges.Source.Id;
             invoice.GuestId = charges.Source.GuestId;
+            reservationStatus = charges.Source.Status;
 
             var guest = await reader.GetGuestAsync(charges.Source.GuestId, cancellationToken)
                 .ConfigureAwait(false);
@@ -106,6 +113,13 @@ internal sealed class CreateInvoiceHandler(
         {
             source = request.ReservationId is null ? "manual" : "reservation",
             reservationId = invoice.ReservationId,
+            reservationStatus = reservationStatus?.ToString(),
+            // Kurtaxe fiili konaklamaya baglidir: NoShow/Cancelled'da satir HIC uretilmez
+            // (CityTaxLiability). Bayrak izde acikca durur ki sifir Kurtaxe "unutulmus" sanilmasin.
+            // ELLE kesilen faturada anlamsizdir (rezervasyon yok) -> null.
+            cityTaxLevied = reservationStatus is ReservationStatus status
+                ? CityTaxLiability.ArisesFrom(status)
+                : (bool?)null,
             guestId = invoice.GuestId,
             lineCount = allLines.Count,
             netAmount = invoice.NetAmount,

@@ -103,6 +103,41 @@ internal sealed class InvoiceReader(IAppDbContext database)
                 // Ters bag dogrudan kolondan (bkz. ListAsync notu).
                 CancelsInvoiceId = candidate.CancelsInvoiceId,
                 CreatedAt = candidate.CreatedAt,
+
+                // UStG §14 Abs. 4 Nr. 6 (Zeitpunkt der Leistung): konaklamada hizmet zamani bir
+                // ARALIKTIR ve dogru siniri rezervasyonun kendisidir. Satirin ServiceDate'i
+                // yalnizca GIRIS gunudur; tek satirlik bir konaklamada aralik "01.09 - 01.09"
+                // gorunur ve belge 2 gecelik hizmeti tek gune indirir. Bu yuzden aralik once
+                // rezervasyondan alinir, asagida satir tarihleriyle GENISLETILIR (elle kesilen
+                // faturada rezervasyon yoktur -> yalnizca satir tarihleri kalir).
+                ServicePeriodFrom = candidate.Reservation != null ? candidate.Reservation.CheckIn : null,
+                ServicePeriodTo = candidate.Reservation != null ? candidate.Reservation.CheckOut : null,
+
+                // UStG §14 Abs. 4 Nr. 1-2: duzenleyenin tam adi/adresi + Steuernummer/USt-IdNr.
+                // Otel kunyesi ayni sorguda okunur (ek gidis-donus yok).
+                Issuer = new InvoiceIssuerResponse
+                {
+                    HotelId = candidate.HotelId,
+                    Name = candidate.Hotel.Name,
+                    AddressLine = candidate.Hotel.AddressLine,
+                    PostalCode = candidate.Hotel.PostalCode,
+                    City = candidate.Hotel.City,
+                    Country = candidate.Hotel.Country.ToString(),
+                    TaxNumber = candidate.Hotel.TaxNumber,
+                    Phone = candidate.Hotel.Phone,
+                    Email = candidate.Hotel.Email,
+                },
+
+                // UStG §14 Abs. 4 Nr. 1: alicinin tam adi/adresi. Adresin ULKESI domainde YOK;
+                // Guest.Nationality uyrukluktur, adres ulkesi degildir ve buraya YAZILMAZ.
+                Recipient = new InvoiceRecipientResponse
+                {
+                    GuestId = candidate.GuestId,
+                    Name = candidate.Guest.FirstName + " " + candidate.Guest.LastName,
+                    AddressLine = candidate.Guest.AddressLine,
+                    PostalCode = candidate.Guest.PostalCode,
+                    City = candidate.Guest.City,
+                },
                 LineItems = candidate.LineItems
                     .OrderBy(line => line.SortOrder)
                     .ThenBy(line => line.Id)
@@ -154,8 +189,48 @@ internal sealed class InvoiceReader(IAppDbContext database)
             throw new NotFoundException(nameof(Invoice), id);
         }
 
-        return invoice with { IsCancellationInvoice = invoice.CancelsInvoiceId is not null };
+        // Turetilmis §14 alanlari BELLEKTE hesaplanir: gruplama ve min/max satirlar zaten
+        // yuklendikten sonra deterministiktir, SQL'e GroupBy cevirtmek (saglayiciya gore degisen)
+        // bir risk uretirdi. Tutarlar satir tutarlarinin toplamidir; yeniden yuvarlanmaz.
+        return invoice with
+        {
+            IsCancellationInvoice = invoice.CancelsInvoiceId is not null,
+            ServicePeriodFrom = Earliest(invoice.ServicePeriodFrom, invoice.LineItems.Min(line => line.ServiceDate)),
+            ServicePeriodTo = Latest(invoice.ServicePeriodTo, invoice.LineItems.Max(line => line.ServiceDate)),
+            VatBreakdown = BuildVatBreakdown(invoice.LineItems),
+        };
     }
+
+    /// <summary>İki tarihten erken olanı; biri yoksa diğeri (ikisi de yoksa <c>null</c>).</summary>
+    private static DateOnly? Earliest(DateOnly? left, DateOnly? right) =>
+        left is null ? right : right is null ? left : left < right ? left : right;
+
+    /// <summary>İki tarihten geç olanı; biri yoksa diğeri (ikisi de yoksa <c>null</c>).</summary>
+    private static DateOnly? Latest(DateOnly? left, DateOnly? right) =>
+        left is null ? right : right is null ? left : left > right ? left : right;
+
+    /// <summary>
+    /// KDV oranına göre ayrıştırılmış matrah/vergi — UStG §14 Abs. 4 Nr. 8.
+    /// <para>
+    /// <b>Kurtaxe türe göre dışlanır</b> (orana göre değil): şehir vergisi otelin bedelinin parçası
+    /// olmadığı için (durchlaufender Posten, UStG §10 Abs. 1 Satz 5) matrahta yer almaz. Oranı
+    /// gerçekten %0 olan bir <i>hizmet</i> satırı ise listede kendi satırıyla görünmelidir —
+    /// iki durum orana bakılarak ayırt edilemezdi.
+    /// </para>
+    /// </summary>
+    private static List<InvoiceVatBreakdownResponse> BuildVatBreakdown(
+        IReadOnlyList<InvoiceLineItemResponse> lines) =>
+        [.. lines
+            .Where(line => !string.Equals(line.Type, nameof(InvoiceLineType.CityTax), StringComparison.Ordinal))
+            .GroupBy(line => line.VatRate)
+            .OrderBy(group => group.Key)
+            .Select(group => new InvoiceVatBreakdownResponse
+            {
+                VatRate = group.Key,
+                NetAmount = group.Sum(line => line.LineNet),
+                VatAmount = group.Sum(line => line.LineVat),
+                GrossAmount = group.Sum(line => line.LineNet + line.LineVat),
+            })];
 
     /// <summary>
     /// Yazma yolu için izlenen (tracked) fatura. Satırlar <c>Include</c> ile yüklenir çünkü
