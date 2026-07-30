@@ -1,5 +1,6 @@
 using System.Reflection;
 using FluentValidation;
+using HotelCore.Application.Common.Interfaces;
 using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Common.Messaging.Behaviors;
@@ -8,6 +9,7 @@ using HotelCore.Application.Features.Departments.Common;
 using HotelCore.Application.Features.Employees.Common;
 using HotelCore.Application.Features.HeadOffices.Common;
 using HotelCore.Application.Features.Hotels.Common;
+using HotelCore.Application.Features.Invoices.Common;
 using HotelCore.Application.Features.Rooms.Common;
 using HotelCore.Application.Features.RoomTypes.Common;
 using Mapster;
@@ -63,6 +65,20 @@ public static class DependencyInjection
         // Personel slice'ları: okuma gövdeleri ve paylaşılan benzersizlik kontrolleri.
         services.AddScoped<DepartmentReader>();
         services.AddScoped<EmployeeReader>();
+
+        // --- Faturalama (GoBD) ---------------------------------------------------------------
+        // Okuma gövdesi, satır üretimi ve denetim izi yazıcısı slice'lar arasında paylaşılır.
+        services.AddScoped<InvoiceReader>();
+        services.AddScoped<InvoiceLineComposer>();
+        services.AddScoped<InvoiceAuditWriter>();
+
+        // Fatura numarası üreticisi: sayaç artışının fatura ile AYNI DbContext biriminde (aynı
+        // SaveChanges/transaction) olması zorunlu olduğu için scoped ve Application katmanında
+        // (gerekçe: InvoiceNumberGenerator sınıf yorumu).
+        services.AddScoped<IInvoiceNumberGenerator, InvoiceNumberGenerator>();
+
+        // IInvoiceExporter BİLİNÇLİ olarak kayıtlı DEĞİL: PDF/ZUGFeRD üretimi bu fazda yok,
+        // GET /invoices/{id}/pdf 501 döner (sahte PDF üretilmez).
 
         return services;
     }
