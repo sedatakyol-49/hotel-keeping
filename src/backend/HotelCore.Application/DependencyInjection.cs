@@ -15,6 +15,7 @@ using HotelCore.Application.Features.Hotels.Common;
 using HotelCore.Application.Features.Hr.Common;
 using HotelCore.Application.Features.Invoices.Common;
 using HotelCore.Application.Features.RatePlans.Common;
+using HotelCore.Application.Features.Reports.Common;
 using HotelCore.Application.Features.Reservations.Common;
 using HotelCore.Application.Features.Rooms.Common;
 using HotelCore.Application.Features.RoomTypes.Common;
@@ -106,6 +107,12 @@ public static class DependencyInjection
         services.AddScoped<ReservationPricingService>();
         services.AddScoped<ReservationNumberGenerator>();
         services.AddScoped<ReservationFolioService>();
+
+        // --- Raporlama -----------------------------------------------------------------------
+        // Veri erişimi (toplulaştırılmış SQL) ile yanıt üretimi ayrı tutulur: ReportDataSource
+        // yalnızca GROUP BY/SUM sorguları çalıştırır, ReportReader tanımları uygular.
+        services.AddScoped<ReportDataSource>();
+        services.AddScoped<ReportReader>();
 
         return services;
     }
