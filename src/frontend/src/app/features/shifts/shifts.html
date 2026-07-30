@@ -1,0 +1,327 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="shifts.title"
+    subtitleKey="shifts.subtitle"
+    eyebrowKey="nav.section.staff"
+  />
+
+  <!-- Hafta gezinmesi: secili hafta URL'de tutulur (?week=YYYY-Www) -->
+  <nav
+    class="flex flex-col gap-3 border border-rule bg-paper-raised px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    [attr.aria-label]="'shifts.week.navLabel' | translate"
+  >
+    <div class="min-w-0">
+      <p class="numeric text-lg text-ink" data-testid="shift-week-label">{{ week() }}</p>
+      @if (store.from(); as from) {
+        <p class="mt-1 numeric text-xs text-ink-faint" data-testid="shift-week-range">
+          {{ from | hcDate: 'medium' }} – {{ store.to() | hcDate: 'medium' }}
+        </p>
+      }
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <hc-button
+        size="sm"
+        variant="secondary"
+        data-testid="shift-week-prev"
+        (pressed)="goToWeek(-1)"
+      >
+        {{ 'shifts.week.previous' | translate }}
+      </hc-button>
+      <hc-button
+        size="sm"
+        variant="secondary"
+        data-testid="shift-week-current"
+        [disabled]="isCurrentWeek()"
+        (pressed)="goToCurrentWeek()"
+      >
+        {{ 'shifts.week.current' | translate }}
+      </hc-button>
+      <hc-button
+        size="sm"
+        variant="secondary"
+        data-testid="shift-week-next"
+        (pressed)="goToWeek(1)"
+      >
+        {{ 'shifts.week.next' | translate }}
+      </hc-button>
+      @if (canEdit()) {
+        <hc-button size="sm" data-testid="shift-assign" (pressed)="openBlankEditor()">
+          {{ 'shifts.actions.assign' | translate }}
+        </hc-button>
+      }
+    </div>
+  </nav>
+
+  @if (writeErrorKey(); as writeError) {
+    <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+      <p class="text-sm text-danger" data-testid="shift-write-error">
+        {{ writeError | translate }}
+      </p>
+      @if (store.writeError()?.detail; as detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ detail }}</p>
+      }
+      <div class="mt-2">
+        <hc-button size="sm" variant="ghost" (pressed)="store.clearWriteError()">
+          {{ 'common.close' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  }
+
+  <!-- Atama paneli: hucreye tiklayarak acilir (Shifts.Edit) -->
+  @if (editorOpen()) {
+    <form
+      class="border border-navy bg-paper-raised"
+      [formGroup]="form"
+      novalidate
+      data-testid="shift-editor"
+      (ngSubmit)="save()"
+    >
+      <h2 class="border-b border-rule px-4 py-3 label-mono text-ink">
+        {{ 'shifts.editor.title' | translate }}
+      </h2>
+
+      <div class="grid grid-cols-1 gap-5 px-4 py-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <label class="hc-label" for="shift-employee">
+            {{ 'shifts.editor.employee' | translate }}
+          </label>
+          <select id="shift-employee" class="hc-input mt-1" formControlName="employeeId" required>
+            <option value="">{{ 'shifts.editor.selectEmployee' | translate }}</option>
+            @for (employee of store.employees(); track employee.id) {
+              <option [value]="employee.id">{{ employee.fullName }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="hc-label" for="shift-date">{{ 'shifts.editor.date' | translate }}</label>
+          <select id="shift-date" class="hc-input mt-1" formControlName="date" required>
+            @for (day of store.days(); track day.date) {
+              <option [value]="day.date">{{ day.date | hcDate: 'medium' }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="hc-label" for="shift-type">{{ 'shifts.editor.type' | translate }}</label>
+          <select id="shift-type" class="hc-input mt-1" formControlName="shiftType" required>
+            @for (type of shiftTypes; track type) {
+              <option [value]="type">{{ typeLabelKeys[type] | translate }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="hc-label" for="shift-note">{{ 'shifts.editor.note' | translate }}</label>
+          <input
+            id="shift-note"
+            class="hc-input mt-1"
+            type="text"
+            formControlName="note"
+            [maxlength]="limits.noteMaxLength"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+        <hc-button type="submit" data-testid="shift-save" [busy]="store.saving()">
+          {{ 'common.save' | translate }}
+        </hc-button>
+        @if (existingShift()) {
+          <hc-button
+            variant="danger"
+            data-testid="shift-delete"
+            [busy]="store.saving()"
+            (pressed)="remove()"
+          >
+            {{ 'common.delete' | translate }}
+          </hc-button>
+        }
+        <hc-button variant="secondary" (pressed)="closeEditor()">
+          {{ 'common.cancel' | translate }}
+        </hc-button>
+      </div>
+    </form>
+  }
+
+  @if (store.loading() && store.employees().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'shifts.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.hasNoEmployees()) {
+    <hc-empty-state
+      titleKey="shifts.noEmployees.title"
+      descriptionKey="shifts.noEmployees.description"
+    />
+  } @else {
+    @if (store.isWeekEmpty()) {
+      <p
+        class="border border-dashed border-rule-strong bg-paper px-4 py-3 text-sm text-ink-muted"
+        data-testid="shift-week-empty"
+      >
+        {{ 'shifts.emptyWeek' | translate }}
+      </p>
+    }
+
+    <!--
+      Masaustu izgarasi: baslik satiri ve calisan satirlari **ayni** tablodadir
+      (ayni yatay kaydirma kabi) ve `table-fixed` ile sutun genislikleri birebir
+      esittir; etiket sutunu ile gun basligi sticky'dir.
+    -->
+    <div class="hidden border border-rule bg-paper-raised lg:block">
+      <div class="overflow-x-auto overscroll-x-contain">
+        <table class="w-full min-w-[60rem] table-fixed border-collapse text-left text-sm">
+          <caption class="sr-only">
+            {{
+              'shifts.tableCaption' | translate
+            }}
+          </caption>
+          <colgroup>
+            <col class="w-56" />
+            @for (day of store.days(); track day.date) {
+              <col />
+            }
+          </colgroup>
+          <thead>
+            <tr>
+              <th
+                scope="col"
+                class="hc-sticky-head sticky left-0 z-3 border-b border-r border-rule bg-paper px-4 py-2 label-mono text-ink-muted"
+              >
+                {{ 'shifts.columns.employee' | translate }}
+              </th>
+              @for (day of store.days(); track day.date) {
+                <th
+                  scope="col"
+                  class="hc-sticky-head border-b border-r border-rule px-2 py-2 text-center label-mono text-ink-muted last:border-r-0"
+                  data-testid="shift-day-head"
+                >
+                  <span class="block">{{ day.date | hcDate: 'weekdayShort' }}</span>
+                  <span class="block numeric text-xs text-ink-faint">
+                    {{ day.date | hcDate: 'dayMonth' }}
+                  </span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rule">
+            @for (employee of store.employees(); track employee.id) {
+              <tr>
+                <th
+                  scope="row"
+                  class="sticky left-0 z-2 border-r border-rule bg-paper-raised px-4 py-2 text-left font-normal text-ink"
+                >
+                  {{ employee.fullName }}
+                  @if (employee.departmentName) {
+                    <span class="block eyebrow">{{ employee.departmentName }}</span>
+                  }
+                </th>
+                @for (day of store.days(); track day.date) {
+                  <td class="border-r border-rule p-1 text-center last:border-r-0">
+                    @let shift = shiftFor(employee.id, day.date);
+                    @if (canEdit()) {
+                      <button
+                        type="button"
+                        class="flex min-h-touch w-full items-center justify-center border px-1 py-1 label-mono"
+                        [class]="cellClass(shift ? shift.shiftType : null)"
+                        [attr.aria-label]="
+                          'shifts.cell.editAria'
+                            | translate
+                              : { name: employee.fullName, date: day.date | hcDate: 'long' }
+                        "
+                        [disabled]="store.saving()"
+                        data-testid="shift-cell"
+                        [attr.data-employee]="employee.id"
+                        [attr.data-date]="day.date"
+                        (click)="openEditor(employee.id, day.date)"
+                      >
+                        {{ shift ? (typeShortKeys[shift.shiftType] | translate) : '·' }}
+                        @if (shift) {
+                          <span class="sr-only">
+                            {{ typeLabelKeys[shift.shiftType] | translate }}
+                          </span>
+                        }
+                      </button>
+                    } @else {
+                      <!-- Yazma izni yoksa hucre salt okunur tipografi olarak kalir -->
+                      <span
+                        class="flex min-h-touch w-full items-center justify-center border px-1 py-1 label-mono"
+                        [class]="cellClass(shift ? shift.shiftType : null)"
+                        data-testid="shift-cell-readonly"
+                      >
+                        {{ shift ? (typeShortKeys[shift.shiftType] | translate) : '·' }}
+                        @if (shift) {
+                          <span class="sr-only">
+                            {{ typeLabelKeys[shift.shiftType] | translate }}
+                          </span>
+                        }
+                      </span>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mobil: gun bazli liste (ayni store, farkli yerlesim) -->
+    <ul class="space-y-4 lg:hidden">
+      @for (day of store.days(); track day.date) {
+        <li class="border border-rule bg-paper-raised">
+          <div class="flex items-baseline justify-between gap-3 border-b border-rule px-4 py-2">
+            <p class="label-mono text-ink">{{ day.date | hcDate: 'weekdayShort' }}</p>
+            <p class="numeric text-xs text-ink-faint">{{ day.date | hcDate: 'medium' }}</p>
+          </div>
+          @if (day.shifts.length === 0) {
+            <p class="px-4 py-3 text-sm text-ink-muted">{{ 'shifts.emptyDay' | translate }}</p>
+          } @else {
+            <ul class="divide-y divide-rule">
+              @for (shift of day.shifts; track shift.id) {
+                <li class="flex items-center justify-between gap-3 px-4 py-3">
+                  <div class="min-w-0">
+                    <p class="text-ink">{{ shift.employeeName }}</p>
+                    @if (shift.note) {
+                      <p class="text-sm text-ink-muted">{{ shift.note }}</p>
+                    }
+                  </div>
+                  <div class="flex shrink-0 items-center gap-2">
+                    <hc-badge [tone]="shift.shiftType === 'Off' ? 'neutral' : 'navy'">
+                      {{ typeLabelKeys[shift.shiftType] | translate }}
+                    </hc-badge>
+                    @if (canEdit()) {
+                      <hc-button
+                        size="sm"
+                        variant="secondary"
+                        data-testid="shift-mobile-edit"
+                        (pressed)="openEditor(shift.employeeId, day.date)"
+                      >
+                        {{ 'common.edit' | translate }}
+                      </hc-button>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -128,19 +128,22 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         path: '/vacations',
         labelKey: 'nav.vacations',
         permissions: [PERMISSIONS.VacationsView],
-        hub: { descriptionKey: 'hub.cards.vacations.description', planned: true },
+        // Backend uclari hazir (GET/POST /vacations, approve/reject/cancel, balances).
+        hub: { descriptionKey: 'hub.cards.vacations.description' },
       },
       {
         path: '/time-tracking',
         labelKey: 'nav.timeTracking',
         permissions: [PERMISSIONS.TimeTrackingView],
-        hub: { descriptionKey: 'hub.cards.timeTracking.description', planned: true },
+        // Backend uclari hazir (GET/PUT/DELETE /time-entries, clock-in, clock-out).
+        hub: { descriptionKey: 'hub.cards.timeTracking.description' },
       },
       {
         path: '/shifts',
         labelKey: 'nav.shifts',
         permissions: [PERMISSIONS.ShiftsView],
-        hub: { descriptionKey: 'hub.cards.shifts.description', planned: true },
+        // Backend uclari hazir (GET /shifts?week=, POST/PUT/DELETE /shifts).
+        hub: { descriptionKey: 'hub.cards.shifts.description' },
       },
     ],
   },

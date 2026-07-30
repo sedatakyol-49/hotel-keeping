@@ -289,7 +289,7 @@ departman `name` zorunlu ≤ 100, `description` ≤ 500.
 | POST | `/vacations` | `Vacations.Request` | Talep `Pending` olarak açılır |
 | POST | `/vacations/{id}/approve` | `Vacations.Approve` | Bakiyeden **düşer** |
 | POST | `/vacations/{id}/reject` | `Vacations.Approve` | Bakiyeyi **etkilemez** |
-| POST | `/vacations/{id}/cancel` | `Vacations.Request` | Onaylıysa bakiyeyi **geri verir** |
+| POST | `/vacations/{id}/cancel` | `Vacations.Approve` **veya** `Vacations.Request` | Onaylıysa bakiyeyi **geri verir** |
 | GET | `/vacations/balances?employeeId=&year=` | `Vacations.View` | |
 
 ```jsonc
@@ -298,12 +298,15 @@ departman `name` zorunlu ≤ 100, `description` ≤ 500.
   "from":"2026-08-10", "to":"2026-08-14",
   "requestedDays":5.00,                  // takvim günü (bkz. not)
   "status":"Pending",                    // Pending | Approved | Rejected | Cancelled
-  "reason":null, "decidedByUserId":null, "decidedAt":null, "decisionNote":null }
+  "reason":null, "decidedByUserId":null, "decidedAt":null, "decisionNote":null,
+  "createdAt":"2026-07-30T12:00:00+00:00" }   // talep tarihi
 
-// VacationBalanceResponse — kayıt yoksa çalışanın annualLeaveDays'inden türetilir
-{ "id":null,                             // henüz kalıcı satır yoksa null
-  "employeeId":"guid", "employeeName":"Anna Becker", "year":2026,
-  "entitledDays":28.00, "usedDays":0, "carriedOverDays":0, "remainingDays":28.00 }
+// GET /vacations/balances → VacationBalanceResponse[]  (DÜZ DİZİ, tek nesne degil)
+// employeeId verilmezse tum kadro doner; year verilmezse sunucunun gecerli yili kullanilir.
+// Kayit yoksa satir calisanin annualLeaveDays'inden turetilir ve `id` null gelir.
+[{ "id":null,
+   "employeeId":"guid", "employeeName":"Anna Becker", "year":2026,
+   "entitledDays":28.00, "usedDays":0, "carriedOverDays":0, "remainingDays":28.00 }]
 
 // POST /vacations           { "employeeId":"guid", "from":"2026-08-10", "to":"2026-08-14", "reason":null }
 // POST /vacations/{id}/reject { "decisionNote":"..." }   // gövde opsiyonel
@@ -315,8 +318,13 @@ departman `name` zorunlu ≤ 100, `description` ≤ 500.
 
 **İş kuralları:** `to >= from` · aynı çalışan için tarih aralığı çakışan `Pending`/`Approved`
 talep varsa **409** · yalnızca `Pending` onaylanıp reddedilebilir, karara bağlanmış talebe tekrar
-karar **409** · onay ve bakiye güncellemesi **tek transaction** · `CheckedIn` benzeri ara durum
-yoktur.
+karar **409** · onay ve bakiye güncellemesi **tek transaction** · tek talep en fazla **366 gün** ·
+`reason` ve `decisionNote` ≤ 500 karakter.
+
+> **İptal yetkisi iki alternatiflidir** ve endpoint'te tek bir policy ile ifade edilemez:
+> `Vacations.Approve` olan **her** talebi iptal edebilir; yalnızca `Vacations.Request` olan
+> **kendi** talebini iptal edebilir (çalışanın `userId`'si ile eşleşme). Başkasının talebini
+> iptal denemesi **403** döner. İstemci bu yüzden aksiyonu "Request ∪ Approve" olarak gösterir.
 
 ### Zeiterfassung (TimeEntry) — **uygulandı**
 
@@ -336,8 +344,10 @@ yoktur.
   "workedMinutes":480,                   // (clockOut - clockIn) - mola; acik kayitta null
   "source":"Manual", "note":null, "isOpen":false }
 
-// POST /time-entries/clock-in  { "employeeId":"guid", "note":null }
-// POST /time-entries/clock-out { "employeeId":"guid", "breakMinutes":30 }
+// POST /time-entries/clock-in  { "employeeId":"guid", "clockIn":null, "note":null }
+// POST /time-entries/clock-out { "employeeId":"guid", "clockOut":null, "breakMinutes":30, "note":null }
+//   clockIn/clockOut opsiyoneldir: verilmezse sunucu saati kullanilir (geriye donuk kayit icin acik).
+//   Tek kayit ucu (GET /time-entries/{id}) YOKTUR — duzeltme ekrani listeden beslenir.
 // PUT  /time-entries/{id}      { "clockIn":"...", "clockOut":"...", "breakMinutes":30, "note":"..." }
 // GET  filtreleri: ?page&pageSize&employeeId=&from=&to=
 ```
@@ -357,7 +367,10 @@ mevcut süreyi söyler) · gelecek tarihli clock-in reddedilir.
 
 ```jsonc
 // GET /shifts?week=2026-W32 → gun bazli plan
-{ "from":"2026-08-03", "to":"2026-08-09", "week":"2026-W32",
+{ "from":"2026-08-03", "to":"2026-08-09",
+  "week":"2026-W32",                      // ?from=&to= ile sorulursa null doner
+  // Izgaranin SATIR kaynagi: ayrica GET /employees cagirmak gerekmez.
+  "employees":[ { "id":"guid", "fullName":"Anna Becker", "departmentName":"Rezeption" } ],
   "days":[ { "date":"2026-08-03",
              "shifts":[ { "id":"guid", "employeeId":"guid", "employeeName":"Anna Becker",
                           "date":"2026-08-03", "shiftType":"Morning", "note":null } ] } ] }
@@ -369,16 +382,7 @@ mevcut süreyi söyler) · gelecek tarihli clock-in reddedilir.
 **İş kuralları:** `(employeeId, date)` benzersiz — aynı güne ikinci vardiya **409** · çalışan aktif
 otelde olmalı, değilse **404** · ISO hafta (`YYYY-Www`) Pazartesi–Pazar aralığına çevrilir.
 
-### HR (kalan) — henüz uygulanmadı
-| Method | Path | İzin |
-|---|---|---|
-| GET/POST | `/vacations` | `Vacations.View` / `Vacations.Request` |
-| POST | `/vacations/{id}/approve` | `Vacations.Approve` |
-| POST | `/time-entries/clock-in` | `TimeTracking.Record` |
-| POST | `/time-entries/clock-out` | `TimeTracking.Record` |
-| GET | `/shifts?week=` | `Shifts.View` |
-
-### Reports
+### Reports — henüz uygulanmadı
 | Method | Path | İzin |
 |---|---|---|
 | GET | `/reports/revenue?from=&to=` | `Reports.View` (ciro, kanal dağılımı, ADR/RevPAR) |

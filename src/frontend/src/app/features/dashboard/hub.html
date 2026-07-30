@@ -69,7 +69,9 @@
             </p>
 
             <!-- Ince cetvel + canli ozet satiri; kartlarin alt hizasi ortaktir. -->
-            <div class="mt-auto flex items-baseline justify-between gap-3 border-t border-rule pt-2">
+            <div
+              class="mt-auto flex items-baseline justify-between gap-3 border-t border-rule pt-2"
+            >
               <div [id]="card.metaId" class="min-w-0" data-testid="hub-summary">
                 @if (card.planned) {
                   <p class="label-mono text-brass">{{ 'hub.status.planned' | translate }}</p>

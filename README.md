@@ -45,6 +45,21 @@ gerekçeleri [docs/architecture.md](docs/architecture.md) §10 karar günlüğü
 - Fatura **PDF çıktısı** henüz üretilmez (`GET /invoices/{id}/pdf` → 501); ZUGFeRD/XRechnung için
   `IInvoiceExporter` zemini hazırdır.
 
+### Canlıya çıkmadan mali onay isteyen kararlar
+Aşağıdaki üç karar kodda uygulanmış ve tek noktada toplanmış durumda, ancak **mali müşavir
+onayı** alınmadan üretimde kullanılmamalı:
+
+| Karar | Uygulanan varsayım | Değişecek tek yer |
+|---|---|---|
+| Fiyat tabanı | Birim fiyatlar **brüt**; KDV içinden çıkarılır (PAngV + `Reservation.TotalAmount` brüt tanımı) | `InvoiceAmounts.ComputeLine` |
+| Kurtaxe ve KDV | Şehir vergisi **KDV dışı** (belediyenin misafirden aldığı, otelin yalnızca tahsil ettiği tutar) | `InvoiceAmounts.ResolveVatRate` |
+| KDV oranı eşlemesi | Konaklama **indirimli** oran, ekstralar **standart** oran (kahvaltı Aufteilungsgebot gereği indirimli orandan yararlanmaz) | aynı yer |
+
+Bazı şehirlerin "Bettensteuer" uygulamasında idare şehir vergisini bedelin parçası sayabiliyor;
+bu belediye bazında değerlendirilmelidir. Kurtaxe **çocuk muafiyeti** otel bazında açılabilir
+(`TaxProfile.CityTaxExemptChildren`); rezervasyon yalnızca yetişkin/çocuk **sayısı** tuttuğu için
+yaş sınırı hesaba girmez, hukuki dayanağı belgelemek için saklanır.
+
 ## Multi-Agent Yapı
 Proje `.claude/` altında ajan ve skill tanımlarıyla organize edilmiştir:
 - `.claude/agents/` — Main (orkestratör), Frontend, Backend, Database, DevOps ajanları

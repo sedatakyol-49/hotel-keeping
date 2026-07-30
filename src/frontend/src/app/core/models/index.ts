@@ -7,3 +7,6 @@ export * from './permission.model';
 export * from './problem-details.model';
 export * from './room-type.model';
 export * from './room.model';
+export * from './shift.model';
+export * from './time-entry.model';
+export * from './vacation.model';

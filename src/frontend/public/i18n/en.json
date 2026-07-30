@@ -565,22 +565,222 @@
   "vacations": {
     "title": "Vacations",
     "subtitle": "Submit and review leave requests and check remaining entitlements.",
+    "count": "{{count}} requests",
+    "daysCount": "{{count}} calendar days",
+    "tableCaption": "List of leave requests with employee, period, days, status and decision",
+    "calendarDaysNote": "The day count uses calendar days — weekends and public holidays are not deducted at this stage.",
+    "actions": {
+      "create": "New request",
+      "approve": "Approve",
+      "reject": "Reject",
+      "cancel": "Withdraw"
+    },
+    "columns": {
+      "employee": "Employee",
+      "period": "Period",
+      "days": "Days",
+      "status": "Status",
+      "reason": "Reason",
+      "decision": "Decision"
+    },
+    "filters": {
+      "legend": "Filters",
+      "employee": "Employee",
+      "allEmployees": "All employees",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "year": "Year",
+      "yearPlaceholder": "e.g. 2026",
+      "apply": "Apply filters",
+      "reset": "Reset filters"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}"
+    },
+    "list": {
+      "loadFailed": "The leave requests could not be loaded."
+    },
     "empty": {
       "title": "No leave requests",
       "description": "Approved requests are booked automatically against the leave balance of the respective year."
+    },
+    "emptyFiltered": {
+      "title": "No requests for this selection",
+      "description": "Please adjust the filters or reset them."
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Withdrawn"
+    },
+    "balances": {
+      "title": "Leave balance",
+      "year": "Year {{year}}",
+      "entitled": "Entitled",
+      "used": "Used",
+      "carriedOver": "Carried over",
+      "remaining": "Remaining",
+      "derived": "Not booked yet",
+      "empty": "No leave balance available for this selection.",
+      "loadFailed": "The leave balance could not be loaded."
+    },
+    "decide": {
+      "conflict": "This request has already been decided and cannot be changed again.",
+      "forbidden": "You may only withdraw your own leave requests.",
+      "noteLabel": "Note (optional)",
+      "notePlaceholder": "e.g. front desk coverage"
+    },
+    "form": {
+      "createTitle": "New leave request",
+      "subtitle": "Employee, period and reason for the request.",
+      "backToList": "Back to requests",
+      "employee": "Employee",
+      "selectEmployee": "Please select",
+      "noEmployees": "No employee has been created yet. Please create an employee first.",
+      "from": "First day of leave",
+      "to": "Last day of leave",
+      "toHint": "The last day is included.",
+      "daysPreview": "{{count}} calendar days are requested.",
+      "reason": "Reason",
+      "reasonPlaceholder": "e.g. summer holiday",
+      "submit": "Submit request",
+      "saving": "Saving …",
+      "overlap": "Another request already exists for this period.",
+      "validation": {
+        "employeeIdRequired": "Please select an employee.",
+        "fromRequired": "Please enter the first day of leave.",
+        "toRequired": "Please enter the last day of leave.",
+        "dateFormat": "Please enter a valid date.",
+        "reasonLength": "The reason must not exceed {{reasonMaxLength}} characters.",
+        "periodOrder": "The end date must not be before the start date.",
+        "overlap": "A request already exists for these days."
+      }
     }
   },
   "timeTracking": {
     "title": "Time tracking",
     "subtitle": "Manual recording of clock-in, clock-out and breaks.",
+    "count": "{{count}} entries",
+    "open": "Running",
+    "rowConflict": "The entry conflicts with the current state of the data.",
+    "tableCaption": "List of time entries with employee, date, clock-in, clock-out, break and working time",
+    "clock": {
+      "title": "Clock in and out",
+      "employee": "Employee",
+      "selectEmployee": "Please select",
+      "selectHint": "Select an employee to record a time.",
+      "breakMinutes": "Break (minutes)",
+      "note": "Note",
+      "clockIn": "Clock in",
+      "clockOut": "Clock out",
+      "openSince": "Open entry since {{time}} ({{date}}).",
+      "alreadyOpen": "This employee already has a running entry. Please clock out first.",
+      "notOpen": "This employee has no running entry. Please clock in first."
+    },
+    "filters": {
+      "legend": "Filters",
+      "employee": "Employee",
+      "allEmployees": "All employees",
+      "apply": "Apply filters",
+      "reset": "Reset filters"
+    },
+    "columns": {
+      "employee": "Employee",
+      "date": "Date",
+      "clockIn": "Clock-in",
+      "clockOut": "Clock-out",
+      "breakMinutes": "Break (min)",
+      "worked": "Working time",
+      "note": "Note"
+    },
+    "actions": {
+      "correct": "Correct"
+    },
+    "delete": {
+      "confirmShort": "Delete this entry?"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}"
+    },
+    "list": {
+      "loadFailed": "The time entries could not be loaded."
+    },
     "empty": {
       "title": "No time entries",
       "description": "Recorded times are compared against the shift plan (planned vs. actual)."
+    },
+    "emptyFiltered": {
+      "title": "No entries for this selection",
+      "description": "Please adjust the filters or reset them."
+    },
+    "form": {
+      "title": "Correction — {{name}}",
+      "clockIn": "Clock-in",
+      "clockOut": "Clock-out",
+      "clockOutHint": "Leave empty while the entry is still running.",
+      "breakMinutes": "Break (minutes)",
+      "note": "Note",
+      "validation": {
+        "clockInRequired": "Please enter the clock-in time.",
+        "clockOutOrder": "The clock-out time must be after the clock-in time.",
+        "breakFormat": "Please enter a whole number.",
+        "breakRange": "The break must be between {{min}} and {{max}} minutes.",
+        "breakExceedsWork": "The break must not exceed the working time ({{minutes}} min).",
+        "noteLength": "The note must not exceed {{noteMaxLength}} characters."
+      }
     }
   },
   "shifts": {
     "title": "Shifts",
     "subtitle": "Weekly shift planning per department.",
+    "tableCaption": "Weekly plan with one row per employee and one column per day",
+    "loadFailed": "The shift plan could not be loaded.",
+    "emptyWeek": "No shift has been planned for this week yet.",
+    "emptyDay": "No shift",
+    "actions": {
+      "assign": "Assign shift"
+    },
+    "week": {
+      "navLabel": "Change week",
+      "previous": "Previous week",
+      "next": "Next week",
+      "current": "This week"
+    },
+    "columns": {
+      "employee": "Employee"
+    },
+    "type": {
+      "morning": "Morning",
+      "evening": "Evening",
+      "night": "Night",
+      "off": "Off"
+    },
+    "short": {
+      "morning": "M",
+      "evening": "E",
+      "night": "N",
+      "off": "—"
+    },
+    "cell": {
+      "editAria": "Edit shift of {{name}} on {{date}}"
+    },
+    "editor": {
+      "title": "Assign shift",
+      "employee": "Employee",
+      "selectEmployee": "Please select",
+      "date": "Day",
+      "type": "Shift type",
+      "note": "Note",
+      "conflict": "This employee already has a shift on that day.",
+      "notFound": "The employee does not belong to the active hotel."
+    },
+    "noEmployees": {
+      "title": "No employees available",
+      "description": "The shift plan needs employees. Please create employees first."
+    },
     "empty": {
       "title": "No shifts planned",
       "description": "Morning, evening and night shifts are planned per employee and day."

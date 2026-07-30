@@ -1,0 +1,574 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="vacations.title"
+    subtitleKey="vacations.subtitle"
+    eyebrowKey="nav.section.staff"
+  >
+    <!--
+      Not: yazma aksiyonlari statik bir kapsayici icinde durur; yapisal direktif
+      dogrudan projeksiyon slotuna uygulanamaz.
+    -->
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        *hcHasPermission="requestPermission"
+        class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+        routerLink="/vacations/new"
+        data-testid="vacations-create"
+      >
+        {{ 'vacations.actions.create' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  <!-- Sozlesmede bilincli bir sinir: gun sayisi takvim gunudur -->
+  <p
+    class="border-l-2 border-brass bg-brass-tint px-3 py-2 text-sm text-ink"
+    data-testid="vacations-calendar-note"
+  >
+    {{ 'vacations.calendarDaysNote' | translate }}
+  </p>
+
+  <!-- Bakiye paneli: hak edilen / kullanilan / devreden / kalan -->
+  <section class="border border-rule bg-paper-raised" aria-labelledby="vacations-balances-heading">
+    <header
+      class="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule px-4 py-3"
+    >
+      <h2 id="vacations-balances-heading" class="label-mono text-ink">
+        {{ 'vacations.balances.title' | translate }}
+      </h2>
+      @if (store.balanceYear(); as year) {
+        <p class="eyebrow" data-testid="vacations-balance-year">
+          {{ 'vacations.balances.year' | translate: { year: year } }}
+        </p>
+      }
+    </header>
+
+    @if (store.balancesLoading() && store.balances().length === 0) {
+      <div class="px-4 py-6">
+        <hc-spinner labelKey="common.loading" [showLabel]="true" />
+      </div>
+    } @else if (store.balancesError(); as error) {
+      <div class="px-4 py-4" role="alert">
+        <p class="label-mono text-danger">{{ 'vacations.balances.loadFailed' | translate }}</p>
+        <p class="mt-1 text-sm text-ink">{{ error.messageKey | translate }}</p>
+        <div class="mt-3">
+          <hc-button size="sm" variant="secondary" (pressed)="retryBalances()">
+            {{ 'common.retry' | translate }}
+          </hc-button>
+        </div>
+      </div>
+    } @else if (store.balancesEmpty()) {
+      <p class="px-4 py-4 text-sm text-ink-muted">
+        {{ 'vacations.balances.empty' | translate }}
+      </p>
+    } @else {
+      <ul class="divide-y divide-rule">
+        @for (balance of store.balances(); track balance.employeeId) {
+          <li class="px-4 py-3" data-testid="vacation-balance-row">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <p class="text-ink">{{ balance.employeeName }}</p>
+              @if (!balance.id) {
+                <!-- Kalici bakiye satiri henuz yok: degerler calisanin yillik hakkindan turetilir -->
+                <hc-badge tone="neutral" [dashed]="true" data-testid="vacation-balance-derived">
+                  {{ 'vacations.balances.derived' | translate }}
+                </hc-badge>
+              }
+            </div>
+            <dl class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div>
+                <dt class="eyebrow">{{ 'vacations.balances.entitled' | translate }}</dt>
+                <dd class="numeric text-ink">{{ balance.entitledDays }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'vacations.balances.used' | translate }}</dt>
+                <dd class="numeric text-ink">{{ balance.usedDays }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'vacations.balances.carriedOver' | translate }}</dt>
+                <dd class="numeric text-ink">{{ balance.carriedOverDays }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'vacations.balances.remaining' | translate }}</dt>
+                <dd class="numeric text-lg text-navy" data-testid="vacation-balance-remaining">
+                  {{ balance.remainingDays }}
+                </dd>
+              </div>
+            </dl>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <!-- Filtreler: degerler URL sorgu parametrelerinden okunur -->
+  <form
+    class="border border-rule bg-paper-raised"
+    aria-labelledby="vacations-filter-heading"
+    novalidate
+    (ngSubmit)="
+      applyFromForm(
+        employeeSelect.value,
+        statusSelect.value,
+        yearInput.value,
+        fromInput.value,
+        toInput.value
+      )
+    "
+  >
+    <h2 id="vacations-filter-heading" class="border-b border-rule px-4 py-3 label-mono text-ink">
+      {{ 'vacations.filters.legend' | translate }}
+    </h2>
+
+    <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div>
+        <label class="hc-label" for="vacations-filter-employee">
+          {{ 'vacations.filters.employee' | translate }}
+        </label>
+        <select
+          #employeeSelect
+          id="vacations-filter-employee"
+          class="hc-input mt-1"
+          name="employeeId"
+          [value]="query().employeeId ?? ''"
+          (change)="
+            applyFromForm(
+              employeeSelect.value,
+              statusSelect.value,
+              yearInput.value,
+              fromInput.value,
+              toInput.value
+            )
+          "
+        >
+          <option value="">{{ 'vacations.filters.allEmployees' | translate }}</option>
+          @for (employee of employees.options(); track employee.id) {
+            <option [value]="employee.id" [selected]="employee.id === query().employeeId">
+              {{ employee.fullName }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="hc-label" for="vacations-filter-status">
+          {{ 'vacations.filters.status' | translate }}
+        </label>
+        <select
+          #statusSelect
+          id="vacations-filter-status"
+          class="hc-input mt-1"
+          name="status"
+          [value]="query().status ?? ''"
+          (change)="
+            applyFromForm(
+              employeeSelect.value,
+              statusSelect.value,
+              yearInput.value,
+              fromInput.value,
+              toInput.value
+            )
+          "
+        >
+          <option value="">{{ 'vacations.filters.allStatuses' | translate }}</option>
+          @for (status of statuses; track status) {
+            <option [value]="status" [selected]="status === query().status">
+              {{ statusLabelKeys[status] | translate }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="hc-label" for="vacations-filter-year">
+          {{ 'vacations.filters.year' | translate }}
+        </label>
+        <input
+          #yearInput
+          id="vacations-filter-year"
+          class="hc-input mt-1"
+          type="number"
+          name="year"
+          inputmode="numeric"
+          step="1"
+          [min]="yearMin"
+          [max]="yearMax"
+          [value]="query().year ?? ''"
+          [placeholder]="'vacations.filters.yearPlaceholder' | translate"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="vacations-filter-from">{{ 'common.from' | translate }}</label>
+        <input
+          #fromInput
+          id="vacations-filter-from"
+          class="hc-input mt-1"
+          type="date"
+          name="from"
+          [value]="query().from ?? ''"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="vacations-filter-to">{{ 'common.to' | translate }}</label>
+        <input
+          #toInput
+          id="vacations-filter-to"
+          class="hc-input mt-1"
+          type="date"
+          name="to"
+          [value]="query().to ?? ''"
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 border-t border-rule px-4 py-3">
+      <hc-button type="submit">{{ 'vacations.filters.apply' | translate }}</hc-button>
+      @if (store.hasFilters()) {
+        <hc-button variant="ghost" (pressed)="resetFilters()">
+          {{ 'vacations.filters.reset' | translate }}
+        </hc-button>
+      }
+      <p class="ml-auto eyebrow" aria-live="polite">
+        {{ 'vacations.count' | translate: { count: store.totalCount() } }}
+      </p>
+    </div>
+  </form>
+
+  @if (actionErrorKey(); as actionError) {
+    <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+      <p class="text-sm text-danger" data-testid="vacation-action-error">
+        {{ actionError | translate }}
+      </p>
+      @if (store.actionError()?.detail; as detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ detail }}</p>
+      }
+    </div>
+  }
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'vacations.list.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      [titleKey]="store.hasFilters() ? 'vacations.emptyFiltered.title' : 'vacations.empty.title'"
+      [descriptionKey]="
+        store.hasFilters() ? 'vacations.emptyFiltered.description' : 'vacations.empty.description'
+      "
+    >
+      @if (store.hasFilters()) {
+        <hc-button variant="secondary" (pressed)="resetFilters()">
+          {{ 'vacations.filters.reset' | translate }}
+        </hc-button>
+      }
+    </hc-empty-state>
+  } @else {
+    <!-- Masaustu: yogun tablo -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="vacations.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'vacations.columns.employee' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'vacations.columns.period' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'vacations.columns.days' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'vacations.columns.status' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'vacations.columns.reason' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'vacations.columns.decision' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (request of store.items(); track request.id) {
+            <tr [class.opacity-40]="store.pendingActionId() === request.id">
+              <th scope="row" class="px-4 py-3 text-left font-normal text-ink">
+                {{ request.employeeName }}
+              </th>
+              <td class="px-4 py-3 numeric text-ink">
+                {{ request.from | hcDate: 'medium' }} – {{ request.to | hcDate: 'medium' }}
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink" data-testid="vacation-days">
+                {{ request.requestedDays }}
+              </td>
+              <td class="px-4 py-3">
+                <hc-vacation-status [status]="request.status" />
+              </td>
+              <td class="px-4 py-3 text-sm text-ink-muted">{{ request.reason || '—' }}</td>
+              <td class="px-4 py-3 text-sm text-ink-muted">
+                @if (request.decidedAt) {
+                  <span class="block numeric text-xs text-ink-faint">
+                    {{ request.decidedAt | hcDate: 'medium' }}
+                  </span>
+                }
+                {{ request.decisionNote || '—' }}
+              </td>
+              <td class="px-4 py-3 text-right">
+                @if (hasOpenPanel(request)) {
+                  <!-- Ret/iptal gerekcesi: karar sunucuya notla birlikte gider -->
+                  <div class="flex flex-col items-stretch gap-2 text-left">
+                    <label class="hc-label" [for]="'vacation-note-' + request.id">
+                      {{ 'vacations.decide.noteLabel' | translate }}
+                    </label>
+                    <textarea
+                      #noteInput
+                      class="hc-input"
+                      rows="2"
+                      [id]="'vacation-note-' + request.id"
+                      [attr.maxlength]="noteMaxLength"
+                      data-testid="vacation-decision-note"
+                      [placeholder]="'vacations.decide.notePlaceholder' | translate"
+                    ></textarea>
+                    <div class="flex flex-wrap justify-end gap-2">
+                      @if (isPanelOpen(request, 'reject')) {
+                        <hc-button
+                          size="sm"
+                          variant="danger"
+                          data-testid="vacation-reject-confirm"
+                          [busy]="store.pendingActionId() === request.id"
+                          (pressed)="decide('reject', request, noteInput.value)"
+                        >
+                          {{ 'vacations.actions.reject' | translate }}
+                        </hc-button>
+                      } @else {
+                        <hc-button
+                          size="sm"
+                          variant="danger"
+                          data-testid="vacation-cancel-confirm"
+                          [busy]="store.pendingActionId() === request.id"
+                          (pressed)="decide('cancel', request, noteInput.value)"
+                        >
+                          {{ 'vacations.actions.cancel' | translate }}
+                        </hc-button>
+                      }
+                      <hc-button size="sm" variant="ghost" (pressed)="closePanel()">
+                        {{ 'common.cancel' | translate }}
+                      </hc-button>
+                    </div>
+                  </div>
+                } @else {
+                  <span class="inline-flex flex-wrap items-center justify-end gap-2">
+                    @if (canDecide(request)) {
+                      <span *hcHasPermission="approvePermission" class="inline-flex gap-2">
+                        <hc-button
+                          size="sm"
+                          data-testid="vacation-approve"
+                          [busy]="store.pendingActionId() === request.id"
+                          (pressed)="decide('approve', request)"
+                        >
+                          {{ 'vacations.actions.approve' | translate }}
+                        </hc-button>
+                        <hc-button
+                          size="sm"
+                          variant="secondary"
+                          data-testid="vacation-reject"
+                          (pressed)="openPanel(request, 'reject')"
+                        >
+                          {{ 'vacations.actions.reject' | translate }}
+                        </hc-button>
+                      </span>
+                    }
+                    @if (canCancel(request)) {
+                      <hc-button
+                        *hcHasPermission="cancelPermissions"
+                        size="sm"
+                        variant="ghost"
+                        data-testid="vacation-cancel"
+                        (pressed)="openPanel(request, 'cancel')"
+                      >
+                        {{ 'vacations.actions.cancel' | translate }}
+                      </hc-button>
+                    }
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil: ayni store, kart yerlesimi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (request of store.items(); track request.id) {
+        <li class="px-4 py-4" [class.opacity-40]="store.pendingActionId() === request.id">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-serif text-xl leading-tight text-ink">{{ request.employeeName }}</p>
+              <p class="mt-1 numeric text-sm text-ink">
+                {{ request.from | hcDate: 'medium' }} – {{ request.to | hcDate: 'medium' }}
+              </p>
+              <p class="mt-1 eyebrow">
+                {{ 'vacations.daysCount' | translate: { count: request.requestedDays } }}
+              </p>
+            </div>
+            <hc-vacation-status [status]="request.status" />
+          </div>
+
+          @if (request.reason) {
+            <p class="mt-2 text-sm text-ink-muted">{{ request.reason }}</p>
+          }
+          @if (request.decisionNote) {
+            <p class="mt-1 text-sm text-ink-muted">{{ request.decisionNote }}</p>
+          }
+
+          @if (hasOpenPanel(request)) {
+            <div class="mt-3 space-y-2">
+              <label class="hc-label" [for]="'vacation-note-mobile-' + request.id">
+                {{ 'vacations.decide.noteLabel' | translate }}
+              </label>
+              <textarea
+                #mobileNote
+                class="hc-input"
+                rows="2"
+                [id]="'vacation-note-mobile-' + request.id"
+                [attr.maxlength]="noteMaxLength"
+                data-testid="vacation-decision-note"
+              ></textarea>
+              <div class="flex flex-wrap gap-2">
+                @if (isPanelOpen(request, 'reject')) {
+                  <hc-button
+                    size="sm"
+                    variant="danger"
+                    data-testid="vacation-reject-confirm"
+                    [busy]="store.pendingActionId() === request.id"
+                    (pressed)="decide('reject', request, mobileNote.value)"
+                  >
+                    {{ 'vacations.actions.reject' | translate }}
+                  </hc-button>
+                } @else {
+                  <hc-button
+                    size="sm"
+                    variant="danger"
+                    data-testid="vacation-cancel-confirm"
+                    [busy]="store.pendingActionId() === request.id"
+                    (pressed)="decide('cancel', request, mobileNote.value)"
+                  >
+                    {{ 'vacations.actions.cancel' | translate }}
+                  </hc-button>
+                }
+                <hc-button size="sm" variant="ghost" (pressed)="closePanel()">
+                  {{ 'common.cancel' | translate }}
+                </hc-button>
+              </div>
+            </div>
+          } @else {
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              @if (canDecide(request)) {
+                <span *hcHasPermission="approvePermission" class="flex flex-wrap gap-2">
+                  <hc-button
+                    size="sm"
+                    data-testid="vacation-approve"
+                    [busy]="store.pendingActionId() === request.id"
+                    (pressed)="decide('approve', request)"
+                  >
+                    {{ 'vacations.actions.approve' | translate }}
+                  </hc-button>
+                  <hc-button
+                    size="sm"
+                    variant="secondary"
+                    data-testid="vacation-reject"
+                    (pressed)="openPanel(request, 'reject')"
+                  >
+                    {{ 'vacations.actions.reject' | translate }}
+                  </hc-button>
+                </span>
+              }
+              @if (canCancel(request)) {
+                <hc-button
+                  *hcHasPermission="cancelPermissions"
+                  size="sm"
+                  variant="ghost"
+                  data-testid="vacation-cancel"
+                  (pressed)="openPanel(request, 'cancel')"
+                >
+                  {{ 'vacations.actions.cancel' | translate }}
+                </hc-button>
+              }
+            </div>
+          }
+        </li>
+      }
+    </ul>
+
+    <!-- Sayfalama -->
+    <div
+      class="flex flex-col gap-3 border border-rule bg-paper-raised px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="eyebrow">
+        {{
+          'vacations.pagination.range'
+            | translate
+              : { from: store.rangeStart(), to: store.rangeEnd(), total: store.totalCount() }
+        }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 label-mono text-ink-muted" for="vacations-page-size">
+          {{ 'common.rowsPerPage' | translate }}
+          <select
+            id="vacations-page-size"
+            class="hc-input w-auto"
+            [value]="query().pageSize"
+            (change)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === query().pageSize">{{ size }}</option>
+            }
+          </select>
+        </label>
+
+        <nav class="flex items-center gap-2" [attr.aria-label]="'common.page' | translate">
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasPreviousPage()"
+            (pressed)="goToPage(store.page() - 1)"
+          >
+            {{ 'common.previous' | translate }}
+          </hc-button>
+          <span class="numeric text-sm text-ink" aria-live="polite">
+            {{
+              'vacations.pagination.page'
+                | translate: { page: store.page(), pages: store.totalPages() }
+            }}
+          </span>
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasNextPage()"
+            (pressed)="goToPage(store.page() + 1)"
+          >
+            {{ 'common.next' | translate }}
+          </hc-button>
+        </nav>
+      </div>
+    </div>
+  }
+</div>

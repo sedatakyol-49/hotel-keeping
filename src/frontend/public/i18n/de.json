@@ -565,22 +565,222 @@
   "vacations": {
     "title": "Urlaub",
     "subtitle": "Urlaubsanträge stellen, prüfen und Restansprüche einsehen.",
+    "count": "{{count}} Anträge",
+    "daysCount": "{{count}} Kalendertage",
+    "tableCaption": "Liste der Urlaubsanträge mit Mitarbeiter, Zeitraum, Tagen, Status und Entscheidung",
+    "calendarDaysNote": "Die Tagesangabe zählt Kalendertage — Wochenenden und Feiertage werden in dieser Ausbaustufe nicht abgezogen.",
+    "actions": {
+      "create": "Antrag stellen",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "cancel": "Zurückziehen"
+    },
+    "columns": {
+      "employee": "Mitarbeiter",
+      "period": "Zeitraum",
+      "days": "Tage",
+      "status": "Status",
+      "reason": "Grund",
+      "decision": "Entscheidung"
+    },
+    "filters": {
+      "legend": "Filter",
+      "employee": "Mitarbeiter",
+      "allEmployees": "Alle Mitarbeiter",
+      "status": "Status",
+      "allStatuses": "Alle Status",
+      "year": "Jahr",
+      "yearPlaceholder": "z. B. 2026",
+      "apply": "Filter anwenden",
+      "reset": "Filter zurücksetzen"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} von {{total}}",
+      "page": "Seite {{page}} von {{pages}}"
+    },
+    "list": {
+      "loadFailed": "Die Urlaubsanträge konnten nicht geladen werden."
+    },
     "empty": {
       "title": "Keine Urlaubsanträge",
       "description": "Genehmigte Anträge buchen automatisch auf das Urlaubskonto des jeweiligen Jahres."
+    },
+    "emptyFiltered": {
+      "title": "Keine Anträge für diese Auswahl",
+      "description": "Bitte passen Sie die Filter an oder setzen Sie sie zurück."
+    },
+    "status": {
+      "pending": "Offen",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt",
+      "cancelled": "Zurückgezogen"
+    },
+    "balances": {
+      "title": "Urlaubskonto",
+      "year": "Jahr {{year}}",
+      "entitled": "Anspruch",
+      "used": "Genommen",
+      "carriedOver": "Übertrag",
+      "remaining": "Rest",
+      "derived": "Noch nicht gebucht",
+      "empty": "Für diese Auswahl liegt kein Urlaubskonto vor.",
+      "loadFailed": "Das Urlaubskonto konnte nicht geladen werden."
+    },
+    "decide": {
+      "conflict": "Über diesen Antrag ist bereits entschieden worden; er kann nicht erneut geändert werden.",
+      "forbidden": "Sie dürfen nur eigene Urlaubsanträge zurückziehen.",
+      "noteLabel": "Begründung (optional)",
+      "notePlaceholder": "z. B. Besetzung an der Rezeption"
+    },
+    "form": {
+      "createTitle": "Urlaubsantrag stellen",
+      "subtitle": "Mitarbeiter, Zeitraum und Grund des Antrags.",
+      "backToList": "Zur Antragsliste",
+      "employee": "Mitarbeiter",
+      "selectEmployee": "Bitte wählen",
+      "noEmployees": "Es ist noch kein Mitarbeiter angelegt. Bitte legen Sie zuerst einen Mitarbeiter an.",
+      "from": "Erster Urlaubstag",
+      "to": "Letzter Urlaubstag",
+      "toHint": "Der letzte Tag zählt mit.",
+      "daysPreview": "{{count}} Kalendertage werden beantragt.",
+      "reason": "Grund",
+      "reasonPlaceholder": "z. B. Sommerurlaub",
+      "submit": "Antrag stellen",
+      "saving": "Wird gespeichert …",
+      "overlap": "In diesem Zeitraum besteht bereits ein anderer Antrag.",
+      "validation": {
+        "employeeIdRequired": "Bitte wählen Sie einen Mitarbeiter.",
+        "fromRequired": "Bitte geben Sie den ersten Urlaubstag ein.",
+        "toRequired": "Bitte geben Sie den letzten Urlaubstag ein.",
+        "dateFormat": "Bitte geben Sie ein gültiges Datum ein.",
+        "reasonLength": "Der Grund darf höchstens {{reasonMaxLength}} Zeichen lang sein.",
+        "periodOrder": "Das Enddatum darf nicht vor dem Startdatum liegen.",
+        "overlap": "Für diese Tage existiert bereits ein Antrag."
+      }
     }
   },
   "timeTracking": {
     "title": "Zeiterfassung",
     "subtitle": "Manuelle Erfassung von Kommen, Gehen und Pausen.",
+    "count": "{{count}} Buchungen",
+    "open": "Läuft",
+    "rowConflict": "Die Buchung steht im Konflikt mit dem aktuellen Datenstand.",
+    "tableCaption": "Liste der Zeitbuchungen mit Mitarbeiter, Datum, Kommen, Gehen, Pause und Arbeitszeit",
+    "clock": {
+      "title": "Kommen und Gehen",
+      "employee": "Mitarbeiter",
+      "selectEmployee": "Bitte wählen",
+      "selectHint": "Wählen Sie einen Mitarbeiter, um zu buchen.",
+      "breakMinutes": "Pause (Minuten)",
+      "note": "Notiz",
+      "clockIn": "Kommen buchen",
+      "clockOut": "Gehen buchen",
+      "openSince": "Offene Buchung seit {{time}} ({{date}}).",
+      "alreadyOpen": "Für diesen Mitarbeiter läuft bereits eine Buchung. Bitte zuerst „Gehen“ buchen.",
+      "notOpen": "Für diesen Mitarbeiter läuft keine Buchung. Bitte zuerst „Kommen“ buchen."
+    },
+    "filters": {
+      "legend": "Filter",
+      "employee": "Mitarbeiter",
+      "allEmployees": "Alle Mitarbeiter",
+      "apply": "Filter anwenden",
+      "reset": "Filter zurücksetzen"
+    },
+    "columns": {
+      "employee": "Mitarbeiter",
+      "date": "Datum",
+      "clockIn": "Kommen",
+      "clockOut": "Gehen",
+      "breakMinutes": "Pause (Min.)",
+      "worked": "Arbeitszeit",
+      "note": "Notiz"
+    },
+    "actions": {
+      "correct": "Korrigieren"
+    },
+    "delete": {
+      "confirmShort": "Buchung wirklich löschen?"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} von {{total}}",
+      "page": "Seite {{page}} von {{pages}}"
+    },
+    "list": {
+      "loadFailed": "Die Zeitbuchungen konnten nicht geladen werden."
+    },
     "empty": {
       "title": "Keine Zeitbuchungen",
       "description": "Erfasste Zeiten werden der Schichtplanung gegenübergestellt (Soll/Ist)."
+    },
+    "emptyFiltered": {
+      "title": "Keine Buchungen für diese Auswahl",
+      "description": "Bitte passen Sie die Filter an oder setzen Sie sie zurück."
+    },
+    "form": {
+      "title": "Korrektur — {{name}}",
+      "clockIn": "Kommen",
+      "clockOut": "Gehen",
+      "clockOutHint": "Leer lassen, solange die Buchung läuft.",
+      "breakMinutes": "Pause (Minuten)",
+      "note": "Notiz",
+      "validation": {
+        "clockInRequired": "Bitte geben Sie die Kommen-Zeit ein.",
+        "clockOutOrder": "Die Gehen-Zeit muss nach der Kommen-Zeit liegen.",
+        "breakFormat": "Bitte geben Sie eine ganze Zahl ein.",
+        "breakRange": "Die Pause muss zwischen {{min}} und {{max}} Minuten liegen.",
+        "breakExceedsWork": "Die Pause darf die Arbeitszeit ({{minutes}} Min.) nicht überschreiten.",
+        "noteLength": "Die Notiz darf höchstens {{noteMaxLength}} Zeichen lang sein."
+      }
     }
   },
   "shifts": {
     "title": "Schichtplan",
     "subtitle": "Wochenweise Schichtplanung je Abteilung.",
+    "tableCaption": "Wochenplan mit einer Zeile je Mitarbeiter und einer Spalte je Tag",
+    "loadFailed": "Der Schichtplan konnte nicht geladen werden.",
+    "emptyWeek": "In dieser Woche ist noch keine Schicht geplant.",
+    "emptyDay": "Keine Schicht",
+    "actions": {
+      "assign": "Schicht zuweisen"
+    },
+    "week": {
+      "navLabel": "Woche wechseln",
+      "previous": "Vorherige Woche",
+      "next": "Nächste Woche",
+      "current": "Diese Woche"
+    },
+    "columns": {
+      "employee": "Mitarbeiter"
+    },
+    "type": {
+      "morning": "Früh",
+      "evening": "Spät",
+      "night": "Nacht",
+      "off": "Frei"
+    },
+    "short": {
+      "morning": "F",
+      "evening": "S",
+      "night": "N",
+      "off": "—"
+    },
+    "cell": {
+      "editAria": "Schicht von {{name}} am {{date}} bearbeiten"
+    },
+    "editor": {
+      "title": "Schicht zuweisen",
+      "employee": "Mitarbeiter",
+      "selectEmployee": "Bitte wählen",
+      "date": "Tag",
+      "type": "Schichtart",
+      "note": "Notiz",
+      "conflict": "Für diesen Mitarbeiter besteht an diesem Tag bereits eine Schicht.",
+      "notFound": "Der Mitarbeiter gehört nicht zum aktiven Hotel."
+    },
+    "noEmployees": {
+      "title": "Keine Mitarbeiter vorhanden",
+      "description": "Der Schichtplan braucht Mitarbeiter. Legen Sie zuerst Mitarbeiter an."
+    },
     "empty": {
       "title": "Keine Schichten geplant",
       "description": "Früh-, Spät- und Nachtschichten werden je Mitarbeiter und Tag geplant."

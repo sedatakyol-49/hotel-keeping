@@ -565,22 +565,222 @@
   "vacations": {
     "title": "İzinler",
     "subtitle": "İzin taleplerini oluşturun, değerlendirin ve kalan hakları görüntüleyin.",
+    "count": "{{count}} talep",
+    "daysCount": "{{count}} takvim günü",
+    "tableCaption": "Çalışan, tarih aralığı, gün sayısı, durum ve karar bilgisiyle izin talepleri listesi",
+    "calendarDaysNote": "Gün sayısı takvim günü olarak hesaplanır — bu aşamada hafta sonu ve resmî tatiller düşülmez.",
+    "actions": {
+      "create": "Talep oluştur",
+      "approve": "Onayla",
+      "reject": "Reddet",
+      "cancel": "Geri çek"
+    },
+    "columns": {
+      "employee": "Çalışan",
+      "period": "Tarih aralığı",
+      "days": "Gün",
+      "status": "Durum",
+      "reason": "Gerekçe",
+      "decision": "Karar"
+    },
+    "filters": {
+      "legend": "Filtreler",
+      "employee": "Çalışan",
+      "allEmployees": "Tüm çalışanlar",
+      "status": "Durum",
+      "allStatuses": "Tüm durumlar",
+      "year": "Yıl",
+      "yearPlaceholder": "örn. 2026",
+      "apply": "Filtreleri uygula",
+      "reset": "Filtreleri sıfırla"
+    },
+    "pagination": {
+      "range": "{{total}} kayıttan {{from}}–{{to}}",
+      "page": "Sayfa {{page}} / {{pages}}"
+    },
+    "list": {
+      "loadFailed": "İzin talepleri yüklenemedi."
+    },
     "empty": {
       "title": "İzin talebi yok",
       "description": "Onaylanan talepler ilgili yılın izin bakiyesine otomatik işlenir."
+    },
+    "emptyFiltered": {
+      "title": "Bu seçim için talep yok",
+      "description": "Lütfen filtreleri değiştirin veya sıfırlayın."
+    },
+    "status": {
+      "pending": "Bekliyor",
+      "approved": "Onaylandı",
+      "rejected": "Reddedildi",
+      "cancelled": "Geri çekildi"
+    },
+    "balances": {
+      "title": "İzin bakiyesi",
+      "year": "{{year}} yılı",
+      "entitled": "Hak edilen",
+      "used": "Kullanılan",
+      "carriedOver": "Devreden",
+      "remaining": "Kalan",
+      "derived": "Henüz kaydedilmedi",
+      "empty": "Bu seçim için izin bakiyesi bulunmuyor.",
+      "loadFailed": "İzin bakiyesi yüklenemedi."
+    },
+    "decide": {
+      "conflict": "Bu talep zaten karara bağlanmış; tekrar değiştirilemez.",
+      "forbidden": "Yalnızca kendi izin talebinizi geri çekebilirsiniz.",
+      "noteLabel": "Gerekçe (isteğe bağlı)",
+      "notePlaceholder": "örn. resepsiyon kadrosu"
+    },
+    "form": {
+      "createTitle": "İzin talebi oluştur",
+      "subtitle": "Talebin çalışanı, tarih aralığı ve gerekçesi.",
+      "backToList": "Talep listesine dön",
+      "employee": "Çalışan",
+      "selectEmployee": "Lütfen seçin",
+      "noEmployees": "Henüz çalışan tanımlanmadı. Lütfen önce bir çalışan ekleyin.",
+      "from": "İlk izin günü",
+      "to": "Son izin günü",
+      "toHint": "Son gün de sayılır.",
+      "daysPreview": "{{count}} takvim günü talep ediliyor.",
+      "reason": "Gerekçe",
+      "reasonPlaceholder": "örn. yıllık izin",
+      "submit": "Talebi gönder",
+      "saving": "Kaydediliyor …",
+      "overlap": "Bu tarihlerde başka bir talep var.",
+      "validation": {
+        "employeeIdRequired": "Lütfen bir çalışan seçin.",
+        "fromRequired": "Lütfen ilk izin gününü girin.",
+        "toRequired": "Lütfen son izin gününü girin.",
+        "dateFormat": "Lütfen geçerli bir tarih girin.",
+        "reasonLength": "Gerekçe en fazla {{reasonMaxLength}} karakter olabilir.",
+        "periodOrder": "Bitiş tarihi başlangıç tarihinden önce olamaz.",
+        "overlap": "Bu günler için zaten bir talep var."
+      }
     }
   },
   "timeTracking": {
     "title": "Zaman Takibi",
     "subtitle": "Giriş, çıkış ve molaların manuel kaydı.",
+    "count": "{{count}} kayıt",
+    "open": "Devam ediyor",
+    "rowConflict": "Kayıt mevcut veri durumuyla çelişiyor.",
+    "tableCaption": "Çalışan, tarih, giriş, çıkış, mola ve çalışma süresiyle zaman kayıtları listesi",
+    "clock": {
+      "title": "Giriş ve çıkış",
+      "employee": "Çalışan",
+      "selectEmployee": "Lütfen seçin",
+      "selectHint": "Kayıt için bir çalışan seçin.",
+      "breakMinutes": "Mola (dakika)",
+      "note": "Not",
+      "clockIn": "Giriş yap",
+      "clockOut": "Çıkış yap",
+      "openSince": "{{time}} ({{date}}) itibarıyla açık kayıt.",
+      "alreadyOpen": "Bu çalışanın devam eden bir kaydı var. Lütfen önce çıkış yapın.",
+      "notOpen": "Bu çalışanın açık kaydı yok. Lütfen önce giriş yapın."
+    },
+    "filters": {
+      "legend": "Filtreler",
+      "employee": "Çalışan",
+      "allEmployees": "Tüm çalışanlar",
+      "apply": "Filtreleri uygula",
+      "reset": "Filtreleri sıfırla"
+    },
+    "columns": {
+      "employee": "Çalışan",
+      "date": "Tarih",
+      "clockIn": "Giriş",
+      "clockOut": "Çıkış",
+      "breakMinutes": "Mola (dk.)",
+      "worked": "Çalışma süresi",
+      "note": "Not"
+    },
+    "actions": {
+      "correct": "Düzelt"
+    },
+    "delete": {
+      "confirmShort": "Kayıt silinsin mi?"
+    },
+    "pagination": {
+      "range": "{{total}} kayıttan {{from}}–{{to}}",
+      "page": "Sayfa {{page}} / {{pages}}"
+    },
+    "list": {
+      "loadFailed": "Zaman kayıtları yüklenemedi."
+    },
     "empty": {
       "title": "Zaman kaydı yok",
       "description": "Kaydedilen süreler vardiya planıyla karşılaştırılır (planlanan / gerçekleşen)."
+    },
+    "emptyFiltered": {
+      "title": "Bu seçim için kayıt yok",
+      "description": "Lütfen filtreleri değiştirin veya sıfırlayın."
+    },
+    "form": {
+      "title": "Düzeltme — {{name}}",
+      "clockIn": "Giriş",
+      "clockOut": "Çıkış",
+      "clockOutHint": "Kayıt devam ettiği sürece boş bırakın.",
+      "breakMinutes": "Mola (dakika)",
+      "note": "Not",
+      "validation": {
+        "clockInRequired": "Lütfen giriş saatini girin.",
+        "clockOutOrder": "Çıkış saati giriş saatinden sonra olmalıdır.",
+        "breakFormat": "Lütfen tam sayı girin.",
+        "breakRange": "Mola {{min}} ile {{max}} dakika arasında olmalıdır.",
+        "breakExceedsWork": "Mola süresi çalışma süresini ({{minutes}} dk.) aşamaz.",
+        "noteLength": "Not en fazla {{noteMaxLength}} karakter olabilir."
+      }
     }
   },
   "shifts": {
     "title": "Vardiyalar",
     "subtitle": "Departman bazında haftalık vardiya planlaması.",
+    "tableCaption": "Her çalışan için bir satır, her gün için bir sütun içeren haftalık plan",
+    "loadFailed": "Vardiya planı yüklenemedi.",
+    "emptyWeek": "Bu hafta için henüz vardiya planlanmadı.",
+    "emptyDay": "Vardiya yok",
+    "actions": {
+      "assign": "Vardiya ata"
+    },
+    "week": {
+      "navLabel": "Hafta değiştir",
+      "previous": "Önceki hafta",
+      "next": "Sonraki hafta",
+      "current": "Bu hafta"
+    },
+    "columns": {
+      "employee": "Çalışan"
+    },
+    "type": {
+      "morning": "Sabah",
+      "evening": "Akşam",
+      "night": "Gece",
+      "off": "İzinli"
+    },
+    "short": {
+      "morning": "S",
+      "evening": "A",
+      "night": "G",
+      "off": "—"
+    },
+    "cell": {
+      "editAria": "{{name}} çalışanının {{date}} tarihli vardiyasını düzenle"
+    },
+    "editor": {
+      "title": "Vardiya ata",
+      "employee": "Çalışan",
+      "selectEmployee": "Lütfen seçin",
+      "date": "Gün",
+      "type": "Vardiya tipi",
+      "note": "Not",
+      "conflict": "Bu çalışanın o gün için zaten bir vardiyası var.",
+      "notFound": "Çalışan aktif otele ait değil."
+    },
+    "noEmployees": {
+      "title": "Çalışan bulunmuyor",
+      "description": "Vardiya planı için çalışan gerekir. Lütfen önce çalışan ekleyin."
+    },
     "empty": {
       "title": "Planlanmış vardiya yok",
       "description": "Sabah, akşam ve gece vardiyaları çalışan ve gün bazında planlanır."

@@ -1,0 +1,170 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="vacations.form.createTitle"
+    subtitleKey="vacations.form.subtitle"
+    eyebrowKey="vacations.title"
+  >
+    <a
+      slot="actions"
+      class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+      routerLink="/vacations"
+    >
+      {{ 'vacations.form.backToList' | translate }}
+    </a>
+  </hc-page-header>
+
+  <form
+    class="border border-rule bg-paper-raised"
+    [formGroup]="form"
+    novalidate
+    (ngSubmit)="submit()"
+  >
+    <div class="space-y-5 px-4 py-5 sm:px-6">
+      @if (formErrorKey(); as errorKey) {
+        <p
+          class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
+          role="alert"
+          data-testid="vacation-form-error"
+        >
+          {{ errorKey | translate }}
+        </p>
+      }
+      @if (serverDetail(); as detail) {
+        <p class="font-mono text-xs text-ink-muted" data-testid="vacation-form-detail">
+          {{ detail }}
+        </p>
+      }
+      @if (formErrors().length > 0) {
+        <ul class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger" role="alert">
+          @for (message of formErrors(); track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      }
+      @if (employees.loading()) {
+        <hc-spinner labelKey="common.loading" [showLabel]="true" />
+      } @else if (employees.isEmpty()) {
+        <p class="border border-brass bg-brass-tint px-3 py-2 text-sm text-brass">
+          {{ 'vacations.form.noEmployees' | translate }}
+        </p>
+      }
+
+      <div>
+        <label class="hc-label" for="vacation-employee">
+          {{ 'vacations.form.employee' | translate }}
+        </label>
+        <select
+          id="vacation-employee"
+          class="hc-input mt-1"
+          formControlName="employeeId"
+          required
+          [attr.aria-invalid]="errorKeyFor('employeeId') ? 'true' : null"
+        >
+          <option value="">{{ 'vacations.form.selectEmployee' | translate }}</option>
+          @for (employee of employees.options(); track employee.id) {
+            <option [value]="employee.id">{{ employee.fullName }}</option>
+          }
+        </select>
+        @if (errorKeyFor('employeeId'); as errorKey) {
+          <p class="mt-1 text-xs text-danger" data-testid="vacation-employee-error">
+            {{ errorKey | translate: validationParams }}
+          </p>
+        }
+        @for (message of serverMessagesFor('employeeId'); track message) {
+          <p class="mt-1 text-xs text-danger">{{ message }}</p>
+        }
+      </div>
+
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="hc-label" for="vacation-from">{{
+            'vacations.form.from' | translate
+          }}</label>
+          <input
+            id="vacation-from"
+            class="hc-input mt-1"
+            type="date"
+            formControlName="from"
+            required
+            [attr.aria-invalid]="errorKeyFor('from') ? 'true' : null"
+          />
+          @if (errorKeyFor('from'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="vacation-from-error">
+              {{ errorKey | translate: validationParams }}
+            </p>
+          }
+          @for (message of serverMessagesFor('from'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="vacation-to">{{ 'vacations.form.to' | translate }}</label>
+          <input
+            id="vacation-to"
+            class="hc-input mt-1"
+            type="date"
+            formControlName="to"
+            required
+            [attr.aria-invalid]="errorKeyFor('to') || periodOrderError() ? 'true' : null"
+            [attr.aria-describedby]="'vacation-to-hint'"
+          />
+          <p id="vacation-to-hint" class="mt-1 text-xs text-ink-faint">
+            {{ 'vacations.form.toHint' | translate }}
+          </p>
+          @if (periodOrderError()) {
+            <p class="mt-1 text-xs text-danger" data-testid="vacation-period-error">
+              {{ 'vacations.form.validation.periodOrder' | translate }}
+            </p>
+          } @else if (errorKeyFor('to'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="vacation-to-error">
+              {{ errorKey | translate: validationParams }}
+            </p>
+          }
+          @for (message of serverMessagesFor('to'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+      </div>
+
+      @if (daysPreview(); as days) {
+        <p
+          class="border-l-2 border-brass bg-brass-tint px-3 py-2 text-sm text-ink"
+          data-testid="vacation-days-preview"
+        >
+          {{ 'vacations.form.daysPreview' | translate: { count: days } }}
+        </p>
+      }
+
+      <div>
+        <label class="hc-label" for="vacation-reason">
+          {{ 'vacations.form.reason' | translate }}
+        </label>
+        <textarea
+          id="vacation-reason"
+          class="hc-input mt-1"
+          rows="3"
+          formControlName="reason"
+          [maxlength]="limits.reasonMaxLength"
+          [attr.aria-invalid]="errorKeyFor('reason') ? 'true' : null"
+          [placeholder]="'vacations.form.reasonPlaceholder' | translate"
+        ></textarea>
+        @if (errorKeyFor('reason'); as errorKey) {
+          <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+        }
+        @for (message of serverMessagesFor('reason'); track message) {
+          <p class="mt-1 text-xs text-danger">{{ message }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3 sm:px-6">
+      <hc-button type="submit" [busy]="saving()" [disabled]="employees.isEmpty()">
+        {{ (saving() ? 'vacations.form.saving' : 'vacations.form.submit') | translate }}
+      </hc-button>
+      <hc-button variant="secondary" (pressed)="cancel()">
+        {{ 'common.cancel' | translate }}
+      </hc-button>
+    </div>
+  </form>
+</div>

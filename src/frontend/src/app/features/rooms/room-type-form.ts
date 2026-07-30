@@ -232,7 +232,10 @@ export class RoomTypeFormPage {
       description: raw.translations[DEFAULT_LANGUAGE].description.trim() || null,
       basePrice: parseDecimal(raw.basePrice) ?? 0,
       capacity: parseInteger(raw.capacity) ?? ROOM_TYPE_LIMITS.capacityMin,
-      sizeSqm: raw.sizeSqm.trim() ? parseInteger(raw.sizeSqm) : null,
+      // `<input type="number">` bagli kontrole Angular **sayi** yazar; bu yuzden
+      // metin varsayan bir kontrol (`trim()`) kullanilamaz. `parseInteger` bos
+      // degeri de, sayiyi da guvenle karsilar: bos -> null.
+      sizeSqm: parseInteger(raw.sizeSqm),
       amenities: parseAmenities(raw.amenities),
       translations,
     };

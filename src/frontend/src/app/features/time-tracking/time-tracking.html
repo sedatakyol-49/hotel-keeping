@@ -1,0 +1,615 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="timeTracking.title"
+    subtitleKey="timeTracking.subtitle"
+    eyebrowKey="nav.section.staff"
+  />
+
+  <!-- Giris/cikis paneli: acik kayit varsa yalnizca cikis, yoksa yalnizca giris -->
+  <section
+    *hcHasPermission="recordPermission"
+    class="border border-rule bg-paper-raised"
+    aria-labelledby="time-clock-heading"
+    data-testid="time-clock-panel"
+  >
+    <h2 id="time-clock-heading" class="border-b border-rule px-4 py-3 label-mono text-ink">
+      {{ 'timeTracking.clock.title' | translate }}
+    </h2>
+
+    <div class="grid grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-3">
+      <div>
+        <label class="hc-label" for="time-clock-employee">
+          {{ 'timeTracking.clock.employee' | translate }}
+        </label>
+        <select
+          id="time-clock-employee"
+          class="hc-input mt-1"
+          data-testid="clock-employee"
+          [value]="store.clockEmployeeId() ?? ''"
+          (change)="onClockEmployeeChange($event)"
+        >
+          <option value="">{{ 'timeTracking.clock.selectEmployee' | translate }}</option>
+          @for (employee of employees.options(); track employee.id) {
+            <option [value]="employee.id" [selected]="employee.id === store.clockEmployeeId()">
+              {{ employee.fullName }}
+            </option>
+          }
+        </select>
+      </div>
+
+      @if (store.probing()) {
+        <div class="flex items-end">
+          <hc-spinner labelKey="common.loading" [showLabel]="true" />
+        </div>
+      } @else if (store.clockEmployeeId() === null) {
+        <p class="self-end text-sm text-ink-muted lg:col-span-2">
+          {{ 'timeTracking.clock.selectHint' | translate }}
+        </p>
+      } @else if (store.openEntry(); as open) {
+        <!-- Acik kayit: yalnizca cikis. Giris dugmesi hic render edilmez. -->
+        <div>
+          <label class="hc-label" for="time-clock-break">
+            {{ 'timeTracking.clock.breakMinutes' | translate }}
+          </label>
+          <input
+            #breakInput
+            id="time-clock-break"
+            class="hc-input mt-1"
+            type="number"
+            inputmode="numeric"
+            step="1"
+            value="0"
+            [min]="limits.breakMinutesMin"
+            [max]="limits.breakMinutesMax"
+          />
+          <p class="mt-1 numeric text-xs text-ink-faint" data-testid="clock-open-since">
+            {{
+              'timeTracking.clock.openSince'
+                | translate
+                  : { time: open.clockIn | hcDate: 'time', date: open.clockIn | hcDate: 'medium' }
+            }}
+          </p>
+        </div>
+        <div class="flex flex-col justify-end gap-2">
+          <label class="hc-label" for="time-clock-note-out">
+            {{ 'timeTracking.clock.note' | translate }}
+          </label>
+          <input
+            #noteOutInput
+            id="time-clock-note-out"
+            class="hc-input"
+            type="text"
+            [attr.maxlength]="limits.noteMaxLength"
+          />
+          <hc-button
+            data-testid="clock-out"
+            [busy]="store.clockBusy()"
+            [disabled]="!store.canClock()"
+            (pressed)="clockOut(breakInput.value, noteOutInput.value)"
+          >
+            {{ 'timeTracking.clock.clockOut' | translate }}
+          </hc-button>
+        </div>
+      } @else {
+        <!-- Acik kayit yok: yalnizca giris -->
+        <div class="lg:col-span-2 flex flex-col justify-end gap-2">
+          <label class="hc-label" for="time-clock-note-in">
+            {{ 'timeTracking.clock.note' | translate }}
+          </label>
+          <input
+            #noteInInput
+            id="time-clock-note-in"
+            class="hc-input"
+            type="text"
+            [attr.maxlength]="limits.noteMaxLength"
+          />
+          <hc-button
+            data-testid="clock-in"
+            [busy]="store.clockBusy()"
+            [disabled]="!store.canClock()"
+            (pressed)="clockIn(noteInInput.value)"
+          >
+            {{ 'timeTracking.clock.clockIn' | translate }}
+          </hc-button>
+        </div>
+      }
+    </div>
+
+    @if (clockErrorKey(); as errorKey) {
+      <div class="border-t border-danger bg-danger-tint px-4 py-3" role="alert">
+        <p class="text-sm text-danger" data-testid="clock-error">{{ errorKey | translate }}</p>
+        @if (store.clockError()?.detail; as detail) {
+          <p class="mt-1 font-mono text-xs text-ink-muted">{{ detail }}</p>
+        }
+        <div class="mt-2">
+          <hc-button size="sm" variant="ghost" (pressed)="store.clearClockError()">
+            {{ 'common.close' | translate }}
+          </hc-button>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- Filtreler: degerler URL sorgu parametrelerinden okunur -->
+  <form
+    class="border border-rule bg-paper-raised"
+    aria-labelledby="time-filter-heading"
+    novalidate
+    (ngSubmit)="applyFromForm(employeeSelect.value, fromInput.value, toInput.value)"
+  >
+    <h2 id="time-filter-heading" class="border-b border-rule px-4 py-3 label-mono text-ink">
+      {{ 'timeTracking.filters.legend' | translate }}
+    </h2>
+
+    <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-3">
+      <div>
+        <label class="hc-label" for="time-filter-employee">
+          {{ 'timeTracking.filters.employee' | translate }}
+        </label>
+        <select
+          #employeeSelect
+          id="time-filter-employee"
+          class="hc-input mt-1"
+          name="employeeId"
+          [value]="query().employeeId ?? ''"
+          (change)="applyFromForm(employeeSelect.value, fromInput.value, toInput.value)"
+        >
+          <option value="">{{ 'timeTracking.filters.allEmployees' | translate }}</option>
+          @for (employee of employees.options(); track employee.id) {
+            <option [value]="employee.id" [selected]="employee.id === query().employeeId">
+              {{ employee.fullName }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="hc-label" for="time-filter-from">{{ 'common.from' | translate }}</label>
+        <input
+          #fromInput
+          id="time-filter-from"
+          class="hc-input mt-1"
+          type="date"
+          name="from"
+          [value]="query().from ?? ''"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="time-filter-to">{{ 'common.to' | translate }}</label>
+        <input
+          #toInput
+          id="time-filter-to"
+          class="hc-input mt-1"
+          type="date"
+          name="to"
+          [value]="query().to ?? ''"
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 border-t border-rule px-4 py-3">
+      <hc-button type="submit">{{ 'timeTracking.filters.apply' | translate }}</hc-button>
+      @if (store.hasFilters()) {
+        <hc-button variant="ghost" (pressed)="resetFilters()">
+          {{ 'timeTracking.filters.reset' | translate }}
+        </hc-button>
+      }
+      <p class="ml-auto eyebrow" aria-live="polite">
+        {{ 'timeTracking.count' | translate: { count: store.totalCount() } }}
+      </p>
+    </div>
+  </form>
+
+  @if (rowErrorKey(); as rowError) {
+    <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+      <p class="text-sm text-danger" data-testid="time-row-error">{{ rowError | translate }}</p>
+      @if (store.rowError()?.detail; as detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ detail }}</p>
+      }
+    </div>
+  }
+
+  <!-- Manuel duzeltme: tek panel, listedeki satirdan doldurulur -->
+  @if (editingEntry(); as entry) {
+    <form
+      class="border border-navy bg-paper-raised"
+      [formGroup]="editForm"
+      novalidate
+      data-testid="time-edit-form"
+      (ngSubmit)="saveEdit()"
+    >
+      <h2 class="border-b border-rule px-4 py-3 label-mono text-ink">
+        {{ 'timeTracking.form.title' | translate: { name: entry.employeeName } }}
+      </h2>
+
+      <div class="grid grid-cols-1 gap-5 px-4 py-5 sm:grid-cols-2">
+        <div>
+          <label class="hc-label" for="time-edit-clock-in">
+            {{ 'timeTracking.form.clockIn' | translate }}
+          </label>
+          <input
+            id="time-edit-clock-in"
+            class="hc-input mt-1"
+            type="datetime-local"
+            formControlName="clockIn"
+            required
+            [attr.aria-invalid]="errorKeyFor('clockIn') ? 'true' : null"
+          />
+          @if (errorKeyFor('clockIn'); as errorKey) {
+            <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+          }
+          @for (message of serverMessagesFor('clockIn'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="time-edit-clock-out">
+            {{ 'timeTracking.form.clockOut' | translate }}
+          </label>
+          <input
+            id="time-edit-clock-out"
+            class="hc-input mt-1"
+            type="datetime-local"
+            formControlName="clockOut"
+            [attr.aria-invalid]="clockOrderError() ? 'true' : null"
+            [attr.aria-describedby]="'time-edit-clock-out-hint'"
+          />
+          <p id="time-edit-clock-out-hint" class="mt-1 text-xs text-ink-faint">
+            {{ 'timeTracking.form.clockOutHint' | translate }}
+          </p>
+          @if (clockOrderError()) {
+            <p class="mt-1 text-xs text-danger" data-testid="time-clock-order-error">
+              {{ 'timeTracking.form.validation.clockOutOrder' | translate }}
+            </p>
+          }
+          @for (message of serverMessagesFor('clockOut'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="time-edit-break">
+            {{ 'timeTracking.form.breakMinutes' | translate }}
+          </label>
+          <input
+            id="time-edit-break"
+            class="hc-input mt-1"
+            type="number"
+            formControlName="breakMinutes"
+            inputmode="numeric"
+            step="1"
+            [min]="limits.breakMinutesMin"
+            [max]="limits.breakMinutesMax"
+            [attr.aria-invalid]="
+              errorKeyFor('breakMinutes') || breakExceedsMinutes() !== null ? 'true' : null
+            "
+          />
+          @if (breakExceedsMinutes(); as minutes) {
+            <p class="mt-1 text-xs text-danger" data-testid="time-break-error">
+              {{
+                'timeTracking.form.validation.breakExceedsWork' | translate: { minutes: minutes }
+              }}
+            </p>
+          } @else if (errorKeyFor('breakMinutes'); as errorKey) {
+            <p class="mt-1 text-xs text-danger" data-testid="time-break-error">
+              {{ errorKey | translate: validationParams }}
+            </p>
+          }
+          @for (message of serverMessagesFor('breakMinutes'); track message) {
+            <p class="mt-1 text-xs text-danger" data-testid="time-break-server-error">
+              {{ message }}
+            </p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="time-edit-note">
+            {{ 'timeTracking.form.note' | translate }}
+          </label>
+          <input
+            id="time-edit-note"
+            class="hc-input mt-1"
+            type="text"
+            formControlName="note"
+            [maxlength]="limits.noteMaxLength"
+          />
+          @if (errorKeyFor('note'); as errorKey) {
+            <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+          }
+          @for (message of serverMessagesFor('note'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3">
+        <hc-button type="submit" [busy]="store.savingId() === entry.id">
+          {{ 'common.save' | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="cancelEdit()">
+          {{ 'common.cancel' | translate }}
+        </hc-button>
+      </div>
+    </form>
+  }
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'timeTracking.list.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      [titleKey]="
+        store.hasFilters() ? 'timeTracking.emptyFiltered.title' : 'timeTracking.empty.title'
+      "
+      [descriptionKey]="
+        store.hasFilters()
+          ? 'timeTracking.emptyFiltered.description'
+          : 'timeTracking.empty.description'
+      "
+    >
+      @if (store.hasFilters()) {
+        <hc-button variant="secondary" (pressed)="resetFilters()">
+          {{ 'timeTracking.filters.reset' | translate }}
+        </hc-button>
+      }
+    </hc-empty-state>
+  } @else {
+    <!-- Masaustu: yogun tablo -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="timeTracking.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'timeTracking.columns.employee' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'timeTracking.columns.date' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'timeTracking.columns.clockIn' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'timeTracking.columns.clockOut' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'timeTracking.columns.breakMinutes' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'timeTracking.columns.worked' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'timeTracking.columns.note' | translate }}
+            </th>
+            <th
+              *hcHasPermission="recordPermission"
+              scope="col"
+              class="px-4 py-2 text-right label-mono text-ink-muted"
+            >
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (entry of store.items(); track entry.id) {
+            <tr
+              [attr.data-open]="entry.isOpen ? 'true' : null"
+              [class.opacity-40]="store.deletingId() === entry.id"
+            >
+              <th scope="row" class="px-4 py-3 text-left font-normal text-ink">
+                {{ entry.employeeName }}
+              </th>
+              <td class="px-4 py-3 numeric text-ink-muted">
+                {{ entry.clockIn | hcDate: 'medium' }}
+              </td>
+              <td class="px-4 py-3 numeric text-ink">{{ entry.clockIn | hcDate: 'time' }}</td>
+              <td class="px-4 py-3 numeric text-ink">
+                {{ entry.clockOut ? (entry.clockOut | hcDate: 'time') : '—' }}
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink-muted">{{ entry.breakMinutes }}</td>
+              <td class="px-4 py-3 text-right">
+                @if (worked(entry); as workedTime) {
+                  <span class="numeric text-ink" data-testid="time-worked">{{ workedTime }}</span>
+                } @else {
+                  <hc-badge tone="brass" data-testid="time-open">
+                    {{ 'timeTracking.open' | translate }}
+                  </hc-badge>
+                }
+              </td>
+              <td class="px-4 py-3 text-sm text-ink-muted">{{ entry.note || '—' }}</td>
+              <td *hcHasPermission="recordPermission" class="px-4 py-3 text-right">
+                @if (pendingDeleteId() === entry.id) {
+                  <span class="inline-flex flex-wrap items-center justify-end gap-2">
+                    <span class="label-mono text-danger">
+                      {{ 'timeTracking.delete.confirmShort' | translate }}
+                    </span>
+                    <hc-button
+                      size="sm"
+                      variant="danger"
+                      data-testid="time-delete-confirm"
+                      [busy]="store.deletingId() === entry.id"
+                      (pressed)="confirmDelete(entry)"
+                    >
+                      {{ 'common.confirm' | translate }}
+                    </hc-button>
+                    <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                      {{ 'common.cancel' | translate }}
+                    </hc-button>
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center justify-end gap-2">
+                    <hc-button
+                      size="sm"
+                      variant="secondary"
+                      data-testid="time-edit"
+                      (pressed)="startEdit(entry)"
+                    >
+                      {{ 'timeTracking.actions.correct' | translate }}
+                    </hc-button>
+                    <hc-button
+                      size="sm"
+                      variant="ghost"
+                      data-testid="time-delete"
+                      (pressed)="requestDelete(entry.id)"
+                    >
+                      {{ 'common.delete' | translate }}
+                    </hc-button>
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil: ayni store, kart yerlesimi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (entry of store.items(); track entry.id) {
+        <li
+          class="px-4 py-4"
+          [attr.data-open]="entry.isOpen ? 'true' : null"
+          [class.opacity-40]="store.deletingId() === entry.id"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-serif text-xl leading-tight text-ink">{{ entry.employeeName }}</p>
+              <p class="mt-1 numeric text-sm text-ink">
+                {{ entry.clockIn | hcDate: 'medium' }} · {{ entry.clockIn | hcDate: 'time' }} –
+                {{ entry.clockOut ? (entry.clockOut | hcDate: 'time') : '—' }}
+              </p>
+            </div>
+            @if (worked(entry); as workedTime) {
+              <span class="numeric text-lg text-ink" data-testid="time-worked">{{
+                workedTime
+              }}</span>
+            } @else {
+              <hc-badge tone="brass" data-testid="time-open">
+                {{ 'timeTracking.open' | translate }}
+              </hc-badge>
+            }
+          </div>
+
+          <dl class="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <dt class="eyebrow">{{ 'timeTracking.columns.breakMinutes' | translate }}</dt>
+              <dd class="numeric text-ink">{{ entry.breakMinutes }}</dd>
+            </div>
+            @if (entry.note) {
+              <div class="col-span-2 min-w-0">
+                <dt class="eyebrow">{{ 'timeTracking.columns.note' | translate }}</dt>
+                <dd class="text-sm text-ink">{{ entry.note }}</dd>
+              </div>
+            }
+          </dl>
+
+          <div *hcHasPermission="recordPermission" class="mt-3 flex flex-wrap items-center gap-2">
+            @if (pendingDeleteId() === entry.id) {
+              <span class="w-full label-mono text-danger">
+                {{ 'timeTracking.delete.confirmShort' | translate }}
+              </span>
+              <hc-button
+                size="sm"
+                variant="danger"
+                data-testid="time-delete-confirm"
+                [busy]="store.deletingId() === entry.id"
+                (pressed)="confirmDelete(entry)"
+              >
+                {{ 'common.confirm' | translate }}
+              </hc-button>
+              <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                {{ 'common.cancel' | translate }}
+              </hc-button>
+            } @else {
+              <hc-button
+                size="sm"
+                variant="secondary"
+                data-testid="time-edit"
+                (pressed)="startEdit(entry)"
+              >
+                {{ 'timeTracking.actions.correct' | translate }}
+              </hc-button>
+              <hc-button
+                size="sm"
+                variant="ghost"
+                data-testid="time-delete"
+                (pressed)="requestDelete(entry.id)"
+              >
+                {{ 'common.delete' | translate }}
+              </hc-button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+
+    <!-- Sayfalama -->
+    <div
+      class="flex flex-col gap-3 border border-rule bg-paper-raised px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="eyebrow">
+        {{
+          'timeTracking.pagination.range'
+            | translate
+              : { from: store.rangeStart(), to: store.rangeEnd(), total: store.totalCount() }
+        }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 label-mono text-ink-muted" for="time-page-size">
+          {{ 'common.rowsPerPage' | translate }}
+          <select
+            id="time-page-size"
+            class="hc-input w-auto"
+            [value]="query().pageSize"
+            (change)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === query().pageSize">{{ size }}</option>
+            }
+          </select>
+        </label>
+
+        <nav class="flex items-center gap-2" [attr.aria-label]="'common.page' | translate">
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasPreviousPage()"
+            (pressed)="goToPage(store.page() - 1)"
+          >
+            {{ 'common.previous' | translate }}
+          </hc-button>
+          <span class="numeric text-sm text-ink" aria-live="polite">
+            {{
+              'timeTracking.pagination.page'
+                | translate: { page: store.page(), pages: store.totalPages() }
+            }}
+          </span>
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasNextPage()"
+            (pressed)="goToPage(store.page() + 1)"
+          >
+            {{ 'common.next' | translate }}
+          </hc-button>
+        </nav>
+      </div>
+    </div>
+  }
+</div>

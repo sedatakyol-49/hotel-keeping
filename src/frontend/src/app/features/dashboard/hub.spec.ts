@@ -42,11 +42,7 @@ function roomType(code: string): RoomTypeResponse {
   };
 }
 
-const ROOM_TYPES: readonly RoomTypeResponse[] = [
-  roomType('SGL'),
-  roomType('DBL'),
-  roomType('SUI'),
-];
+const ROOM_TYPES: readonly RoomTypeResponse[] = [roomType('SGL'), roomType('DBL'), roomType('SUI')];
 
 function user(permissions: readonly PermissionKey[]): AuthenticatedUser {
   return {
@@ -257,8 +253,8 @@ describe('HubPage — modul kart izgarasi', () => {
       params: {},
     });
     expect(element.querySelector('[data-path="/rooms"] a')?.getAttribute('href')).toBe('/rooms');
-    expect(element.querySelector('[data-path="/rooms"] [data-testid="hub-summary"]')?.textContent).toContain(
-      'hub.summary.unavailable',
-    );
+    expect(
+      element.querySelector('[data-path="/rooms"] [data-testid="hub-summary"]')?.textContent,
+    ).toContain('hub.summary.unavailable');
   });
 });
