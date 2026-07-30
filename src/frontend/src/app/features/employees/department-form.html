@@ -1,0 +1,126 @@
+<div class="space-y-6">
+  <hc-page-header
+    [titleKey]="
+      isEdit() ? 'employees.departments.form.editTitle' : 'employees.departments.form.createTitle'
+    "
+    subtitleKey="employees.departments.form.subtitle"
+    eyebrowKey="employees.departments.title"
+  >
+    <a
+      slot="actions"
+      class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+      routerLink="/employees/departments"
+    >
+      {{ 'employees.departments.form.backToList' | translate }}
+    </a>
+  </hc-page-header>
+
+  @if (loading()) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (loadError(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">
+        {{ 'employees.departments.form.loadFailed' | translate }}
+      </p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="reload()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (notFound()) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'employees.departments.form.notFound' | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="cancel()">
+          {{ 'employees.departments.form.backToList' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else {
+    <form
+      class="border border-rule bg-paper-raised"
+      [formGroup]="form"
+      novalidate
+      (ngSubmit)="submit()"
+    >
+      <div class="space-y-5 px-4 py-5 sm:px-6">
+        @if (formErrorKey(); as errorKey) {
+          <p
+            class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
+            role="alert"
+            data-testid="department-form-error"
+          >
+            {{ errorKey | translate }}
+          </p>
+        }
+        @if (formErrors().length > 0) {
+          <ul
+            class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
+            role="alert"
+          >
+            @for (message of formErrors(); track message) {
+              <li>{{ message }}</li>
+            }
+          </ul>
+        }
+
+        <div>
+          <label class="hc-label" for="department-name">
+            {{ 'employees.departments.form.name' | translate }}
+          </label>
+          <input
+            id="department-name"
+            class="hc-input mt-1"
+            type="text"
+            formControlName="name"
+            autocomplete="off"
+            required
+            [maxlength]="limits.nameMaxLength"
+            [attr.aria-invalid]="errorKeyFor('name') ? 'true' : null"
+            [placeholder]="'employees.departments.form.namePlaceholder' | translate"
+          />
+          @if (errorKeyFor('name'); as errorKey) {
+            <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+          }
+          @for (message of serverMessagesFor('name'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+
+        <div>
+          <label class="hc-label" for="department-description">
+            {{ 'employees.departments.form.description' | translate }}
+            <span class="text-ink-faint">· {{ 'common.optional' | translate }}</span>
+          </label>
+          <textarea
+            id="department-description"
+            class="hc-input mt-1"
+            rows="3"
+            formControlName="description"
+            [maxlength]="limits.descriptionMaxLength"
+            [attr.aria-invalid]="errorKeyFor('description') ? 'true' : null"
+          ></textarea>
+          @if (errorKeyFor('description'); as errorKey) {
+            <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+          }
+          @for (message of serverMessagesFor('description'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3 sm:px-6">
+        <hc-button type="submit" data-testid="department-form-submit" [busy]="saving()">
+          {{ (saving() ? 'employees.departments.form.saving' : 'common.save') | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="cancel()">
+          {{ 'common.cancel' | translate }}
+        </hc-button>
+      </div>
+    </form>
+  }
+</div>

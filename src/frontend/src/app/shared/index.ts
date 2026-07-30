@@ -1,5 +1,6 @@
 export * from './directives/has-permission.directive';
 export * from './forms/api-field-errors';
+export * from './forms/date-validators';
 export * from './forms/numeric-validators';
 export * from './pipes/localized-date.pipe';
 export * from './pipes/money.pipe';

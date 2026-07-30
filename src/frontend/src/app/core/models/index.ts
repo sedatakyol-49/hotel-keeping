@@ -1,4 +1,5 @@
 export * from './auth.model';
+export * from './employee.model';
 export * from './hotel.model';
 export * from './language.model';
 export * from './paged-result.model';

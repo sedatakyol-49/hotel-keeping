@@ -1,0 +1,210 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="employees.departments.title"
+    subtitleKey="employees.departments.subtitle"
+    eyebrowKey="employees.title"
+  >
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/employees"
+      >
+        {{ 'employees.departments.backToEmployees' | translate }}
+      </a>
+      <a
+        *hcHasPermission="editPermission"
+        class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+        routerLink="/employees/departments/new"
+        data-testid="department-create"
+      >
+        {{ 'employees.departments.actions.create' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'employees.departments.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      titleKey="employees.departments.empty.title"
+      descriptionKey="employees.departments.empty.description"
+    />
+  } @else {
+    @if (deleteErrorKey(); as deleteError) {
+      <p
+        class="border border-danger bg-danger-tint px-4 py-2 text-sm text-danger"
+        role="alert"
+        data-testid="department-delete-error"
+      >
+        {{ deleteError | translate }}
+      </p>
+    }
+
+    <!-- Masaustu tablo -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="employees.departments.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'employees.departments.columns.name' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'employees.departments.columns.description' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'employees.departments.columns.employeeCount' | translate }}
+            </th>
+            <th
+              *hcHasPermission="editPermission"
+              scope="col"
+              class="px-4 py-2 text-right label-mono text-ink-muted"
+            >
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (department of store.options(); track department.id) {
+            <tr [class.opacity-40]="store.deletingId() === department.id">
+              <th scope="row" class="px-4 py-3 text-left font-normal text-ink">
+                {{ department.name }}
+              </th>
+              <td class="max-w-[28rem] px-4 py-3 text-sm text-ink-muted">
+                {{ department.description || '—' }}
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink">{{ department.employeeCount }}</td>
+              <td *hcHasPermission="editPermission" class="px-4 py-3 text-right">
+                @if (pendingDeleteId() === department.id) {
+                  <span class="inline-flex flex-wrap items-center justify-end gap-2">
+                    <span class="label-mono text-danger">
+                      {{
+                        department.employeeCount > 0
+                          ? ('employees.departments.delete.blocked'
+                            | translate: { count: department.employeeCount })
+                          : ('employees.departments.delete.confirmShort' | translate)
+                      }}
+                    </span>
+                    <hc-button
+                      size="sm"
+                      variant="danger"
+                      data-testid="department-delete-confirm"
+                      [busy]="store.deletingId() === department.id"
+                      (pressed)="confirmDelete(department)"
+                    >
+                      {{ 'common.confirm' | translate }}
+                    </hc-button>
+                    <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                      {{ 'common.cancel' | translate }}
+                    </hc-button>
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center justify-end gap-2">
+                    <a
+                      class="inline-flex min-h-9 items-center border border-rule-strong px-3 py-1.5 label-mono text-ink hover:bg-paper-sunken"
+                      [routerLink]="['/employees/departments', department.id, 'edit']"
+                      [attr.aria-label]="
+                        'employees.departments.actions.editAria'
+                          | translate: { name: department.name }
+                      "
+                      data-testid="department-edit"
+                    >
+                      {{ 'common.edit' | translate }}
+                    </a>
+                    <hc-button
+                      size="sm"
+                      variant="ghost"
+                      data-testid="department-delete"
+                      (pressed)="requestDelete(department.id)"
+                    >
+                      {{ 'common.delete' | translate }}
+                    </hc-button>
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil kart listesi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (department of store.options(); track department.id) {
+        <li class="px-4 py-4" [class.opacity-40]="store.deletingId() === department.id">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-serif text-xl leading-tight text-ink">{{ department.name }}</p>
+              @if (department.description) {
+                <p class="mt-1 text-sm text-ink-muted">{{ department.description }}</p>
+              }
+            </div>
+            <p class="shrink-0 text-right">
+              <span class="block numeric text-lg leading-none text-ink">
+                {{ department.employeeCount }}
+              </span>
+              <span class="eyebrow">
+                {{ 'employees.departments.columns.employeeCount' | translate }}
+              </span>
+            </p>
+          </div>
+
+          <div *hcHasPermission="editPermission" class="mt-3 flex flex-wrap items-center gap-2">
+            @if (pendingDeleteId() === department.id) {
+              <span class="w-full label-mono text-danger">
+                {{
+                  department.employeeCount > 0
+                    ? ('employees.departments.delete.blocked'
+                      | translate: { count: department.employeeCount })
+                    : ('employees.departments.delete.confirmShort' | translate)
+                }}
+              </span>
+              <hc-button
+                size="sm"
+                variant="danger"
+                data-testid="department-delete-confirm"
+                [busy]="store.deletingId() === department.id"
+                (pressed)="confirmDelete(department)"
+              >
+                {{ 'common.confirm' | translate }}
+              </hc-button>
+              <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                {{ 'common.cancel' | translate }}
+              </hc-button>
+            } @else {
+              <a
+                class="inline-flex touch-target items-center border border-rule-strong px-3 py-2 label-mono text-ink"
+                [routerLink]="['/employees/departments', department.id, 'edit']"
+                [attr.aria-label]="
+                  'employees.departments.actions.editAria' | translate: { name: department.name }
+                "
+                data-testid="department-edit"
+              >
+                {{ 'common.edit' | translate }}
+              </a>
+              <hc-button
+                size="sm"
+                variant="ghost"
+                data-testid="department-delete"
+                (pressed)="requestDelete(department.id)"
+              >
+                {{ 'common.delete' | translate }}
+              </hc-button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>

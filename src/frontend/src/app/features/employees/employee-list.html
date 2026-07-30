@@ -1,0 +1,471 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="employees.title"
+    subtitleKey="employees.subtitle"
+    eyebrowKey="nav.section.staff"
+  >
+    <!--
+      Not: yazma aksiyonlari statik bir kapsayici icinde durur; yapisal direktif
+      dogrudan projeksiyon slotuna uygulanamaz (`slot` niteligi ng-template'e gecmez).
+    -->
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        *hcHasPermission="editPermission"
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/employees/departments"
+        data-testid="employees-manage-departments"
+      >
+        {{ 'employees.actions.manageDepartments' | translate }}
+      </a>
+      <a
+        *hcHasPermission="editPermission"
+        class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+        routerLink="/employees/new"
+        data-testid="employees-create"
+      >
+        {{ 'employees.actions.create' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  <!-- Filtreler: degerler URL sorgu parametrelerinden okunur -->
+  <form
+    class="border border-rule bg-paper-raised"
+    aria-labelledby="employees-filter-heading"
+    novalidate
+    (ngSubmit)="
+      applyFromForm(
+        searchInput.value,
+        departmentSelect.value,
+        typeSelect.value,
+        terminatedInput.checked
+      )
+    "
+  >
+    <h2 id="employees-filter-heading" class="border-b border-rule px-4 py-3 label-mono text-ink">
+      {{ 'employees.filters.legend' | translate }}
+    </h2>
+
+    <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div>
+        <label class="hc-label" for="employees-filter-search">
+          {{ 'employees.filters.search' | translate }}
+        </label>
+        <input
+          #searchInput
+          id="employees-filter-search"
+          class="hc-input mt-1"
+          type="search"
+          name="search"
+          autocomplete="off"
+          spellcheck="false"
+          [value]="query().search ?? ''"
+          [placeholder]="'employees.filters.searchPlaceholder' | translate"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="employees-filter-department">
+          {{ 'employees.filters.department' | translate }}
+        </label>
+        <select
+          #departmentSelect
+          id="employees-filter-department"
+          class="hc-input mt-1"
+          name="departmentId"
+          [value]="query().departmentId ?? ''"
+          (change)="
+            applyFromForm(
+              searchInput.value,
+              departmentSelect.value,
+              typeSelect.value,
+              terminatedInput.checked
+            )
+          "
+        >
+          <option value="">{{ 'employees.filters.allDepartments' | translate }}</option>
+          @for (department of departments.options(); track department.id) {
+            <option [value]="department.id" [selected]="department.id === query().departmentId">
+              {{ department.name }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="hc-label" for="employees-filter-type">
+          {{ 'employees.filters.employmentType' | translate }}
+        </label>
+        <select
+          #typeSelect
+          id="employees-filter-type"
+          class="hc-input mt-1"
+          name="employmentType"
+          [value]="query().employmentType ?? ''"
+          (change)="
+            applyFromForm(
+              searchInput.value,
+              departmentSelect.value,
+              typeSelect.value,
+              terminatedInput.checked
+            )
+          "
+        >
+          <option value="">{{ 'employees.filters.allEmploymentTypes' | translate }}</option>
+          @for (type of employmentTypes; track type) {
+            <option [value]="type" [selected]="type === query().employmentType">
+              {{ employmentTypeLabelKeys[type] | translate }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="flex items-end">
+        <label
+          class="flex min-h-touch items-center gap-2 text-sm text-ink"
+          for="employees-filter-terminated"
+        >
+          <input
+            #terminatedInput
+            id="employees-filter-terminated"
+            type="checkbox"
+            name="includeTerminated"
+            data-testid="employees-filter-terminated"
+            [checked]="query().includeTerminated"
+            (change)="
+              applyFromForm(
+                searchInput.value,
+                departmentSelect.value,
+                typeSelect.value,
+                terminatedInput.checked
+              )
+            "
+          />
+          {{ 'employees.filters.includeTerminated' | translate }}
+        </label>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 border-t border-rule px-4 py-3">
+      <hc-button type="submit">{{ 'employees.filters.apply' | translate }}</hc-button>
+      @if (store.hasFilters()) {
+        <hc-button variant="ghost" (pressed)="resetFilters()">
+          {{ 'employees.filters.reset' | translate }}
+        </hc-button>
+      }
+      <p class="ml-auto eyebrow" aria-live="polite">
+        {{ 'employees.count' | translate: { count: store.totalCount() } }}
+      </p>
+    </div>
+  </form>
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'employees.list.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      [titleKey]="store.hasFilters() ? 'employees.emptyFiltered.title' : 'employees.empty.title'"
+      [descriptionKey]="
+        store.hasFilters() ? 'employees.emptyFiltered.description' : 'employees.empty.description'
+      "
+    >
+      @if (store.hasFilters()) {
+        <hc-button variant="secondary" (pressed)="resetFilters()">
+          {{ 'employees.filters.reset' | translate }}
+        </hc-button>
+      }
+    </hc-empty-state>
+  } @else {
+    @if (deleteErrorKey(); as deleteError) {
+      <p class="border border-danger bg-danger-tint px-4 py-2 text-sm text-danger" role="alert">
+        {{ deleteError | translate }}
+      </p>
+    }
+
+    <!-- Masaustu: yogun tablo -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="employees.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'employees.columns.staffNumber' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'employees.columns.name' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'employees.columns.department' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'employees.columns.employmentType' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'employees.columns.hiredOn' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'employees.columns.annualLeaveDays' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'employees.columns.status' | translate }}
+            </th>
+            <th
+              *hcHasPermission="editPermission"
+              scope="col"
+              class="px-4 py-2 text-right label-mono text-ink-muted"
+            >
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (employee of store.items(); track employee.id) {
+            <tr
+              [attr.data-inactive]="employee.isActive ? null : 'true'"
+              [class.opacity-60]="!employee.isActive"
+              [class.opacity-40]="store.deletingId() === employee.id"
+            >
+              <td class="px-4 py-3 numeric text-ink-muted">{{ employee.staffNumber || '—' }}</td>
+              <th scope="row" class="px-4 py-3 text-left font-normal text-ink">
+                {{ employee.fullName }}
+                @if (employee.email || employee.phone) {
+                  <span class="block font-mono text-xs text-ink-faint">
+                    {{ employee.email || employee.phone }}
+                  </span>
+                }
+              </th>
+              <td class="px-4 py-3 text-ink">{{ employee.departmentName }}</td>
+              <td class="px-4 py-3 text-ink">
+                {{ employmentTypeLabelKeys[employee.employmentType] | translate }}
+              </td>
+              <td class="px-4 py-3 numeric text-ink-muted">
+                {{ employee.hiredOn | hcDate: 'medium' }}
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink">{{ employee.annualLeaveDays }}</td>
+              <td class="px-4 py-3">
+                @if (employee.isActive) {
+                  <hc-badge tone="navy">{{ 'employees.status.active' | translate }}</hc-badge>
+                } @else {
+                  <hc-badge tone="neutral" [dashed]="true">
+                    {{ 'employees.status.terminated' | translate }}
+                  </hc-badge>
+                  @if (employee.terminatedOn) {
+                    <span class="mt-1 block numeric text-xs text-ink-faint">
+                      {{ employee.terminatedOn | hcDate: 'medium' }}
+                    </span>
+                  }
+                }
+              </td>
+              <td *hcHasPermission="editPermission" class="px-4 py-3 text-right">
+                @if (pendingDeleteId() === employee.id) {
+                  <span class="inline-flex flex-wrap items-center justify-end gap-2">
+                    <span class="label-mono text-danger">
+                      {{ 'employees.delete.confirmShort' | translate }}
+                    </span>
+                    <hc-button
+                      size="sm"
+                      variant="danger"
+                      [busy]="store.deletingId() === employee.id"
+                      (pressed)="confirmDelete(employee)"
+                    >
+                      {{ 'common.confirm' | translate }}
+                    </hc-button>
+                    <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                      {{ 'common.cancel' | translate }}
+                    </hc-button>
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center justify-end gap-2">
+                    <a
+                      class="inline-flex min-h-9 items-center border border-rule-strong px-3 py-1.5 label-mono text-ink hover:bg-paper-sunken"
+                      [routerLink]="['/employees', employee.id, 'edit']"
+                      [attr.aria-label]="
+                        'employees.actions.editAria' | translate: { name: employee.fullName }
+                      "
+                      data-testid="employee-edit"
+                    >
+                      {{ 'common.edit' | translate }}
+                    </a>
+                    <hc-button
+                      size="sm"
+                      variant="ghost"
+                      data-testid="employee-delete"
+                      (pressed)="requestDelete(employee.id)"
+                    >
+                      {{ 'common.delete' | translate }}
+                    </hc-button>
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil: ayni store, kart yerlesimi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (employee of store.items(); track employee.id) {
+        <li
+          class="px-4 py-4"
+          [attr.data-inactive]="employee.isActive ? null : 'true'"
+          [class.opacity-60]="!employee.isActive"
+          [class.opacity-40]="store.deletingId() === employee.id"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-serif text-xl leading-tight text-ink">{{ employee.fullName }}</p>
+              <p class="mt-1 eyebrow">
+                {{ employee.staffNumber || '—' }} · {{ employee.departmentName }}
+              </p>
+              <p class="mt-1 text-sm text-ink">
+                {{ employmentTypeLabelKeys[employee.employmentType] | translate }}
+              </p>
+            </div>
+            @if (employee.isActive) {
+              <hc-badge tone="navy">{{ 'employees.status.active' | translate }}</hc-badge>
+            } @else {
+              <hc-badge tone="neutral" [dashed]="true">
+                {{ 'employees.status.terminated' | translate }}
+              </hc-badge>
+            }
+          </div>
+
+          <dl class="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <dt class="eyebrow">{{ 'employees.columns.hiredOn' | translate }}</dt>
+              <dd class="numeric text-ink">{{ employee.hiredOn | hcDate: 'medium' }}</dd>
+            </div>
+            <div>
+              <dt class="eyebrow">{{ 'employees.columns.annualLeaveDays' | translate }}</dt>
+              <dd class="numeric text-ink">{{ employee.annualLeaveDays }}</dd>
+            </div>
+            @if (employee.terminatedOn) {
+              <div>
+                <dt class="eyebrow">{{ 'employees.columns.terminatedOn' | translate }}</dt>
+                <dd class="numeric text-ink">{{ employee.terminatedOn | hcDate: 'medium' }}</dd>
+              </div>
+            }
+            @if (employee.email) {
+              <div class="col-span-2 min-w-0">
+                <dt class="eyebrow">{{ 'common.email' | translate }}</dt>
+                <dd class="truncate font-mono text-xs text-ink">{{ employee.email }}</dd>
+              </div>
+            }
+            @if (employee.phone) {
+              <div class="col-span-2 min-w-0">
+                <dt class="eyebrow">{{ 'common.phone' | translate }}</dt>
+                <dd class="numeric text-xs text-ink">{{ employee.phone }}</dd>
+              </div>
+            }
+          </dl>
+
+          <div *hcHasPermission="editPermission" class="mt-3 flex flex-wrap items-center gap-2">
+            @if (pendingDeleteId() === employee.id) {
+              <span class="w-full label-mono text-danger">
+                {{ 'employees.delete.confirmShort' | translate }}
+              </span>
+              <hc-button
+                size="sm"
+                variant="danger"
+                [busy]="store.deletingId() === employee.id"
+                (pressed)="confirmDelete(employee)"
+              >
+                {{ 'common.confirm' | translate }}
+              </hc-button>
+              <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                {{ 'common.cancel' | translate }}
+              </hc-button>
+            } @else {
+              <a
+                class="inline-flex touch-target items-center border border-rule-strong px-3 py-2 label-mono text-ink"
+                [routerLink]="['/employees', employee.id, 'edit']"
+                [attr.aria-label]="
+                  'employees.actions.editAria' | translate: { name: employee.fullName }
+                "
+                data-testid="employee-edit"
+              >
+                {{ 'common.edit' | translate }}
+              </a>
+              <hc-button
+                size="sm"
+                variant="ghost"
+                data-testid="employee-delete"
+                (pressed)="requestDelete(employee.id)"
+              >
+                {{ 'common.delete' | translate }}
+              </hc-button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+
+    <!-- Sayfalama -->
+    <div
+      class="flex flex-col gap-3 border border-rule bg-paper-raised px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="eyebrow">
+        {{
+          'employees.pagination.range'
+            | translate
+              : { from: store.rangeStart(), to: store.rangeEnd(), total: store.totalCount() }
+        }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 label-mono text-ink-muted" for="employees-page-size">
+          {{ 'common.rowsPerPage' | translate }}
+          <select
+            id="employees-page-size"
+            class="hc-input w-auto"
+            [value]="query().pageSize"
+            (change)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === query().pageSize">{{ size }}</option>
+            }
+          </select>
+        </label>
+
+        <nav class="flex items-center gap-2" [attr.aria-label]="'common.page' | translate">
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasPreviousPage()"
+            (pressed)="goToPage(store.page() - 1)"
+          >
+            {{ 'common.previous' | translate }}
+          </hc-button>
+          <span class="numeric text-sm text-ink" aria-live="polite">
+            {{
+              'employees.pagination.page'
+                | translate: { page: store.page(), pages: store.totalPages() }
+            }}
+          </span>
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasNextPage()"
+            (pressed)="goToPage(store.page() + 1)"
+          >
+            {{ 'common.next' | translate }}
+          </hc-button>
+        </nav>
+      </div>
+    </div>
+  }
+</div>

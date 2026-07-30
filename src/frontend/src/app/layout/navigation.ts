@@ -114,7 +114,15 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         path: '/employees',
         labelKey: 'nav.employees',
         permissions: [PERMISSIONS.EmployeesView],
-        hub: { descriptionKey: 'hub.cards.employees.description', planned: true },
+        // Backend uclari hazir (GET/POST/PUT/DELETE /employees).
+        hub: { descriptionKey: 'hub.cards.employees.description' },
+      },
+      {
+        path: '/employees/departments',
+        labelKey: 'nav.departments',
+        permissions: [PERMISSIONS.EmployeesView],
+        // Backend ucu hazir (GET/POST/PUT/DELETE /departments).
+        hub: { descriptionKey: 'hub.cards.departments.description' },
       },
       {
         path: '/vacations',

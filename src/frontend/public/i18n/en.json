@@ -74,6 +74,7 @@
     "housekeeping": "Housekeeping",
     "invoices": "Invoices",
     "employees": "Employees",
+    "departments": "Departments",
     "vacations": "Vacations",
     "timeTracking": "Time tracking",
     "shifts": "Shifts",
@@ -171,6 +172,9 @@
       },
       "employees": {
         "description": "Master data, departments and employment types."
+      },
+      "departments": {
+        "description": "Maintain departments and headcount per department."
       },
       "vacations": {
         "description": "Requests, approvals and remaining entitlements."
@@ -406,9 +410,156 @@
   "employees": {
     "title": "Employees",
     "subtitle": "Master data, departments and employment types of your staff.",
+    "count": "{{count}} employees",
+    "tableCaption": "List of employees with staff number, name, department, employment type and hire date",
+    "columns": {
+      "staffNumber": "Staff no.",
+      "name": "Name",
+      "department": "Department",
+      "employmentType": "Employment type",
+      "hiredOn": "Hired",
+      "terminatedOn": "Left",
+      "annualLeaveDays": "Leave days",
+      "status": "Status"
+    },
+    "filters": {
+      "legend": "Filters",
+      "search": "Name or staff number",
+      "searchPlaceholder": "e.g. Becker or P-014",
+      "department": "Department",
+      "allDepartments": "All departments",
+      "employmentType": "Employment type",
+      "allEmploymentTypes": "All employment types",
+      "includeTerminated": "Show former employees",
+      "apply": "Apply filters",
+      "reset": "Reset filters"
+    },
+    "actions": {
+      "create": "Add employee",
+      "manageDepartments": "Departments",
+      "editAria": "Edit employee {{name}}"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}"
+    },
+    "list": {
+      "loadFailed": "The employee list could not be loaded."
+    },
     "empty": {
       "title": "No employees recorded yet",
       "description": "Name, department, employment type and leave entitlement will be listed here."
+    },
+    "emptyFiltered": {
+      "title": "No employees match this selection",
+      "description": "Please adjust the filters or reset them."
+    },
+    "status": {
+      "active": "Active",
+      "terminated": "Left"
+    },
+    "delete": {
+      "confirmShort": "Really delete this employee?",
+      "conflict": "The employee cannot be deleted because dependent records exist."
+    },
+    "employmentType": {
+      "fullTime": "Full-time",
+      "partTime": "Part-time",
+      "miniJob": "Mini-job",
+      "apprentice": "Apprenticeship",
+      "seasonal": "Seasonal",
+      "temporary": "Fixed-term"
+    },
+    "form": {
+      "createTitle": "Add employee",
+      "editTitle": "Edit employee",
+      "subtitle": "Maintain master data, department, employment type and leave entitlement.",
+      "backToList": "Back to employee list",
+      "loadFailed": "The employee could not be loaded.",
+      "sections": {
+        "person": "Person",
+        "employment": "Employment"
+      },
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone",
+      "staffNumber": "Staff number",
+      "staffNumberHint": "Up to {{staffNumberMaxLength}} characters, unique within the hotel.",
+      "department": "Department",
+      "selectDepartment": "Please select",
+      "noDepartments": "No department exists yet. Please create a department first.",
+      "employmentType": "Employment type",
+      "annualLeaveDays": "Annual leave days",
+      "annualLeaveDaysHint": "Allowed from {{min}} to {{max}}; half days are possible.",
+      "hiredOn": "Hire date",
+      "terminatedOn": "Termination date",
+      "terminatedOnHint": "Leave empty while the employment is ongoing.",
+      "saving": "Saving …",
+      "conflict": "This staff number is already in use in this hotel.",
+      "validation": {
+        "firstNameRequired": "Please enter the first name.",
+        "firstNameLength": "The first name may be at most {{nameMaxLength}} characters long.",
+        "lastNameRequired": "Please enter the last name.",
+        "lastNameLength": "The last name may be at most {{nameMaxLength}} characters long.",
+        "emailInvalid": "Please enter a valid email address.",
+        "emailLength": "The email address may be at most {{emailMaxLength}} characters long.",
+        "phoneLength": "The phone number may be at most {{phoneMaxLength}} characters long.",
+        "staffNumberLength": "The staff number may be at most {{staffNumberMaxLength}} characters long.",
+        "staffNumberConflict": "This staff number is already taken.",
+        "departmentIdRequired": "Please select a department.",
+        "employmentTypeRequired": "Please select an employment type.",
+        "annualLeaveDaysRequired": "Please enter the annual leave days.",
+        "annualLeaveDaysFormat": "Please enter a valid number.",
+        "annualLeaveDaysRange": "Annual leave days must be between {{min}} and {{max}}.",
+        "hiredOnRequired": "Please enter the hire date.",
+        "dateFormat": "Please enter a valid date.",
+        "terminatedBeforeHired": "The termination date must not be before the hire date."
+      }
+    },
+    "departments": {
+      "title": "Departments",
+      "subtitle": "Maintain the departments of the active hotel — the basis for shifts and reports.",
+      "backToEmployees": "Back to employees",
+      "tableCaption": "List of departments with name, description and headcount",
+      "loadFailed": "The departments could not be loaded.",
+      "columns": {
+        "name": "Name",
+        "description": "Description",
+        "employeeCount": "Employees"
+      },
+      "actions": {
+        "create": "Add department",
+        "editAria": "Edit department {{name}}"
+      },
+      "empty": {
+        "title": "No departments yet",
+        "description": "Every employee belongs to a department. Please create a department first."
+      },
+      "delete": {
+        "confirmShort": "Really delete this department?",
+        "blocked": "Careful: {{count}} employees are assigned to this department.",
+        "conflict": "The department cannot be deleted because employees are still assigned to it."
+      },
+      "form": {
+        "createTitle": "Add department",
+        "editTitle": "Edit department",
+        "subtitle": "Name and description of the department.",
+        "backToList": "Back to department list",
+        "loadFailed": "The departments could not be loaded.",
+        "notFound": "This department no longer exists.",
+        "name": "Name",
+        "namePlaceholder": "e.g. Reception",
+        "description": "Description",
+        "saving": "Saving …",
+        "conflict": "A department with this name already exists.",
+        "validation": {
+          "nameRequired": "Please enter a name.",
+          "nameLength": "The name may be at most {{nameMaxLength}} characters long.",
+          "nameConflict": "This name is already taken.",
+          "descriptionLength": "The description may be at most {{descriptionMaxLength}} characters long."
+        }
+      }
     }
   },
   "vacations": {

@@ -74,6 +74,7 @@
     "housekeeping": "Kat Hizmetleri",
     "invoices": "Faturalar",
     "employees": "Personel",
+    "departments": "Departmanlar",
     "vacations": "İzinler",
     "timeTracking": "Zaman Takibi",
     "shifts": "Vardiyalar",
@@ -171,6 +172,9 @@
       },
       "employees": {
         "description": "Personel kartları, departman ve çalışma şekli."
+      },
+      "departments": {
+        "description": "Departman tanımları ve departman başına personel sayısı."
       },
       "vacations": {
         "description": "Talepler, onaylar ve kalan izin hakkı."
@@ -405,10 +409,157 @@
   },
   "employees": {
     "title": "Personel",
-    "subtitle": "Çalışanların künye bilgileri, departmanları ve çalışma türleri.",
+    "subtitle": "Çalışanların künye bilgileri, departmanları ve çalışma şekilleri.",
+    "count": "{{count}} çalışan",
+    "tableCaption": "Personel numarası, ad, departman, çalışma şekli ve işe giriş tarihiyle çalışan listesi",
+    "columns": {
+      "staffNumber": "Personel no",
+      "name": "Ad Soyad",
+      "department": "Departman",
+      "employmentType": "Çalışma şekli",
+      "hiredOn": "İşe giriş",
+      "terminatedOn": "İşten çıkış",
+      "annualLeaveDays": "İzin günü",
+      "status": "Durum"
+    },
+    "filters": {
+      "legend": "Filtreler",
+      "search": "Ad, soyad veya personel no",
+      "searchPlaceholder": "örn. Becker veya P-014",
+      "department": "Departman",
+      "allDepartments": "Tüm departmanlar",
+      "employmentType": "Çalışma şekli",
+      "allEmploymentTypes": "Tüm çalışma şekilleri",
+      "includeTerminated": "İşten ayrılanları göster",
+      "apply": "Filtreleri uygula",
+      "reset": "Filtreleri sıfırla"
+    },
+    "actions": {
+      "create": "Çalışan ekle",
+      "manageDepartments": "Departmanlar",
+      "editAria": "{{name}} adlı çalışanı düzenle"
+    },
+    "pagination": {
+      "range": "{{total}} kayıttan {{from}}–{{to}}",
+      "page": "Sayfa {{page}} / {{pages}}"
+    },
+    "list": {
+      "loadFailed": "Çalışan listesi yüklenemedi."
+    },
     "empty": {
       "title": "Henüz personel kaydı yok",
-      "description": "Ad, departman, çalışma türü ve yıllık izin hakkı burada listelenecek."
+      "description": "Ad, departman, çalışma şekli ve yıllık izin hakkı burada listelenecek."
+    },
+    "emptyFiltered": {
+      "title": "Bu seçime uygun çalışan yok",
+      "description": "Lütfen filtreleri değiştirin veya sıfırlayın."
+    },
+    "status": {
+      "active": "Aktif",
+      "terminated": "Ayrıldı"
+    },
+    "delete": {
+      "confirmShort": "Çalışan kaydı silinsin mi?",
+      "conflict": "Bağlı kayıtlar bulunduğu için çalışan silinemiyor."
+    },
+    "employmentType": {
+      "fullTime": "Tam zamanlı",
+      "partTime": "Yarı zamanlı",
+      "miniJob": "Mini iş (Minijob)",
+      "apprentice": "Çıraklık / Eğitim",
+      "seasonal": "Sezonluk",
+      "temporary": "Belirli süreli"
+    },
+    "form": {
+      "createTitle": "Çalışan ekle",
+      "editTitle": "Çalışanı düzenle",
+      "subtitle": "Künye bilgileri, departman, çalışma şekli ve yıllık izin hakkı.",
+      "backToList": "Çalışan listesine dön",
+      "loadFailed": "Çalışan kaydı yüklenemedi.",
+      "sections": {
+        "person": "Kişi",
+        "employment": "Çalışma bilgileri"
+      },
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "email": "E-posta",
+      "phone": "Telefon",
+      "staffNumber": "Personel numarası",
+      "staffNumberHint": "En fazla {{staffNumberMaxLength}} karakter, otel içinde tekil.",
+      "department": "Departman",
+      "selectDepartment": "Lütfen seçin",
+      "noDepartments": "Henüz departman tanımlı değil. Önce bir departman oluşturun.",
+      "employmentType": "Çalışma şekli",
+      "annualLeaveDays": "Yıllık izin günü",
+      "annualLeaveDaysHint": "{{min}} ile {{max}} arasında; yarım gün girilebilir.",
+      "hiredOn": "İşe giriş tarihi",
+      "terminatedOn": "İşten çıkış tarihi",
+      "terminatedOnHint": "Çalışma sürüyorsa boş bırakın.",
+      "saving": "Kaydediliyor …",
+      "conflict": "Bu personel numarası otelde zaten kullanılıyor.",
+      "validation": {
+        "firstNameRequired": "Lütfen adı girin.",
+        "firstNameLength": "Ad en fazla {{nameMaxLength}} karakter olabilir.",
+        "lastNameRequired": "Lütfen soyadı girin.",
+        "lastNameLength": "Soyad en fazla {{nameMaxLength}} karakter olabilir.",
+        "emailInvalid": "Lütfen geçerli bir e-posta adresi girin.",
+        "emailLength": "E-posta adresi en fazla {{emailMaxLength}} karakter olabilir.",
+        "phoneLength": "Telefon numarası en fazla {{phoneMaxLength}} karakter olabilir.",
+        "staffNumberLength": "Personel numarası en fazla {{staffNumberMaxLength}} karakter olabilir.",
+        "staffNumberConflict": "Bu personel numarası zaten kullanılıyor.",
+        "departmentIdRequired": "Lütfen bir departman seçin.",
+        "employmentTypeRequired": "Lütfen bir çalışma şekli seçin.",
+        "annualLeaveDaysRequired": "Lütfen yıllık izin gününü girin.",
+        "annualLeaveDaysFormat": "Lütfen geçerli bir sayı girin.",
+        "annualLeaveDaysRange": "Yıllık izin günü {{min}} ile {{max}} arasında olmalıdır.",
+        "hiredOnRequired": "Lütfen işe giriş tarihini girin.",
+        "dateFormat": "Lütfen geçerli bir tarih girin.",
+        "terminatedBeforeHired": "İşten çıkış tarihi, işe giriş tarihinden önce olamaz."
+      }
+    },
+    "departments": {
+      "title": "Departmanlar",
+      "subtitle": "Aktif otelin departmanları — vardiya planı ve raporların temeli.",
+      "backToEmployees": "Personele dön",
+      "tableCaption": "Ad, açıklama ve çalışan sayısıyla departman listesi",
+      "loadFailed": "Departmanlar yüklenemedi.",
+      "columns": {
+        "name": "Ad",
+        "description": "Açıklama",
+        "employeeCount": "Çalışan"
+      },
+      "actions": {
+        "create": "Departman ekle",
+        "editAria": "{{name}} departmanını düzenle"
+      },
+      "empty": {
+        "title": "Henüz departman yok",
+        "description": "Her çalışan bir departmana bağlanır. Önce bir departman oluşturun."
+      },
+      "delete": {
+        "confirmShort": "Departman silinsin mi?",
+        "blocked": "Dikkat: bu departmana bağlı {{count}} çalışan var.",
+        "conflict": "Bu departmana bağlı çalışanlar olduğu için departman silinemiyor."
+      },
+      "form": {
+        "createTitle": "Departman ekle",
+        "editTitle": "Departmanı düzenle",
+        "subtitle": "Departman adı ve açıklaması.",
+        "backToList": "Departman listesine dön",
+        "loadFailed": "Departmanlar yüklenemedi.",
+        "notFound": "Bu departman artık mevcut değil.",
+        "name": "Ad",
+        "namePlaceholder": "örn. Resepsiyon",
+        "description": "Açıklama",
+        "saving": "Kaydediliyor …",
+        "conflict": "Bu adda bir departman zaten var.",
+        "validation": {
+          "nameRequired": "Lütfen bir ad girin.",
+          "nameLength": "Ad en fazla {{nameMaxLength}} karakter olabilir.",
+          "nameConflict": "Bu ad zaten kullanılıyor.",
+          "descriptionLength": "Açıklama en fazla {{descriptionMaxLength}} karakter olabilir."
+        }
+      }
     }
   },
   "vacations": {

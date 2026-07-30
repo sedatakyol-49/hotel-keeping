@@ -9,10 +9,17 @@ import type { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/fo
 /**
  * `"1.234,56"` / `"1234.56"` -> `1234.56`; cozumlenemezse `null`.
  * Virgul varsa Almanca yazim kabul edilir (nokta = binlik ayirici).
+ *
+ * Not: `<input type="number">` bagli bir kontrolde Angular'in
+ * `NumberValueAccessor`'i modele **sayi** yazar (metin degil); bu yuzden sayi
+ * girdisi de kabul edilir.
  */
-export function parseDecimal(value: string | null | undefined): number | null {
+export function parseDecimal(value: string | number | null | undefined): number | null {
   if (value === null || value === undefined) {
     return null;
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
   }
   const raw = value.trim().replace(/\s/g, '');
   if (raw === '') {
@@ -26,10 +33,13 @@ export function parseDecimal(value: string | null | undefined): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-/** `"-3"` -> `-3`; tam sayi degilse `null`. */
-export function parseInteger(value: string | null | undefined): number | null {
+/** `"-3"` -> `-3`; tam sayi degilse `null` (sayi girdisi de kabul edilir). */
+export function parseInteger(value: string | number | null | undefined): number | null {
   if (value === null || value === undefined) {
     return null;
+  }
+  if (typeof value === 'number') {
+    return Number.isSafeInteger(value) ? value : null;
   }
   const normalized = value.trim();
   if (!/^-?\d+$/.test(normalized)) {

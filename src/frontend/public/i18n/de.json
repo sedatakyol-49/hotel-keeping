@@ -74,6 +74,7 @@
     "housekeeping": "Housekeeping",
     "invoices": "Rechnungen",
     "employees": "Mitarbeiter",
+    "departments": "Abteilungen",
     "vacations": "Urlaub",
     "timeTracking": "Zeiterfassung",
     "shifts": "Schichtplan",
@@ -171,6 +172,9 @@
       },
       "employees": {
         "description": "Stammdaten, Abteilungen und Beschäftigungsarten."
+      },
+      "departments": {
+        "description": "Abteilungen anlegen und Mitarbeiterzahl je Abteilung."
       },
       "vacations": {
         "description": "Anträge, Genehmigungen und Restansprüche."
@@ -406,9 +410,156 @@
   "employees": {
     "title": "Mitarbeiter",
     "subtitle": "Stammdaten, Abteilungen und Beschäftigungsarten der Mitarbeiter.",
+    "count": "{{count}} Mitarbeiter",
+    "tableCaption": "Liste der Mitarbeiter mit Personalnummer, Name, Abteilung, Beschäftigungsart und Eintrittsdatum",
+    "columns": {
+      "staffNumber": "Personalnr.",
+      "name": "Name",
+      "department": "Abteilung",
+      "employmentType": "Beschäftigungsart",
+      "hiredOn": "Eintritt",
+      "terminatedOn": "Austritt",
+      "annualLeaveDays": "Urlaubstage",
+      "status": "Status"
+    },
+    "filters": {
+      "legend": "Filter",
+      "search": "Name oder Personalnummer",
+      "searchPlaceholder": "z. B. Becker oder P-014",
+      "department": "Abteilung",
+      "allDepartments": "Alle Abteilungen",
+      "employmentType": "Beschäftigungsart",
+      "allEmploymentTypes": "Alle Beschäftigungsarten",
+      "includeTerminated": "Ausgetretene anzeigen",
+      "apply": "Filter anwenden",
+      "reset": "Filter zurücksetzen"
+    },
+    "actions": {
+      "create": "Mitarbeiter anlegen",
+      "manageDepartments": "Abteilungen",
+      "editAria": "Mitarbeiter {{name}} bearbeiten"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} von {{total}}",
+      "page": "Seite {{page}} von {{pages}}"
+    },
+    "list": {
+      "loadFailed": "Die Mitarbeiterliste konnte nicht geladen werden."
+    },
     "empty": {
       "title": "Noch keine Mitarbeiter erfasst",
       "description": "Hier erscheinen Name, Abteilung, Beschäftigungsart und Urlaubsanspruch."
+    },
+    "emptyFiltered": {
+      "title": "Keine Mitarbeiter für diese Auswahl",
+      "description": "Bitte passen Sie die Filter an oder setzen Sie sie zurück."
+    },
+    "status": {
+      "active": "Aktiv",
+      "terminated": "Ausgetreten"
+    },
+    "delete": {
+      "confirmShort": "Mitarbeiter wirklich löschen?",
+      "conflict": "Der Mitarbeiter kann nicht gelöscht werden, weil abhängige Daten bestehen."
+    },
+    "employmentType": {
+      "fullTime": "Vollzeit",
+      "partTime": "Teilzeit",
+      "miniJob": "Minijob",
+      "apprentice": "Ausbildung",
+      "seasonal": "Saison",
+      "temporary": "Befristet"
+    },
+    "form": {
+      "createTitle": "Mitarbeiter anlegen",
+      "editTitle": "Mitarbeiter bearbeiten",
+      "subtitle": "Stammdaten, Abteilung, Beschäftigungsart und Urlaubsanspruch pflegen.",
+      "backToList": "Zur Mitarbeiterliste",
+      "loadFailed": "Der Mitarbeiter konnte nicht geladen werden.",
+      "sections": {
+        "person": "Person",
+        "employment": "Beschäftigung"
+      },
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "staffNumber": "Personalnummer",
+      "staffNumberHint": "Höchstens {{staffNumberMaxLength}} Zeichen, im Hotel eindeutig.",
+      "department": "Abteilung",
+      "selectDepartment": "Bitte wählen",
+      "noDepartments": "Es ist noch keine Abteilung angelegt. Bitte legen Sie zuerst eine Abteilung an.",
+      "employmentType": "Beschäftigungsart",
+      "annualLeaveDays": "Urlaubstage pro Jahr",
+      "annualLeaveDaysHint": "Zulässig von {{min}} bis {{max}}, halbe Tage möglich.",
+      "hiredOn": "Eintrittsdatum",
+      "terminatedOn": "Austrittsdatum",
+      "terminatedOnHint": "Leer lassen, solange das Arbeitsverhältnis läuft.",
+      "saving": "Wird gespeichert …",
+      "conflict": "Diese Personalnummer ist im Hotel bereits vergeben.",
+      "validation": {
+        "firstNameRequired": "Bitte geben Sie den Vornamen ein.",
+        "firstNameLength": "Der Vorname darf höchstens {{nameMaxLength}} Zeichen lang sein.",
+        "lastNameRequired": "Bitte geben Sie den Nachnamen ein.",
+        "lastNameLength": "Der Nachname darf höchstens {{nameMaxLength}} Zeichen lang sein.",
+        "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+        "emailLength": "Die E-Mail-Adresse darf höchstens {{emailMaxLength}} Zeichen lang sein.",
+        "phoneLength": "Die Telefonnummer darf höchstens {{phoneMaxLength}} Zeichen lang sein.",
+        "staffNumberLength": "Die Personalnummer darf höchstens {{staffNumberMaxLength}} Zeichen lang sein.",
+        "staffNumberConflict": "Diese Personalnummer ist bereits vergeben.",
+        "departmentIdRequired": "Bitte wählen Sie eine Abteilung.",
+        "employmentTypeRequired": "Bitte wählen Sie eine Beschäftigungsart.",
+        "annualLeaveDaysRequired": "Bitte geben Sie die Urlaubstage ein.",
+        "annualLeaveDaysFormat": "Bitte geben Sie eine gültige Zahl ein.",
+        "annualLeaveDaysRange": "Die Urlaubstage müssen zwischen {{min}} und {{max}} liegen.",
+        "hiredOnRequired": "Bitte geben Sie das Eintrittsdatum ein.",
+        "dateFormat": "Bitte geben Sie ein gültiges Datum ein.",
+        "terminatedBeforeHired": "Das Austrittsdatum darf nicht vor dem Eintrittsdatum liegen."
+      }
+    },
+    "departments": {
+      "title": "Abteilungen",
+      "subtitle": "Abteilungen des aktiven Hotels pflegen — Grundlage für Schichtplan und Auswertungen.",
+      "backToEmployees": "Zu den Mitarbeitern",
+      "tableCaption": "Liste der Abteilungen mit Bezeichnung, Beschreibung und Mitarbeiterzahl",
+      "loadFailed": "Die Abteilungen konnten nicht geladen werden.",
+      "columns": {
+        "name": "Bezeichnung",
+        "description": "Beschreibung",
+        "employeeCount": "Mitarbeiter"
+      },
+      "actions": {
+        "create": "Abteilung anlegen",
+        "editAria": "Abteilung {{name}} bearbeiten"
+      },
+      "empty": {
+        "title": "Noch keine Abteilungen",
+        "description": "Jeder Mitarbeiter wird einer Abteilung zugeordnet. Legen Sie zuerst eine Abteilung an."
+      },
+      "delete": {
+        "confirmShort": "Abteilung wirklich löschen?",
+        "blocked": "Achtung: {{count}} Mitarbeiter sind dieser Abteilung zugeordnet.",
+        "conflict": "Die Abteilung kann nicht gelöscht werden, weil ihr noch Mitarbeiter zugeordnet sind."
+      },
+      "form": {
+        "createTitle": "Abteilung anlegen",
+        "editTitle": "Abteilung bearbeiten",
+        "subtitle": "Bezeichnung und Beschreibung der Abteilung.",
+        "backToList": "Zur Abteilungsliste",
+        "loadFailed": "Die Abteilungen konnten nicht geladen werden.",
+        "notFound": "Diese Abteilung existiert nicht mehr.",
+        "name": "Bezeichnung",
+        "namePlaceholder": "z. B. Empfang",
+        "description": "Beschreibung",
+        "saving": "Wird gespeichert …",
+        "conflict": "Eine Abteilung mit dieser Bezeichnung existiert bereits.",
+        "validation": {
+          "nameRequired": "Bitte geben Sie eine Bezeichnung ein.",
+          "nameLength": "Die Bezeichnung darf höchstens {{nameMaxLength}} Zeichen lang sein.",
+          "nameConflict": "Diese Bezeichnung ist bereits vergeben.",
+          "descriptionLength": "Die Beschreibung darf höchstens {{descriptionMaxLength}} Zeichen lang sein."
+        }
+      }
     }
   },
   "vacations": {

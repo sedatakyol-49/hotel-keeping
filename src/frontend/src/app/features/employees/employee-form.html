@@ -1,0 +1,333 @@
+<div class="space-y-6">
+  <hc-page-header
+    [titleKey]="isEdit() ? 'employees.form.editTitle' : 'employees.form.createTitle'"
+    subtitleKey="employees.form.subtitle"
+    eyebrowKey="employees.title"
+  >
+    <a
+      slot="actions"
+      class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+      routerLink="/employees"
+    >
+      {{ 'employees.form.backToList' | translate }}
+    </a>
+  </hc-page-header>
+
+  @if (loading()) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (loadError(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'employees.form.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="reload()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else {
+    <form
+      class="border border-rule bg-paper-raised"
+      [formGroup]="form"
+      novalidate
+      (ngSubmit)="submit()"
+    >
+      <div class="space-y-6 px-4 py-5 sm:px-6">
+        @if (formErrorKey(); as errorKey) {
+          <p
+            class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
+            role="alert"
+            data-testid="employee-form-error"
+          >
+            {{ errorKey | translate }}
+          </p>
+        }
+        @if (formErrors().length > 0) {
+          <ul
+            class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
+            role="alert"
+          >
+            @for (message of formErrors(); track message) {
+              <li>{{ message }}</li>
+            }
+          </ul>
+        }
+        @if (departments.options().length === 0 && !departments.loading()) {
+          <p class="border border-brass bg-brass-tint px-3 py-2 text-sm text-brass">
+            {{ 'employees.form.noDepartments' | translate }}
+          </p>
+        }
+
+        <!-- Kisi bilgileri -->
+        <fieldset>
+          <legend class="label-mono text-ink">
+            {{ 'employees.form.sections.person' | translate }}
+          </legend>
+          <div class="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label class="hc-label" for="employee-first-name">
+                {{ 'employees.form.firstName' | translate }}
+              </label>
+              <input
+                id="employee-first-name"
+                class="hc-input mt-1"
+                type="text"
+                formControlName="firstName"
+                autocomplete="given-name"
+                required
+                [maxlength]="limits.firstNameMaxLength"
+                [attr.aria-invalid]="errorKeyFor('firstName') ? 'true' : null"
+              />
+              @if (errorKeyFor('firstName'); as errorKey) {
+                <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+              }
+              @for (message of serverMessagesFor('firstName'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="hc-label" for="employee-last-name">
+                {{ 'employees.form.lastName' | translate }}
+              </label>
+              <input
+                id="employee-last-name"
+                class="hc-input mt-1"
+                type="text"
+                formControlName="lastName"
+                autocomplete="family-name"
+                required
+                [maxlength]="limits.lastNameMaxLength"
+                [attr.aria-invalid]="errorKeyFor('lastName') ? 'true' : null"
+              />
+              @if (errorKeyFor('lastName'); as errorKey) {
+                <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+              }
+              @for (message of serverMessagesFor('lastName'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="hc-label" for="employee-email">
+                {{ 'employees.form.email' | translate }}
+                <span class="text-ink-faint">· {{ 'common.optional' | translate }}</span>
+              </label>
+              <input
+                id="employee-email"
+                class="hc-input mt-1"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                spellcheck="false"
+                [maxlength]="limits.emailMaxLength"
+                [attr.aria-invalid]="errorKeyFor('email') ? 'true' : null"
+              />
+              @if (errorKeyFor('email'); as errorKey) {
+                <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+              }
+              @for (message of serverMessagesFor('email'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="hc-label" for="employee-phone">
+                {{ 'employees.form.phone' | translate }}
+                <span class="text-ink-faint">· {{ 'common.optional' | translate }}</span>
+              </label>
+              <input
+                id="employee-phone"
+                class="hc-input mt-1"
+                type="tel"
+                formControlName="phone"
+                autocomplete="tel"
+                inputmode="tel"
+                [maxlength]="limits.phoneMaxLength"
+                [attr.aria-invalid]="errorKeyFor('phone') ? 'true' : null"
+              />
+              @if (errorKeyFor('phone'); as errorKey) {
+                <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+              }
+              @for (message of serverMessagesFor('phone'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Istihdam bilgileri -->
+        <fieldset class="border-t border-rule pt-5">
+          <legend class="label-mono text-ink">
+            {{ 'employees.form.sections.employment' | translate }}
+          </legend>
+          <div class="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label class="hc-label" for="employee-staff-number">
+                {{ 'employees.form.staffNumber' | translate }}
+                <span class="text-ink-faint">· {{ 'common.optional' | translate }}</span>
+              </label>
+              <input
+                id="employee-staff-number"
+                class="hc-input mt-1"
+                type="text"
+                formControlName="staffNumber"
+                autocomplete="off"
+                spellcheck="false"
+                [maxlength]="limits.staffNumberMaxLength"
+                [attr.aria-invalid]="errorKeyFor('staffNumber') ? 'true' : null"
+                [attr.aria-describedby]="'employee-staff-number-hint'"
+              />
+              <p id="employee-staff-number-hint" class="mt-1 text-xs text-ink-faint">
+                {{ 'employees.form.staffNumberHint' | translate: validationParams }}
+              </p>
+              @if (errorKeyFor('staffNumber'); as errorKey) {
+                <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+              }
+              @for (message of serverMessagesFor('staffNumber'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="hc-label" for="employee-department">
+                {{ 'employees.form.department' | translate }}
+              </label>
+              <select
+                id="employee-department"
+                class="hc-input mt-1"
+                formControlName="departmentId"
+                required
+                [attr.aria-invalid]="errorKeyFor('departmentId') ? 'true' : null"
+              >
+                <option value="">{{ 'employees.form.selectDepartment' | translate }}</option>
+                @for (department of departments.options(); track department.id) {
+                  <option [value]="department.id">{{ department.name }}</option>
+                }
+              </select>
+              @if (errorKeyFor('departmentId'); as errorKey) {
+                <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+              }
+              @for (message of serverMessagesFor('departmentId'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="hc-label" for="employee-employment-type">
+                {{ 'employees.form.employmentType' | translate }}
+              </label>
+              <select
+                id="employee-employment-type"
+                class="hc-input mt-1"
+                formControlName="employmentType"
+                required
+                [attr.aria-invalid]="errorKeyFor('employmentType') ? 'true' : null"
+              >
+                @for (type of employmentTypes; track type) {
+                  <option [value]="type">{{ employmentTypeLabelKeys[type] | translate }}</option>
+                }
+              </select>
+              @if (errorKeyFor('employmentType'); as errorKey) {
+                <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+              }
+              @for (message of serverMessagesFor('employmentType'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="hc-label" for="employee-annual-leave">
+                {{ 'employees.form.annualLeaveDays' | translate }}
+              </label>
+              <input
+                id="employee-annual-leave"
+                class="hc-input mt-1"
+                type="number"
+                formControlName="annualLeaveDays"
+                inputmode="numeric"
+                step="0.5"
+                required
+                [min]="limits.annualLeaveDaysMin"
+                [max]="limits.annualLeaveDaysMax"
+                [attr.aria-invalid]="errorKeyFor('annualLeaveDays') ? 'true' : null"
+                [attr.aria-describedby]="'employee-annual-leave-hint'"
+              />
+              <p id="employee-annual-leave-hint" class="mt-1 text-xs text-ink-faint">
+                {{ 'employees.form.annualLeaveDaysHint' | translate: validationParams }}
+              </p>
+              @if (errorKeyFor('annualLeaveDays'); as errorKey) {
+                <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+              }
+              @for (message of serverMessagesFor('annualLeaveDays'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="hc-label" for="employee-hired-on">
+                {{ 'employees.form.hiredOn' | translate }}
+              </label>
+              <input
+                id="employee-hired-on"
+                class="hc-input mt-1"
+                type="date"
+                formControlName="hiredOn"
+                required
+                [attr.aria-invalid]="errorKeyFor('hiredOn') ? 'true' : null"
+              />
+              @if (errorKeyFor('hiredOn'); as errorKey) {
+                <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+              }
+              @for (message of serverMessagesFor('hiredOn'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="hc-label" for="employee-terminated-on">
+                {{ 'employees.form.terminatedOn' | translate }}
+                <span class="text-ink-faint">· {{ 'common.optional' | translate }}</span>
+              </label>
+              <input
+                id="employee-terminated-on"
+                class="hc-input mt-1"
+                type="date"
+                formControlName="terminatedOn"
+                [attr.aria-invalid]="errorKeyFor('terminatedOn') ? 'true' : null"
+                [attr.aria-describedby]="'employee-terminated-on-hint'"
+              />
+              <p id="employee-terminated-on-hint" class="mt-1 text-xs text-ink-faint">
+                {{ 'employees.form.terminatedOnHint' | translate }}
+              </p>
+              @if (errorKeyFor('terminatedOn'); as errorKey) {
+                <p class="mt-1 text-xs text-danger" data-testid="employee-terminated-error">
+                  {{ errorKey | translate: validationParams }}
+                </p>
+              }
+              @for (message of serverMessagesFor('terminatedOn'); track message) {
+                <p class="mt-1 text-xs text-danger">{{ message }}</p>
+              }
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3 sm:px-6">
+        <hc-button
+          type="submit"
+          data-testid="employee-form-submit"
+          [busy]="saving()"
+          [disabled]="departments.options().length === 0"
+        >
+          {{ (saving() ? 'employees.form.saving' : 'common.save') | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="cancel()">
+          {{ 'common.cancel' | translate }}
+        </hc-button>
+      </div>
+    </form>
+  }
+</div>
