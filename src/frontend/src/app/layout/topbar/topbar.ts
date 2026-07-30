@@ -7,8 +7,12 @@ import { LanguagePicker } from '../language-picker/language-picker';
 import { UserMenu } from '../user-menu/user-menu';
 
 /**
- * Ust cubuk: mobil menu dugmesi, otel secici, dil secici ve kullanici menusu.
- * 1px cetvel ile icerikten ayrilir; golge kullanilmaz.
+ * Ust cubuk: mobil menu dugmesi, masaustu kenar cubugu daraltma dugmesi, otel
+ * secici, dil secici ve kullanici menusu. 1px cetvel ile icerikten ayrilir;
+ * golge kullanilmaz.
+ *
+ * Kabuk bu cubugu akista **sabit** tutar (kaydirilmaz); bu yuzden burada ayrica
+ * `sticky`/`fixed` konumlandirma yapilmaz — duzen sorumlulugu tek yerde kalir.
  */
 @Component({
   selector: 'hc-topbar',
@@ -16,7 +20,7 @@ import { UserMenu } from '../user-menu/user-menu';
   imports: [TranslatePipe, HotelSwitcher, LanguagePicker, UserMenu],
   template: `
     <header
-      class="sticky top-0 z-20 flex min-h-topbar items-center gap-3 border-b border-rule bg-paper px-3 sm:px-6"
+      class="z-20 flex min-h-topbar shrink-0 items-center gap-3 border-b border-rule bg-paper px-3 sm:px-6"
     >
       @if (menuVisible()) {
         <button
@@ -28,6 +32,25 @@ import { UserMenu } from '../user-menu/user-menu';
           (click)="menuToggled.emit()"
         >
           <span aria-hidden="true">{{ menuOpen() ? '✕' : '≡' }}</span>
+        </button>
+      }
+
+      @if (sidebarToggleVisible()) {
+        <!-- Daraltma yalnizca masaustunde anlamli: mobilde gezinme cekmecededir. -->
+        <button
+          type="button"
+          class="hidden touch-target items-center justify-center border border-rule label-mono text-ink lg:flex"
+          [attr.aria-pressed]="sidebarCollapsed()"
+          [attr.aria-label]="
+            (sidebarCollapsed() ? 'nav.expandSidebar' : 'nav.collapseSidebar') | translate
+          "
+          [attr.title]="
+            (sidebarCollapsed() ? 'nav.expandSidebar' : 'nav.collapseSidebar') | translate
+          "
+          data-testid="sidebar-toggle"
+          (click)="sidebarToggled.emit()"
+        >
+          <span aria-hidden="true">{{ sidebarCollapsed() ? '»' : '«' }}</span>
         </button>
       }
 
@@ -55,4 +78,10 @@ export class Topbar {
   /** Hub ekraninda gezinme cekmecesi yoktur; menu dugmesi hic render edilmez. */
   readonly menuVisible = input(true);
   readonly menuToggled = output<void>();
+
+  /** Kenar cubugu daraltilmis mi (dugmenin basili durumu ve etiketi icin). */
+  readonly sidebarCollapsed = input(false);
+  /** Hub ekraninda kenar cubugu yoktur; daraltma dugmesi de gosterilmez. */
+  readonly sidebarToggleVisible = input(true);
+  readonly sidebarToggled = output<void>();
 }

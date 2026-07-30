@@ -50,6 +50,8 @@
     "skipToContent": "Skip to content",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
+    "collapseSidebar": "Collapse navigation",
+    "expandSidebar": "Expand navigation",
     "userMenu": "User menu",
     "section": {
       "overview": "Overview",
@@ -57,6 +59,13 @@
       "staff": "Staff",
       "finance": "Finance",
       "system": "System"
+    },
+    "short": {
+      "overview": "OV",
+      "operations": "OP",
+      "staff": "ST",
+      "finance": "FI",
+      "system": "SY"
     },
     "dashboard": "Dashboard",
     "rooms": "Rooms",

@@ -50,6 +50,8 @@
     "skipToContent": "İçeriğe atla",
     "openMenu": "Menüyü aç",
     "closeMenu": "Menüyü kapat",
+    "collapseSidebar": "Menüyü daralt",
+    "expandSidebar": "Menüyü genişlet",
     "userMenu": "Kullanıcı menüsü",
     "section": {
       "overview": "Genel",
@@ -57,6 +59,13 @@
       "staff": "Personel",
       "finance": "Finans",
       "system": "Sistem"
+    },
+    "short": {
+      "overview": "GN",
+      "operations": "OP",
+      "staff": "PE",
+      "finance": "Fİ",
+      "system": "SI"
     },
     "dashboard": "Genel Bakış",
     "rooms": "Odalar",

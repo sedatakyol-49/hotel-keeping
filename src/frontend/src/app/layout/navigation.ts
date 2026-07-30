@@ -37,8 +37,21 @@ export interface NavItem {
   readonly hub?: NavHubMeta;
 }
 
+/**
+ * Kenar cubugundaki bir **ana menu kalemi** ve onun alt menusu.
+ *
+ * Tek ogesi olan bolum kenar cubugunda dogrudan baglanti olarak cizilir (araya
+ * gereksiz bir accordion katmani koymamak icin); coklu bolum acilip kapanan bir
+ * ana kalem olur. Modul eklendikce tek ogeli bolum kendiliginden gruba doner.
+ */
 export interface NavSection {
   readonly labelKey: string;
+  /**
+   * Daraltilmis (rail) kenar cubugunda gosterilen kisa gosterim anahtari —
+   * `nav.short.*`. Stok ikon/emoji kullanilmadigi icin gosterim tipografiktir
+   * ve **cevrilebilir** olmalidir (DE "BE" ≠ EN "OP").
+   */
+  readonly shortKey: string;
   readonly items: readonly NavItem[];
 }
 
@@ -56,6 +69,7 @@ export type HubNavItem = NavItem & { readonly hub: NavHubMeta };
 export const NAV_SECTIONS: readonly NavSection[] = [
   {
     labelKey: 'nav.section.overview',
+    shortKey: 'nav.short.overview',
     items: [
       // Hub'in kendisi: kenar cubugunda geri donus baglantisi olarak durur,
       // kart izgarasinda kendini tekrar etmez (bu yuzden `hub` ustverisi yok).
@@ -64,6 +78,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   },
   {
     labelKey: 'nav.section.operations',
+    shortKey: 'nav.short.operations',
     items: [
       {
         path: '/rooms',
@@ -93,6 +108,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   },
   {
     labelKey: 'nav.section.staff',
+    shortKey: 'nav.short.staff',
     items: [
       {
         path: '/employees',
@@ -122,6 +138,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   },
   {
     labelKey: 'nav.section.finance',
+    shortKey: 'nav.short.finance',
     items: [
       {
         path: '/invoices',
@@ -139,6 +156,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   },
   {
     labelKey: 'nav.section.system',
+    shortKey: 'nav.short.system',
     items: [
       {
         path: '/settings',

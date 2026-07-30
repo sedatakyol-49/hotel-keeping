@@ -1,0 +1,113 @@
+<nav
+  class="flex h-full flex-col"
+  [class.hc-rail]="collapsed()"
+  [attr.aria-label]="'nav.mainNavigation' | translate"
+>
+  <div class="border-b border-rule py-4" [class.px-4]="!collapsed()" [class.px-2]="collapsed()">
+    @if (collapsed()) {
+      <p class="text-center font-serif text-2xl leading-none text-ink" aria-hidden="true">H</p>
+      <span class="sr-only">{{ 'common.appName' | translate }}</span>
+    } @else {
+      <p class="font-serif text-2xl leading-none text-ink">{{ 'common.appName' | translate }}</p>
+      <p class="mt-1 eyebrow">{{ 'common.tagline' | translate }}</p>
+    }
+  </div>
+
+  <div class="flex-1 overflow-y-auto py-2">
+    <ul>
+      @for (group of groups(); track group.labelKey) {
+        <li class="hc-group relative">
+          @if (group.single) {
+            <!-- Tek ogeli bolum: araya accordion katmani koymadan dogrudan baglanti. -->
+            <a
+              [routerLink]="group.items[0].path"
+              [attr.aria-current]="group.items[0].active ? 'page' : null"
+              class="flex min-h-touch items-center border-l-2 text-sm hover:bg-paper-sunken hover:text-ink"
+              [class.px-4]="!collapsed()"
+              [class.justify-center]="collapsed()"
+              [class.border-l-copper]="group.items[0].active"
+              [class.bg-paper-sunken]="group.items[0].active"
+              [class.text-ink]="group.items[0].active"
+              [class.border-l-transparent]="!group.items[0].active"
+              [class.text-ink-muted]="!group.items[0].active"
+              [attr.title]="collapsed() ? (group.items[0].labelKey | translate) : null"
+              data-testid="nav-link"
+              [attr.data-path]="group.items[0].path"
+              (click)="navigated.emit()"
+            >
+              @if (collapsed()) {
+                <span aria-hidden="true" class="label-mono">{{ group.shortKey | translate }}</span>
+                <span class="sr-only">{{ group.items[0].labelKey | translate }}</span>
+              } @else {
+                {{ group.items[0].labelKey | translate }}
+              }
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="flex min-h-touch w-full items-center gap-2 border-l-2 text-left text-sm hover:bg-paper-sunken hover:text-ink"
+              [class.px-4]="!collapsed()"
+              [class.justify-center]="collapsed()"
+              [class.text-ink]="group.active"
+              [class.border-l-copper]="group.active"
+              [class.text-ink-muted]="!group.active"
+              [class.border-l-transparent]="!group.active"
+              [attr.aria-expanded]="isOpen(group.labelKey)"
+              [attr.aria-controls]="group.panelId"
+              [attr.title]="collapsed() ? (group.labelKey | translate) : null"
+              data-testid="nav-group-toggle"
+              [attr.data-group]="group.labelKey"
+              (click)="toggle(group.labelKey)"
+            >
+              @if (collapsed()) {
+                <span aria-hidden="true" class="label-mono">{{ group.shortKey | translate }}</span>
+                <span class="sr-only">{{ group.labelKey | translate }}</span>
+              } @else {
+                <span class="flex-1 eyebrow">{{ group.labelKey | translate }}</span>
+                <span class="label-mono text-ink-faint" aria-hidden="true">{{
+                  isOpen(group.labelKey) ? '▾' : '▸'
+                }}</span>
+              }
+            </button>
+
+            <ul
+              [id]="group.panelId"
+              class="hc-submenu"
+              [hidden]="!isOpen(group.labelKey)"
+              data-testid="nav-submenu"
+              [attr.data-group]="group.labelKey"
+            >
+              @for (item of group.items; track item.path) {
+                <li>
+                  <a
+                    [routerLink]="item.path"
+                    [attr.aria-current]="item.active ? 'page' : null"
+                    class="flex min-h-touch items-center border-l-2 pr-4 text-sm hover:bg-paper-sunken hover:text-ink"
+                    [class.pl-8]="!collapsed()"
+                    [class.pl-4]="collapsed()"
+                    [class.border-l-copper]="item.active"
+                    [class.bg-paper-sunken]="item.active"
+                    [class.text-ink]="item.active"
+                    [class.border-l-transparent]="!item.active"
+                    [class.text-ink-muted]="!item.active"
+                    data-testid="nav-link"
+                    [attr.data-path]="item.path"
+                    (click)="navigated.emit()"
+                  >
+                    {{ item.labelKey | translate }}
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+  </div>
+
+  @if (!collapsed()) {
+    <div class="border-t border-rule px-4 py-3">
+      <p class="eyebrow">{{ 'common.version' | translate }} 0.1.0</p>
+    </div>
+  }
+</nav>

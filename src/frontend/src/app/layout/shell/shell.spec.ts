@@ -86,7 +86,9 @@ describe('Shell — kabuk duzeni', () => {
 
   it('modulden hub a donuldugunde kenar cubugu yeniden gizlenir', async () => {
     const harness = await RouterTestingHarness.create('/rooms');
-    expect((harness.fixture.nativeElement as HTMLElement).querySelector('hc-sidebar')).not.toBeNull();
+    expect(
+      (harness.fixture.nativeElement as HTMLElement).querySelector('hc-sidebar'),
+    ).not.toBeNull();
 
     await harness.navigateByUrl('/dashboard');
     harness.detectChanges();

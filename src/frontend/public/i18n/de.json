@@ -50,6 +50,8 @@
     "skipToContent": "Zum Inhalt springen",
     "openMenu": "Menü öffnen",
     "closeMenu": "Menü schließen",
+    "collapseSidebar": "Navigation einklappen",
+    "expandSidebar": "Navigation ausklappen",
     "userMenu": "Benutzermenü",
     "section": {
       "overview": "Überblick",
@@ -57,6 +59,13 @@
       "staff": "Personal",
       "finance": "Finanzen",
       "system": "System"
+    },
+    "short": {
+      "overview": "ÜB",
+      "operations": "BE",
+      "staff": "PE",
+      "finance": "FI",
+      "system": "SY"
     },
     "dashboard": "Übersicht",
     "rooms": "Zimmer",

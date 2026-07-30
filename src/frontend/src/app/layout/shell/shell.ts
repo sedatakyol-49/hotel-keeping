@@ -8,6 +8,7 @@ import { NotificationStore } from '../../core/state/notification.store';
 import { shouldHideSidebar } from '../chrome';
 import { LanguagePicker } from '../language-picker/language-picker';
 import { Sidebar } from '../sidebar/sidebar';
+import { SidebarState } from '../sidebar-state';
 import { Topbar } from '../topbar/topbar';
 
 /**
@@ -30,11 +31,14 @@ import { Topbar } from '../topbar/topbar';
 })
 export class Shell {
   private readonly router = inject(Router);
+  private readonly sidebarState = inject(SidebarState);
   protected readonly notifications = inject(NotificationStore);
 
   protected readonly drawerOpen = signal(false);
   /** Kenar cubugu ve mobil menu dugmesi gorunur mu (rota `data` bayragindan). */
   protected readonly navigationVisible = signal(true);
+  /** Masaustunde kenar cubugu rail moduna alinmis mi (kullanici tercihi, kalici). */
+  protected readonly sidebarCollapsed = this.sidebarState.collapsed;
 
   constructor() {
     this.syncNavigationVisibility();
@@ -57,6 +61,10 @@ export class Shell {
 
   protected closeDrawer(): void {
     this.drawerOpen.set(false);
+  }
+
+  protected toggleSidebar(): void {
+    this.sidebarState.toggleCollapsed();
   }
 
   private syncNavigationVisibility(): void {

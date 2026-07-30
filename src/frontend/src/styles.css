@@ -66,6 +66,8 @@
 
   /* --- Duzen olculeri --- */
   --spacing-sidebar: 15rem;
+  /* Daraltilmis (rail) kenar cubugu: yalnizca kisa gosterim sigar */
+  --spacing-rail: 3.5rem;
   --spacing-topbar: 3.5rem;
   /* Dokunmatik hedef alt siniri (>= 44px) */
   --spacing-touch: 2.75rem;
