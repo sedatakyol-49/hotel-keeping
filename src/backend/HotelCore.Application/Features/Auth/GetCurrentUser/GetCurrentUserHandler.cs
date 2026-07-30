@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Features.Auth.Common;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ internal sealed class GetCurrentUserHandler(
     {
         if (currentUser.UserId is not Guid userId)
         {
-            throw new AuthenticationException("Kimlik dogrulanmamis.");
+            throw new AuthenticationException(Messages.NotAuthenticated);
         }
 
         var user = await database.Users
@@ -34,7 +35,7 @@ internal sealed class GetCurrentUserHandler(
         // Token geçerli ama kullanıcı silinmiş/pasif ise oturum artık geçersizdir.
         if (user is null || !user.IsActive)
         {
-            throw new AuthenticationException("Kullanici bulunamadi veya pasif.");
+            throw new AuthenticationException(Messages.UserInactiveOrMissing);
         }
 
         return await sessionService.BuildProfileAsync(user, cancellationToken).ConfigureAwait(false);

@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Ingilizce (en) mesaj kaynagi. Anahtar kumesi Messages.resx (notr/Almanca) ile BIREBIR aynidir;
+    eksik anahtar sessizce notr dile duser. Yer tutucular ({0}, {1}, ...) ayni sirayla kullanilmalidir.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="Problem_BadRequest_Title" xml:space="preserve">
+    <value>Validation failed.</value>
+  </data>
+  <data name="Problem_Unauthorized_Title" xml:space="preserve">
+    <value>Authentication failed.</value>
+  </data>
+  <data name="Problem_Forbidden_Title" xml:space="preserve">
+    <value>Access denied.</value>
+  </data>
+  <data name="Problem_NotFound_Title" xml:space="preserve">
+    <value>Record not found.</value>
+  </data>
+  <data name="Problem_Conflict_Title" xml:space="preserve">
+    <value>The operation conflicts with the current state.</value>
+  </data>
+  <data name="Problem_ClientClosedRequest_Title" xml:space="preserve">
+    <value>Request cancelled.</value>
+  </data>
+  <data name="Problem_ClientClosedRequest_Detail" xml:space="preserve">
+    <value>The client closed the request before it completed.</value>
+  </data>
+  <data name="Problem_Unhandled_Title" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="Problem_Unhandled_Detail" xml:space="preserve">
+    <value>An unexpected error occurred while processing the request. Please quote the traceId value in your support request.</value>
+  </data>
+  <data name="Problem_InvoicePdfNotImplemented_Title" xml:space="preserve">
+    <value>Invoice PDF generation is not implemented yet.</value>
+  </data>
+  <data name="Problem_InvoicePdfNotImplemented_Detail" xml:space="preserve">
+    <value>PDF/ZUGFeRD generation will be added in a later phase (the IInvoiceExporter port is ready). The invoice data can be retrieved in structured form via GET /api/v1/invoices/{0}.</value>
+  </data>
+  <data name="Validation_EnumMustBeString" xml:space="preserve">
+    <value>The value must be a string. Allowed values: {0}.</value>
+  </data>
+  <data name="Validation_EnumInvalidValue" xml:space="preserve">
+    <value>'{0}' is not a valid value. Allowed values: {1}.</value>
+  </data>
+
+  <data name="Error_Forbidden_Default" xml:space="preserve">
+    <value>You are not authorised to perform this operation.</value>
+  </data>
+  <data name="Error_Validation_Default" xml:space="preserve">
+    <value>One or more validation errors occurred.</value>
+  </data>
+  <data name="Auth_InvalidCredentials" xml:space="preserve">
+    <value>Email address or password is incorrect.</value>
+  </data>
+  <data name="NotFound_Entity" xml:space="preserve">
+    <value>The '{0}' record was not found (key: {1}).</value>
+  </data>
+
+  <data name="Entity_Room" xml:space="preserve">
+    <value>Room</value>
+  </data>
+  <data name="Entity_RoomType" xml:space="preserve">
+    <value>Room type</value>
+  </data>
+  <data name="Entity_Reservation" xml:space="preserve">
+    <value>Reservation</value>
+  </data>
+  <data name="Entity_Guest" xml:space="preserve">
+    <value>Guest</value>
+  </data>
+  <data name="Entity_Employee" xml:space="preserve">
+    <value>Employee</value>
+  </data>
+  <data name="Entity_Invoice" xml:space="preserve">
+    <value>Invoice</value>
+  </data>
+  <data name="Entity_RatePlan" xml:space="preserve">
+    <value>Rate plan</value>
+  </data>
+  <data name="Entity_Shift" xml:space="preserve">
+    <value>Shift</value>
+  </data>
+  <data name="Entity_TimeEntry" xml:space="preserve">
+    <value>Time entry</value>
+  </data>
+  <data name="Entity_VacationRequest" xml:space="preserve">
+    <value>Vacation request</value>
+  </data>
+  <data name="Entity_Department" xml:space="preserve">
+    <value>Department</value>
+  </data>
+  <data name="Entity_Hotel" xml:space="preserve">
+    <value>Hotel</value>
+  </data>
+  <data name="Entity_HeadOffice" xml:space="preserve">
+    <value>Head office</value>
+  </data>
+
+  <data name="Validation_HotelHeaderRequired" xml:space="preserve">
+    <value>An active hotel must be selected to create a record (X-Hotel-Id header).</value>
+  </data>
+  <data name="Validation_InvalidGuid" xml:space="preserve">
+    <value>Must be a valid GUID.</value>
+  </data>
+  <data name="Forbidden_HotelAccess" xml:space="preserve">
+    <value>You do not have access to this hotel (hotel: {0}).</value>
+  </data>
+
+  <data name="Auth_NotAuthenticated" xml:space="preserve">
+    <value>Not authenticated.</value>
+  </data>
+  <data name="Auth_UserInactiveOrMissing" xml:space="preserve">
+    <value>User not found or inactive.</value>
+  </data>
+  <data name="Auth_InvalidRefreshToken" xml:space="preserve">
+    <value>The refresh token is invalid or has expired.</value>
+  </data>
+
+  <data name="Conflict_RoomOutOfOrder" xml:space="preserve">
+    <value>Room '{0}' is out of order; it cannot be booked.</value>
+  </data>
+  <data name="Conflict_RoomNotAvailable" xml:space="preserve">
+    <value>Room '{0}' is not available for {1} - {2}: it overlaps with reservation '{3}' ({4} - {5}). (An arrival on the day of departure does NOT count as an overlap.)</value>
+  </data>
+  <data name="Validation_ToAfterFrom_Night" xml:space="preserve">
+    <value>'to' must be after 'from' (at least 1 night).</value>
+  </data>
+  <data name="Validation_ToAfterFrom_Day" xml:space="preserve">
+    <value>'to' must be after 'from' (at least 1 day).</value>
+  </data>
+  <data name="Validation_AvailabilityRangeTooLong" xml:space="preserve">
+    <value>The date range may not exceed {0} days.</value>
+  </data>
+  <data name="Validation_OccupancyRangeTooLong" xml:space="preserve">
+    <value>The occupancy grid range may not exceed {0} days; query longer periods in smaller chunks.</value>
+  </data>
+
+  <data name="NotFound_Department" xml:space="preserve">
+    <value>Department not found.</value>
+  </data>
+  <data name="Conflict_DepartmentNameTaken" xml:space="preserve">
+    <value>A department named '{0}' already exists in this hotel.</value>
+  </data>
+  <data name="Conflict_DepartmentHasEmployees" xml:space="preserve">
+    <value>Employees are assigned to this department; move them to another department first.</value>
+  </data>
+
+  <data name="NotFound_Employee" xml:space="preserve">
+    <value>Employee not found.</value>
+  </data>
+  <data name="Conflict_StaffNumberTaken" xml:space="preserve">
+    <value>Staff number '{0}' is already in use in this hotel.</value>
+  </data>
+
+  <data name="NotFound_Guest" xml:space="preserve">
+    <value>Guest not found.</value>
+  </data>
+  <data name="Conflict_GuestHasActiveReservations" xml:space="preserve">
+    <value>This guest has active or future reservations; cancel the reservations first.</value>
+  </data>
+  <data name="Validation_SupportedCultures" xml:space="preserve">
+    <value>Supported languages: {0}.</value>
+  </data>
+  <data name="Validation_SupportedCultureCodes" xml:space="preserve">
+    <value>Supported language codes: {0}.</value>
+  </data>
+
+  <data name="NotFound_HeadOffice" xml:space="preserve">
+    <value>Head office not found.</value>
+  </data>
+  <data name="Forbidden_NoHeadOffice" xml:space="preserve">
+    <value>No head office is linked to the identity.</value>
+  </data>
+  <data name="NotFound_Hotel" xml:space="preserve">
+    <value>Hotel not found.</value>
+  </data>
+  <data name="Validation_CurrencyFormat" xml:space="preserve">
+    <value>The currency must use the ISO 4217 format (3 letters).</value>
+  </data>
+  <data name="Validation_ChildAgeLimit" xml:space="preserve">
+    <value>The age limit must be between 0 and {0}.</value>
+  </data>
+
+  <data name="NotFound_Reservation" xml:space="preserve">
+    <value>Reservation not found.</value>
+  </data>
+  <data name="Validation_PaymentDateInFuture" xml:space="preserve">
+    <value>The payment time cannot be in the future.</value>
+  </data>
+  <data name="Conflict_PaymentExceedsOutstanding" xml:space="preserve">
+    <value>The payment amount exceeds the outstanding balance. Outstanding: {0:0.00} {1}, submitted: {2:0.00} {1}. An overpayment cannot be recorded on the invoice.</value>
+  </data>
+  <data name="Conflict_PaymentOnDraft" xml:space="preserve">
+    <value>A payment cannot be recorded on a draft invoice. Please finalize the invoice first.</value>
+  </data>
+  <data name="Conflict_PaymentOnCancelled" xml:space="preserve">
+    <value>A payment cannot be recorded on a cancelled invoice.</value>
+  </data>
+  <data name="Conflict_InvoiceAlreadyPaid" xml:space="preserve">
+    <value>The invoice has already been paid in full.</value>
+  </data>
+  <data name="Conflict_PaymentNotAllowedInStatus" xml:space="preserve">
+    <value>A payment cannot be recorded in this status: {0}.</value>
+  </data>
+  <data name="Conflict_PaymentOnNonPositiveInvoice" xml:space="preserve">
+    <value>A payment cannot be recorded on a document with a zero or negative amount (for example a cancellation invoice); refunds are not supported in this phase.</value>
+  </data>
+  <data name="Conflict_InvoiceAlreadyCancelled" xml:space="preserve">
+    <value>The invoice has already been cancelled.</value>
+  </data>
+  <data name="Conflict_ReservationAlreadyInvoiced" xml:space="preserve">
+    <value>A non-cancelled invoice already exists for this reservation. Cancel the previous invoice (Stornorechnung) before issuing a new one.</value>
+  </data>
+  <data name="Conflict_InvoiceNumberSequenceRace" xml:space="preserve">
+    <value>The invoice number could not be assigned because another invoice was finalized at the same time. No number was consumed; please repeat the request.</value>
+  </data>
+  <data name="Conflict_InvoiceNotDraft" xml:space="preserve">
+    <value>Only a draft invoice can be edited (current status: {0}). A finalized invoice must not be changed under GoBD; create a cancellation invoice (Stornorechnung) to correct it.</value>
+  </data>
+  <data name="Conflict_InvoiceNotDraftForFinalize" xml:space="preserve">
+    <value>Only a draft invoice can be finalized (current status: {0}).</value>
+  </data>
+  <data name="Conflict_InvoiceWithoutLines" xml:space="preserve">
+    <value>An invoice without line items cannot be finalized.</value>
+  </data>
+  <data name="Conflict_InvoiceGuestFromReservation" xml:space="preserve">
+    <value>The guest of a reservation-linked invoice cannot be changed; the guest comes from the reservation.</value>
+  </data>
+  <data name="Validation_InvoiceMaxLineItems" xml:space="preserve">
+    <value>An invoice may contain at most {0} line items.</value>
+  </data>
+  <data name="Validation_InvoiceGuestRequired" xml:space="preserve">
+    <value>When no reservation is supplied, the guest (guestId) is required.</value>
+  </data>
+  <data name="Validation_InvoiceLinesNotAllowed" xml:space="preserve">
+    <value>Line items cannot be sent manually for an invoice generated from a reservation; they are derived from the reservation and the folio.</value>
+  </data>
+  <data name="Validation_InvoiceNeedsReservationOrLines" xml:space="preserve">
+    <value>An invoice cannot be created without line items: supply either reservationId or at least one lineItems entry.</value>
+  </data>
+  <data name="Validation_InvoiceNeedsLines" xml:space="preserve">
+    <value>An invoice cannot be saved without line items: at least one lineItems entry is required.</value>
+  </data>
+  <data name="Validation_ToNotBeforeFrom" xml:space="preserve">
+    <value>'to' must not be before 'from'.</value>
+  </data>
+
+  <data name="Conflict_RatePlanOverlap" xml:space="preserve">
+    <value>A rate plan with an overlapping date range already exists for this room type and channel ({0}): '{1}' ({2} - {3}). Two prices cannot apply to the same night.</value>
+  </data>
+  <data name="RatePlan_AllChannels" xml:space="preserve">
+    <value>all channels</value>
+  </data>
+  <data name="Conflict_RatePlanInUse" xml:space="preserve">
+    <value>This rate plan is used by reservations and therefore cannot be deleted; deactivate the plan instead (isActive = false).</value>
+  </data>
+  <data name="Validation_ValidToNotBeforeValidFrom" xml:space="preserve">
+    <value>'validTo' must not be before 'validFrom'.</value>
+  </data>
+
+  <data name="Validation_ReportToNotBeforeFrom" xml:space="preserve">
+    <value>'to' must not be before 'from' (they may be equal for a single-day report).</value>
+  </data>
+  <data name="Validation_ReportRangeTooLong" xml:space="preserve">
+    <value>The report range may not exceed {0} days; query longer periods in smaller chunks.</value>
+  </data>
+
+  <data name="Conflict_CheckInBeforeArrival" xml:space="preserve">
+    <value>Check-in is not possible before the arrival date. Arrival date: {0}, today: {1}. Update the reservation to change the date.</value>
+  </data>
+  <data name="Conflict_CheckInRoomOutOfOrder" xml:space="preserve">
+    <value>Room '{0}' is out of order; check-in is not possible. Put the room back into service or move the reservation to another room.</value>
+  </data>
+  <data name="Validation_StayNightsRange" xml:space="preserve">
+    <value>The stay must be between 1 and {0} nights.</value>
+  </data>
+  <data name="Validation_RoomCapacityExceeded" xml:space="preserve">
+    <value>Room '{0}' has a capacity of {1} guests; {2} guests were selected.</value>
+  </data>
+  <data name="Conflict_ReservationSameStatus" xml:space="preserve">
+    <value>The reservation is already in status '{0}'; a transition to the same status is not possible.</value>
+  </data>
+  <data name="Conflict_ReservationInvalidTransition" xml:space="preserve">
+    <value>Invalid status transition: '{0}' -&gt; '{1}'. Allowed transitions: {2}.</value>
+  </data>
+  <data name="Reservation_NoAllowedTransitions" xml:space="preserve">
+    <value>none (this status is final)</value>
+  </data>
+  <data name="Conflict_ReservationNotModifiable" xml:space="preserve">
+    <value>A reservation in status '{0}' cannot be modified. Modifiable statuses: Option, Confirmed, CheckedIn.</value>
+  </data>
+  <data name="Validation_CheckOutAfterCheckIn" xml:space="preserve">
+    <value>'checkOut' must be after 'checkIn' (at least 1 night).</value>
+  </data>
+  <data name="Validation_MaxNights" xml:space="preserve">
+    <value>The stay may not exceed {0} nights.</value>
+  </data>
+  <data name="Validation_InitialReservationStatus" xml:space="preserve">
+    <value>The initial status may only be 'Option' or 'Confirmed'.</value>
+  </data>
+  <data name="Validation_ToAfterFrom" xml:space="preserve">
+    <value>'to' must be after 'from'.</value>
+  </data>
+
+  <data name="Conflict_RoomTypeCodeTaken" xml:space="preserve">
+    <value>A room type with code '{0}' already exists in this hotel.</value>
+  </data>
+  <data name="Conflict_RoomTypeHasRooms" xml:space="preserve">
+    <value>Rooms are assigned to this room type; delete the rooms first or move them to another type.</value>
+  </data>
+  <data name="Validation_AmenitiesMaxCount" xml:space="preserve">
+    <value>At most {0} amenity keys may be sent.</value>
+  </data>
+  <data name="Validation_AmenityMaxLength" xml:space="preserve">
+    <value>Each amenity key may be at most {0} characters long.</value>
+  </data>
+  <data name="Validation_AmenitiesMaxTotalLength" xml:space="preserve">
+    <value>The amenity list may not exceed {0} characters in total.</value>
+  </data>
+  <data name="Validation_TranslationNameMaxLength" xml:space="preserve">
+    <value>The translated name may be at most {0} characters long.</value>
+  </data>
+  <data name="Validation_TranslationDescriptionMaxLength" xml:space="preserve">
+    <value>The translated description may be at most {0} characters long.</value>
+  </data>
+
+  <data name="Conflict_RoomNumberTaken" xml:space="preserve">
+    <value>Room '{0}' already exists in this hotel.</value>
+  </data>
+  <data name="Conflict_RoomHasFutureReservations" xml:space="preserve">
+    <value>This room has future reservations; cancel them first or move them to another room.</value>
+  </data>
+
+  <data name="Conflict_ShiftAlreadyExists" xml:space="preserve">
+    <value>This employee already has a shift on {0}; edit the existing shift.</value>
+  </data>
+  <data name="Validation_IsoWeekFormat" xml:space="preserve">
+    <value>Must use the ISO 8601 week format (example: 2026-W31).</value>
+  </data>
+  <data name="Validation_ToRequiredWithFrom" xml:space="preserve">
+    <value>'to' must be sent together with 'from'.</value>
+  </data>
+  <data name="Validation_FromRequiredWithTo" xml:space="preserve">
+    <value>'from' must be sent together with 'to'.</value>
+  </data>
+  <data name="Validation_ShiftRangeTooLong" xml:space="preserve">
+    <value>The range may not exceed {0} days.</value>
+  </data>
+
+  <data name="Conflict_NoOpenTimeEntry" xml:space="preserve">
+    <value>This employee has no open time entry; a clock-in is required first.</value>
+  </data>
+  <data name="Conflict_OpenTimeEntryExists" xml:space="preserve">
+    <value>This employee already has a running time entry; a clock-out is required first.</value>
+  </data>
+  <data name="Validation_BreakMinutesRange" xml:space="preserve">
+    <value>Must be between 0 and {0}.</value>
+  </data>
+  <data name="Validation_ClockOutAfterClockIn" xml:space="preserve">
+    <value>The clock-out time must be after the clock-in time.</value>
+  </data>
+  <data name="Validation_BreakExceedsWorkedTime" xml:space="preserve">
+    <value>The break duration may not exceed the worked time ({0} min).</value>
+  </data>
+  <data name="Validation_ClockInNotInFuture" xml:space="preserve">
+    <value>A time entry with a clock-in in the future cannot be saved.</value>
+  </data>
+  <data name="Validation_ClockOutNotInFuture" xml:space="preserve">
+    <value>A time entry with a clock-out in the future cannot be saved.</value>
+  </data>
+
+  <data name="Conflict_VacationNotCancellable" xml:space="preserve">
+    <value>This vacation request cannot be cancelled (status: {0}).</value>
+  </data>
+  <data name="Forbidden_VacationCancel" xml:space="preserve">
+    <value>You are not authorised to cancel vacation requests.</value>
+  </data>
+  <data name="Forbidden_VacationCancelOwnOnly" xml:space="preserve">
+    <value>You can only cancel your own vacation request.</value>
+  </data>
+  <data name="Conflict_VacationAlreadyDecided" xml:space="preserve">
+    <value>This vacation request has already been decided (status: {0}); it cannot be decided again.</value>
+  </data>
+  <data name="Conflict_VacationOverlap" xml:space="preserve">
+    <value>This employee already has a pending or approved vacation in the range {0}.</value>
+  </data>
+  <data name="Validation_VacationToNotBeforeFrom" xml:space="preserve">
+    <value>The end of the vacation must not be before its start.</value>
+  </data>
+  <data name="Validation_VacationMaxDays" xml:space="preserve">
+    <value>A vacation request may not exceed {0} days.</value>
+  </data>
+</root>

@@ -69,13 +69,16 @@ public sealed class InvoicePaymentTests(PostgresFixture fixture)
         // Kalan 10,00; 10,01 bile reddedilir (kurus toleransi YOKTUR).
         var act = async () => await scenario.Host.Dispatcher.Send(Payment(invoice.Id, 10.01m));
 
-        var thrown = await act.Should().ThrowAsync<ConflictException>();
-        thrown.Which.Message.Should().Contain("Fazla odeme");
+        await act.Should().ThrowAsync<ConflictException>();
 
+        // Mesaj METNI dogrulanmaz: yerellestirildikten sonra (de/en/tr) aktif kulture bagli
+        // olur ve CI makinesinin diline bagimlilik yaratirdi. Sozlesme acisindan onemli olan
+        // sonuctur — istek reddedildi ve HICBIR SEY kaydedilmedi:
         scenario.Host.Database.ChangeTracker.Clear();
         var current = await scenario.Host.Dispatcher.Send(new GetInvoiceByIdRequest(invoice.Id));
-        current.PaidAmount.Should().Be(90m);
-        current.Payments.Should().ContainSingle();
+        current.PaidAmount.Should().Be(90m, "reddedilen odeme bakiyeyi degistirmemelidir");
+        current.Payments.Should().ContainSingle("reddedilen odeme kayda gecmemelidir");
+        current.Status.Should().Be(nameof(InvoiceStatus.Finalized), "fatura Paid'e gecmemelidir");
     }
 
     [RequiresPostgresFact]
@@ -111,8 +114,16 @@ public sealed class InvoicePaymentTests(PostgresFixture fixture)
 
         var act = async () => await scenario.Host.Dispatcher.Send(Payment(invoice.Id, 1m));
 
-        var thrown = await act.Should().ThrowAsync<ConflictException>();
-        thrown.Which.Message.Should().Contain("zaten tamamen odenmis");
+        await act.Should().ThrowAsync<ConflictException>();
+
+        // Metin yerine sonuc dogrulanir (bkz. yukaridaki gerekce): kapanmis faturaya gelen
+        // odeme ne kaydediliyor ne de bakiyeyi bozuyor.
+        scenario.Host.Database.ChangeTracker.Clear();
+        var current = await scenario.Host.Dispatcher.Send(new GetInvoiceByIdRequest(invoice.Id));
+        current.Status.Should().Be(nameof(InvoiceStatus.Paid));
+        current.PaidAmount.Should().Be(Gross);
+        current.OutstandingAmount.Should().Be(0m);
+        current.Payments.Should().ContainSingle("ikinci odeme kayda gecmemelidir");
     }
 
     [RequiresPostgresFact]

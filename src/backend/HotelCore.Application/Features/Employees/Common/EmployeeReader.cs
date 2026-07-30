@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Models;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
@@ -78,7 +79,7 @@ internal sealed class EmployeeReader(IAppDbContext database, IDateTimeProvider c
 
         if (!exists)
         {
-            throw new NotFoundException("Departman bulunamadi.");
+            throw new NotFoundException(Messages.DepartmentNotFound);
         }
     }
 
@@ -107,8 +108,7 @@ internal sealed class EmployeeReader(IAppDbContext database, IDateTimeProvider c
 
         if (exists)
         {
-            throw new ConflictException(
-                $"'{normalized}' personel numarasi bu otelde zaten kullaniliyor.");
+            throw new ConflictException(Messages.StaffNumberTaken(normalized));
         }
     }
 

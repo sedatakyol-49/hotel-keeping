@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,7 +42,7 @@ internal sealed class DepartmentReader(IAppDbContext database)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return department ?? throw new NotFoundException("Departman bulunamadi.");
+        return department ?? throw new NotFoundException(Messages.DepartmentNotFound);
     }
 
     public async Task<Department> GetTrackedAsync(Guid id, CancellationToken cancellationToken)
@@ -50,7 +51,7 @@ internal sealed class DepartmentReader(IAppDbContext database)
             .FirstOrDefaultAsync(candidate => candidate.Id == id, cancellationToken)
             .ConfigureAwait(false);
 
-        return department ?? throw new NotFoundException("Departman bulunamadi.");
+        return department ?? throw new NotFoundException(Messages.DepartmentNotFound);
     }
 
     /// <summary>
@@ -73,7 +74,7 @@ internal sealed class DepartmentReader(IAppDbContext database)
 
         if (exists)
         {
-            throw new ConflictException($"'{normalized}' adli departman bu otelde zaten mevcut.");
+            throw new ConflictException(Messages.DepartmentNameTaken(normalized));
         }
     }
 }

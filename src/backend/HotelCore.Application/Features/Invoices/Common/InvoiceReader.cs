@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Models;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
@@ -192,7 +193,7 @@ internal sealed class InvoiceReader(IAppDbContext database)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return context ?? throw new NotFoundException("Otel bulunamadi.");
+        return context ?? throw new NotFoundException(Messages.HotelNotFound);
     }
 
     /// <summary>Misafirin aktif otelde var olduğunu doğrular; yoksa 404 (tenant sızıntısı yok).</summary>
@@ -203,7 +204,7 @@ internal sealed class InvoiceReader(IAppDbContext database)
             .FirstOrDefaultAsync(candidate => candidate.Id == guestId, cancellationToken)
             .ConfigureAwait(false);
 
-        return guest ?? throw new NotFoundException("Misafir bulunamadi.");
+        return guest ?? throw new NotFoundException(Messages.GuestNotFound);
     }
 
     /// <summary>Faturaya yapılmış ödemelerin toplamı (veritabanından — istemci toplamına güvenilmez).</summary>

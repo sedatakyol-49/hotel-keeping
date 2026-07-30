@@ -59,9 +59,7 @@ internal sealed class UpdateInvoiceHandler(
         {
             if (invoice.ReservationId is not null)
             {
-                throw new ConflictException(
-                    "Rezervasyona bagli faturanin misafiri degistirilemez; " +
-                    "misafir rezervasyondan gelir.");
+                throw new ConflictException(Messages.InvoiceGuestFromReservation);
             }
 
             _ = await reader.GetGuestAsync(guestId, cancellationToken).ConfigureAwait(false);

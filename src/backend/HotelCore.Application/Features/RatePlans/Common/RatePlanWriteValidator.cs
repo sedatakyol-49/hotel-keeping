@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 
 namespace HotelCore.Application.Features.RatePlans.Common;
 
@@ -27,7 +28,7 @@ public abstract class RatePlanWriteValidator<TRequest> : AbstractValidator<TRequ
         // Kapalı aralık: tek günlük plan icin ValidTo == ValidFrom gecerlidir.
         RuleFor(request => request.ValidTo)
             .GreaterThanOrEqualTo(request => request.ValidFrom)
-            .WithMessage("'validTo' tarihi 'validFrom' tarihinden once olamaz.");
+            .WithMessage(_ => Messages.ValidToNotBeforeValidFrom);
 
         RuleFor(request => request.Channel)
             .IsInEnum()

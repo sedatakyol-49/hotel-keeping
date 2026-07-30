@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Security;
 
 namespace HotelCore.Api.Services;
@@ -84,7 +85,7 @@ public sealed class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICur
                 return hotelId;
             }
 
-            throw new ForbiddenException($"Bu otele erisim yetkiniz yok (otel: {hotelId}).");
+            throw new ForbiddenException(Messages.HotelAccessDenied(hotelId));
         }
 
         // Head Office kullanıcısı header göndermediyse konsolide (tüm oteller) görünüm ister.
@@ -109,7 +110,7 @@ public sealed class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICur
         {
             throw new ValidationException(new Dictionary<string, string[]>(StringComparer.Ordinal)
             {
-                [HotelHeaderName] = ["Gecerli bir GUID olmalidir."]
+                [HotelHeaderName] = [Messages.InvalidGuid]
             });
         }
 

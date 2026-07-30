@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Features.Auth.Common;
 using Microsoft.EntityFrameworkCore;
@@ -101,5 +102,5 @@ internal sealed class RefreshTokenHandler(
     }
 
     /// <summary>Tüm geçersiz token senaryolarında aynı mesaj kullanılır (bilgi sızdırmamak için).</summary>
-    private const string InvalidTokenMessage = "Refresh token gecersiz veya suresi dolmus.";
+    private static string InvalidTokenMessage => Messages.InvalidRefreshToken;
 }

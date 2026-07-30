@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 
 namespace HotelCore.Application.Features.Invoices.List;
 
@@ -18,6 +19,6 @@ public sealed class ListInvoicesValidator : AbstractValidator<ListInvoicesReques
         RuleFor(request => request.To)
             .GreaterThanOrEqualTo(request => request.From!.Value)
             .When(request => request.From is not null && request.To is not null)
-            .WithMessage("'to' tarihi 'from' tarihinden once olamaz.");
+            .WithMessage(_ => Messages.ToNotBeforeFrom);
     }
 }

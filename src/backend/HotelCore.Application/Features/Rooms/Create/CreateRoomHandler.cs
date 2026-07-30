@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Common.Security;
 using HotelCore.Application.Features.Rooms.Common;
@@ -43,7 +44,7 @@ internal sealed class CreateRoomHandler(IAppDbContext database, ICurrentUser cur
 
         if (numberExists)
         {
-            throw new ConflictException($"'{number}' numarali oda bu otelde zaten mevcut.");
+            throw new ConflictException(Messages.RoomNumberTaken(number));
         }
 
         var entity = new Room

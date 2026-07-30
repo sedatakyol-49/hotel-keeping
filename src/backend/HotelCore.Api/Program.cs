@@ -5,11 +5,13 @@ using HotelCore.Api.Services;
 using HotelCore.Api.Startup;
 using HotelCore.Application;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Security;
 using HotelCore.Domain.Common;
 using HotelCore.Infrastructure;
 using HotelCore.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
@@ -100,6 +102,38 @@ builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = 
         $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
     context.ProblemDetails.Extensions["traceId"] =
         Activity.Current?.Id ?? context.HttpContext.TraceIdentifier;
+
+    // i18n: framework'ün kendi ürettiği yanıtlarda (istisna olmadan dönen 401/403 gibi) başlık
+    // İngilizce sabittir. Bilinen durum kodları için isteğin dilindeki başlıkla değiştirilir;
+    // ApiExceptionHandler zaten aynı metni yazdığı için orada bir değişiklik olmaz.
+    // Kültür kapsamı şart: bu geri çağırım da localization middleware'inin dışında çalışabilir.
+    using var culture = RequestCultureScope.Apply(context.HttpContext);
+
+    var localizedTitle = Messages.TitleForStatusCode(context.ProblemDetails.Status);
+    if (localizedTitle is not null)
+    {
+        context.ProblemDetails.Title = localizedTitle;
+    }
+});
+
+// Model binding hataları (bozuk JSON, tanınmayan enum) ApiExceptionHandler'a uğramaz; MVC kendi
+// 400'ünü üretir ve başlığı İngilizce sabittir. Karışık dilli yanıt oluşmasın diye başlık burada
+// da isteğin diline çevrilir (errors sözlüğündeki metinler zaten yerelleştirilmiştir).
+builder.Services.PostConfigure<ApiBehaviorOptions>(options =>
+{
+    var defaultFactory = options.InvalidModelStateResponseFactory;
+
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var result = defaultFactory(context);
+
+        if (result is ObjectResult { Value: ProblemDetails problem })
+        {
+            problem.Title = Messages.TitleForStatusCode(problem.Status) ?? problem.Title;
+        }
+
+        return result;
+    };
 });
 
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();

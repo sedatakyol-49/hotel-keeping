@@ -42,7 +42,7 @@ public abstract class GuestWriteValidator<TRequest> : AbstractValidator<TRequest
         // Yazışma dili yalnızca desteklenen diller olabilir (architecture.md §8).
         RuleFor(request => request.Culture)
             .Must(SupportedCultures.IsSupported)
-            .WithMessage($"Desteklenen diller: {string.Join(", ", SupportedCultures.All)}.")
+            .WithMessage(_ => Messages.SupportedCultureList)
             .When(request => !string.IsNullOrWhiteSpace(request.Culture));
 
         // Dogum tarihi gelecekte olamaz; kontrol istekten bagimsiz oldugu icin sabit tarih yerine

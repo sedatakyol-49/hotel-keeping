@@ -1,3 +1,5 @@
+using HotelCore.Application.Common.Localization;
+
 namespace HotelCore.Application.Common.Exceptions;
 
 /// <summary>
@@ -10,8 +12,11 @@ namespace HotelCore.Application.Common.Exceptions;
 /// </summary>
 public sealed class AuthenticationException : Exception
 {
-    /// <summary>Tüm kimlik doğrulama hatalarında kullanılan tek tip mesaj.</summary>
-    public const string GenericMessage = "E-posta veya parola hatali.";
+    /// <summary>
+    /// Tüm kimlik doğrulama hatalarında kullanılan tek tip mesaj. Sabit (<c>const</c>) değil
+    /// <b>özellik</b>tir: metin isteğin diline göre çözülür (bkz. <see cref="Messages"/>).
+    /// </summary>
+    public static string GenericMessage => Messages.InvalidCredentials;
 
     public AuthenticationException()
         : base(GenericMessage)

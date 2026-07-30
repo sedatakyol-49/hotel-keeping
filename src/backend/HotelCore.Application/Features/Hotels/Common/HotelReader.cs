@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -95,7 +96,7 @@ internal sealed class HotelReader(IAppDbContext database, ICurrentUser currentUs
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return hotel ?? throw new NotFoundException("Otel bulunamadi.");
+        return hotel ?? throw new NotFoundException(Messages.HotelNotFound);
     }
 
     /// <summary>Yazma yolu için izlenen (tracked) varlık; erişilemiyorsa 404.</summary>
@@ -105,6 +106,6 @@ internal sealed class HotelReader(IAppDbContext database, ICurrentUser currentUs
             .FirstOrDefaultAsync(candidate => candidate.Id == id, cancellationToken)
             .ConfigureAwait(false);
 
-        return hotel ?? throw new NotFoundException("Otel bulunamadi.");
+        return hotel ?? throw new NotFoundException(Messages.HotelNotFound);
     }
 }

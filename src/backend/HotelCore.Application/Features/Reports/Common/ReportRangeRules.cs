@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 
 namespace HotelCore.Application.Features.Reports.Common;
 
@@ -33,14 +34,12 @@ internal static class ReportRangeRules
 
         validator.RuleFor(request => request.To)
             .GreaterThanOrEqualTo(request => request.From)
-            .WithMessage("'to' tarihi 'from' tarihinden once olamaz (tek gunluk rapor icin esit olabilir).");
+            .WithMessage(_ => Messages.ReportToNotBeforeFrom);
 
         validator.RuleFor(request => request.To)
             .Must((request, to) =>
                 to.DayNumber - request.From.DayNumber + 1 <= ReportDefinitions.MaxRangeDays)
-            .WithMessage(
-                $"Rapor araligi en fazla {ReportDefinitions.MaxRangeDays} gun olabilir; " +
-                "daha uzun donemler icin araligi bolerek sorgulayin.")
+            .WithMessage(_ => Messages.ReportRangeTooLong(ReportDefinitions.MaxRangeDays))
             .When(request => request.To >= request.From);
     }
 }

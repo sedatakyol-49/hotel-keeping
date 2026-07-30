@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Nötr (varsayılan) mesaj kaynağı — dili ALMANCA'dır.
+
+    Gerekçe: SupportedCultures.Default = "de" ve Api tarafındaki UseRequestLocalization da
+    varsayılan culture olarak "de" kullanır. Nötr kaynağın Almanca olması, "desteklenmeyen dil ->
+    varsayılan dil" düşüşünü tek adımda ve uydu (satellite) assembly aramadan çözer.
+    HotelCore.Application.csproj içindeki <NeutralLanguage>de</NeutralLanguage>, derleyicinin
+    NeutralResourcesLanguageAttribute("de") üretmesini sağlar; böylece "de"/"de-DE" istekleri
+    doğrudan bu dosyaya düşer, ayrı bir Messages.de.resx'e gerek kalmaz.
+
+    Yer tutucular ({0}, {1}, ...) TÜM dillerde aynı anlamı taşır; biçimlendirme tek yerde
+    (Messages.cs) yapılır. Tarihler çağıran tarafta ISO 8601 (yyyy-MM-dd) olarak biçimlendirilip
+    dize hâlinde geçirilir; para tutarları aktif kültüre göre biçimlenir.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- ================= ProblemDetails baslik/aciklama metinleri (Api) ================= -->
+  <data name="Problem_BadRequest_Title" xml:space="preserve">
+    <value>Validierungsfehler.</value>
+  </data>
+  <data name="Problem_Unauthorized_Title" xml:space="preserve">
+    <value>Authentifizierung fehlgeschlagen.</value>
+  </data>
+  <data name="Problem_Forbidden_Title" xml:space="preserve">
+    <value>Zugriff verweigert.</value>
+  </data>
+  <data name="Problem_NotFound_Title" xml:space="preserve">
+    <value>Datensatz nicht gefunden.</value>
+  </data>
+  <data name="Problem_Conflict_Title" xml:space="preserve">
+    <value>Die Aktion steht im Widerspruch zum aktuellen Zustand.</value>
+  </data>
+  <data name="Problem_ClientClosedRequest_Title" xml:space="preserve">
+    <value>Anfrage abgebrochen.</value>
+  </data>
+  <data name="Problem_ClientClosedRequest_Detail" xml:space="preserve">
+    <value>Der Client hat die Anfrage vor dem Abschluss beendet.</value>
+  </data>
+  <data name="Problem_Unhandled_Title" xml:space="preserve">
+    <value>Ein unerwarteter Fehler ist aufgetreten.</value>
+  </data>
+  <data name="Problem_Unhandled_Detail" xml:space="preserve">
+    <value>Bei der Verarbeitung der Anfrage ist ein unerwarteter Fehler aufgetreten. Bitte geben Sie den Wert traceId bei einer Supportanfrage an.</value>
+  </data>
+  <data name="Problem_InvoicePdfNotImplemented_Title" xml:space="preserve">
+    <value>Die Erzeugung der Rechnungs-PDF ist noch nicht implementiert.</value>
+  </data>
+  <data name="Problem_InvoicePdfNotImplemented_Detail" xml:space="preserve">
+    <value>Die PDF-/ZUGFeRD-Erzeugung folgt in einer späteren Phase (der Port IInvoiceExporter ist vorbereitet). Die Rechnungsdaten können strukturiert über GET /api/v1/invoices/{0} abgerufen werden.</value>
+  </data>
+  <data name="Validation_EnumMustBeString" xml:space="preserve">
+    <value>Der Wert muss eine Zeichenkette sein. Erlaubte Werte: {0}.</value>
+  </data>
+  <data name="Validation_EnumInvalidValue" xml:space="preserve">
+    <value>'{0}' ist kein gültiger Wert. Erlaubte Werte: {1}.</value>
+  </data>
+
+  <!-- ================= Istisna varsayilan mesajlari ================= -->
+  <data name="Error_Forbidden_Default" xml:space="preserve">
+    <value>Sie sind für diese Aktion nicht berechtigt.</value>
+  </data>
+  <data name="Error_Validation_Default" xml:space="preserve">
+    <value>Ein oder mehrere Validierungsfehler sind aufgetreten.</value>
+  </data>
+  <data name="Auth_InvalidCredentials" xml:space="preserve">
+    <value>E-Mail-Adresse oder Passwort ist falsch.</value>
+  </data>
+  <data name="NotFound_Entity" xml:space="preserve">
+    <value>Der Datensatz '{0}' wurde nicht gefunden (Schlüssel: {1}).</value>
+  </data>
+
+  <!-- ================= Entity gorunen adlari (NotFound_Entity icin) ================= -->
+  <data name="Entity_Room" xml:space="preserve">
+    <value>Zimmer</value>
+  </data>
+  <data name="Entity_RoomType" xml:space="preserve">
+    <value>Zimmertyp</value>
+  </data>
+  <data name="Entity_Reservation" xml:space="preserve">
+    <value>Reservierung</value>
+  </data>
+  <data name="Entity_Guest" xml:space="preserve">
+    <value>Gast</value>
+  </data>
+  <data name="Entity_Employee" xml:space="preserve">
+    <value>Mitarbeiter</value>
+  </data>
+  <data name="Entity_Invoice" xml:space="preserve">
+    <value>Rechnung</value>
+  </data>
+  <data name="Entity_RatePlan" xml:space="preserve">
+    <value>Preisplan</value>
+  </data>
+  <data name="Entity_Shift" xml:space="preserve">
+    <value>Schicht</value>
+  </data>
+  <data name="Entity_TimeEntry" xml:space="preserve">
+    <value>Zeiterfassung</value>
+  </data>
+  <data name="Entity_VacationRequest" xml:space="preserve">
+    <value>Urlaubsantrag</value>
+  </data>
+  <data name="Entity_Department" xml:space="preserve">
+    <value>Abteilung</value>
+  </data>
+  <data name="Entity_Hotel" xml:space="preserve">
+    <value>Hotel</value>
+  </data>
+  <data name="Entity_HeadOffice" xml:space="preserve">
+    <value>Zentrale</value>
+  </data>
+
+  <!-- ================= Kimlik / tenant baglami ================= -->
+  <data name="Validation_HotelHeaderRequired" xml:space="preserve">
+    <value>Zum Anlegen eines Datensatzes muss ein aktives Hotel gewählt werden (Header X-Hotel-Id).</value>
+  </data>
+  <data name="Validation_InvalidGuid" xml:space="preserve">
+    <value>Muss eine gültige GUID sein.</value>
+  </data>
+  <data name="Forbidden_HotelAccess" xml:space="preserve">
+    <value>Sie haben keinen Zugriff auf dieses Hotel (Hotel: {0}).</value>
+  </data>
+
+  <!-- ================= Auth ================= -->
+  <data name="Auth_NotAuthenticated" xml:space="preserve">
+    <value>Nicht authentifiziert.</value>
+  </data>
+  <data name="Auth_UserInactiveOrMissing" xml:space="preserve">
+    <value>Benutzer nicht gefunden oder inaktiv.</value>
+  </data>
+  <data name="Auth_InvalidRefreshToken" xml:space="preserve">
+    <value>Refresh-Token ist ungültig oder abgelaufen.</value>
+  </data>
+
+  <!-- ================= Verfuegbarkeit / Musaitlik ================= -->
+  <data name="Conflict_RoomOutOfOrder" xml:space="preserve">
+    <value>Zimmer '{0}' ist außer Betrieb (out of order); es kann nicht reserviert werden.</value>
+  </data>
+  <data name="Conflict_RoomNotAvailable" xml:space="preserve">
+    <value>Zimmer '{0}' ist im Zeitraum {1} - {2} nicht verfügbar: Es überschneidet sich mit der Reservierung '{3}' ({4} - {5}). (Eine Anreise am Abreisetag gilt NICHT als Überschneidung.)</value>
+  </data>
+  <data name="Validation_ToAfterFrom_Night" xml:space="preserve">
+    <value>'to' muss nach 'from' liegen (mindestens 1 Nacht).</value>
+  </data>
+  <data name="Validation_ToAfterFrom_Day" xml:space="preserve">
+    <value>'to' muss nach 'from' liegen (mindestens 1 Tag).</value>
+  </data>
+  <data name="Validation_AvailabilityRangeTooLong" xml:space="preserve">
+    <value>Der Zeitraum darf höchstens {0} Tage betragen.</value>
+  </data>
+  <data name="Validation_OccupancyRangeTooLong" xml:space="preserve">
+    <value>Der Zeitraum des Belegungsrasters darf höchstens {0} Tage betragen; fragen Sie längere Zeiträume in Teilabschnitten ab.</value>
+  </data>
+
+  <!-- ================= Abteilungen / Departmanlar ================= -->
+  <data name="NotFound_Department" xml:space="preserve">
+    <value>Abteilung nicht gefunden.</value>
+  </data>
+  <data name="Conflict_DepartmentNameTaken" xml:space="preserve">
+    <value>Eine Abteilung mit dem Namen '{0}' existiert in diesem Hotel bereits.</value>
+  </data>
+  <data name="Conflict_DepartmentHasEmployees" xml:space="preserve">
+    <value>Dieser Abteilung sind Mitarbeiter zugeordnet; verschieben Sie diese zuerst in eine andere Abteilung.</value>
+  </data>
+
+  <!-- ================= Mitarbeiter / Personel ================= -->
+  <data name="NotFound_Employee" xml:space="preserve">
+    <value>Mitarbeiter nicht gefunden.</value>
+  </data>
+  <data name="Conflict_StaffNumberTaken" xml:space="preserve">
+    <value>Die Personalnummer '{0}' wird in diesem Hotel bereits verwendet.</value>
+  </data>
+
+  <!-- ================= Gaeste / Misafirler ================= -->
+  <data name="NotFound_Guest" xml:space="preserve">
+    <value>Gast nicht gefunden.</value>
+  </data>
+  <data name="Conflict_GuestHasActiveReservations" xml:space="preserve">
+    <value>Dieser Gast hat aktive oder zukünftige Reservierungen; stornieren Sie zuerst die Reservierungen.</value>
+  </data>
+  <data name="Validation_SupportedCultures" xml:space="preserve">
+    <value>Unterstützte Sprachen: {0}.</value>
+  </data>
+  <data name="Validation_SupportedCultureCodes" xml:space="preserve">
+    <value>Unterstützte Sprachcodes: {0}.</value>
+  </data>
+
+  <!-- ================= Head Office / Hotel ================= -->
+  <data name="NotFound_HeadOffice" xml:space="preserve">
+    <value>Zentrale (Head Office) nicht gefunden.</value>
+  </data>
+  <data name="Forbidden_NoHeadOffice" xml:space="preserve">
+    <value>Der Identität ist keine Zentrale (Head Office) zugeordnet.</value>
+  </data>
+  <data name="NotFound_Hotel" xml:space="preserve">
+    <value>Hotel nicht gefunden.</value>
+  </data>
+  <data name="Validation_CurrencyFormat" xml:space="preserve">
+    <value>Die Währung muss dem Format ISO 4217 entsprechen (3 Buchstaben).</value>
+  </data>
+  <data name="Validation_ChildAgeLimit" xml:space="preserve">
+    <value>Die Altersgrenze muss zwischen 0 und {0} liegen.</value>
+  </data>
+
+  <!-- ================= Rechnungen / Faturalar (GoBD) ================= -->
+  <data name="NotFound_Reservation" xml:space="preserve">
+    <value>Reservierung nicht gefunden.</value>
+  </data>
+  <data name="Validation_PaymentDateInFuture" xml:space="preserve">
+    <value>Der Zahlungszeitpunkt darf nicht in der Zukunft liegen.</value>
+  </data>
+  <data name="Conflict_PaymentExceedsOutstanding" xml:space="preserve">
+    <value>Der Zahlbetrag übersteigt den offenen Saldo. Offen: {0:0.00} {1}, gesendet: {2:0.00} {1}. Eine Überzahlung kann nicht auf der Rechnung erfasst werden.</value>
+  </data>
+  <data name="Conflict_PaymentOnDraft" xml:space="preserve">
+    <value>Für eine Rechnung im Entwurf kann keine Zahlung erfasst werden. Bitte die Rechnung zuerst festschreiben (finalize).</value>
+  </data>
+  <data name="Conflict_PaymentOnCancelled" xml:space="preserve">
+    <value>Für eine stornierte Rechnung kann keine Zahlung erfasst werden.</value>
+  </data>
+  <data name="Conflict_InvoiceAlreadyPaid" xml:space="preserve">
+    <value>Die Rechnung ist bereits vollständig bezahlt.</value>
+  </data>
+  <data name="Conflict_PaymentNotAllowedInStatus" xml:space="preserve">
+    <value>In diesem Status kann keine Zahlung erfasst werden: {0}.</value>
+  </data>
+  <data name="Conflict_PaymentOnNonPositiveInvoice" xml:space="preserve">
+    <value>Für einen Beleg mit einem Betrag von null oder negativ (z. B. Stornorechnung) kann keine Zahlung erfasst werden; Erstattungen werden in dieser Phase nicht unterstützt.</value>
+  </data>
+  <data name="Conflict_InvoiceAlreadyCancelled" xml:space="preserve">
+    <value>Die Rechnung wurde bereits storniert.</value>
+  </data>
+  <data name="Conflict_ReservationAlreadyInvoiced" xml:space="preserve">
+    <value>Für diese Reservierung existiert bereits eine nicht stornierte Rechnung. Stornieren Sie die vorherige Rechnung (Stornorechnung), um eine neue auszustellen.</value>
+  </data>
+  <data name="Conflict_InvoiceNumberSequenceRace" xml:space="preserve">
+    <value>Die Rechnungsnummer konnte nicht vergeben werden, weil gleichzeitig eine andere Rechnung festgeschrieben wurde. Es wurde keine Nummer verbraucht; bitte wiederholen Sie die Anfrage.</value>
+  </data>
+  <data name="Conflict_InvoiceNotDraft" xml:space="preserve">
+    <value>Nur eine Rechnung im Entwurf kann bearbeitet werden (aktueller Status: {0}). Eine festgeschriebene Rechnung darf gemäß GoBD nicht geändert werden; erstellen Sie zur Korrektur eine Stornorechnung.</value>
+  </data>
+  <data name="Conflict_InvoiceNotDraftForFinalize" xml:space="preserve">
+    <value>Nur eine Rechnung im Entwurf kann festgeschrieben werden (aktueller Status: {0}).</value>
+  </data>
+  <data name="Conflict_InvoiceWithoutLines" xml:space="preserve">
+    <value>Eine Rechnung ohne Positionen kann nicht festgeschrieben werden.</value>
+  </data>
+  <data name="Conflict_InvoiceGuestFromReservation" xml:space="preserve">
+    <value>Der Gast einer reservierungsgebundenen Rechnung kann nicht geändert werden; der Gast stammt aus der Reservierung.</value>
+  </data>
+  <data name="Validation_InvoiceMaxLineItems" xml:space="preserve">
+    <value>Eine Rechnung darf höchstens {0} Positionen enthalten.</value>
+  </data>
+  <data name="Validation_InvoiceGuestRequired" xml:space="preserve">
+    <value>Ohne Reservierung ist der Gast (guestId) erforderlich.</value>
+  </data>
+  <data name="Validation_InvoiceLinesNotAllowed" xml:space="preserve">
+    <value>Einer aus einer Reservierung erzeugten Rechnung können keine Positionen manuell übergeben werden; die Positionen werden aus Reservierung und Folio abgeleitet.</value>
+  </data>
+  <data name="Validation_InvoiceNeedsReservationOrLines" xml:space="preserve">
+    <value>Eine Rechnung kann nicht ohne Positionen erstellt werden: Es muss entweder reservationId oder mindestens ein lineItems-Element angegeben werden.</value>
+  </data>
+  <data name="Validation_InvoiceNeedsLines" xml:space="preserve">
+    <value>Eine Rechnung kann nicht ohne Positionen gespeichert werden: mindestens ein lineItems-Element ist erforderlich.</value>
+  </data>
+  <data name="Validation_ToNotBeforeFrom" xml:space="preserve">
+    <value>'to' darf nicht vor 'from' liegen.</value>
+  </data>
+
+  <!-- ================= Preisplaene / Fiyat planlari ================= -->
+  <data name="Conflict_RatePlanOverlap" xml:space="preserve">
+    <value>Für diesen Zimmertyp und Kanal ({0}) existiert bereits ein Preisplan mit überschneidendem Zeitraum: '{1}' ({2} - {3}). Für dieselbe Nacht können nicht zwei Preise gelten.</value>
+  </data>
+  <data name="RatePlan_AllChannels" xml:space="preserve">
+    <value>alle Kanäle</value>
+  </data>
+  <data name="Conflict_RatePlanInUse" xml:space="preserve">
+    <value>Dieser Preisplan wird in Reservierungen verwendet und kann daher nicht gelöscht werden; setzen Sie den Plan auf inaktiv (isActive = false).</value>
+  </data>
+  <data name="Validation_ValidToNotBeforeValidFrom" xml:space="preserve">
+    <value>'validTo' darf nicht vor 'validFrom' liegen.</value>
+  </data>
+
+  <!-- ================= Berichte / Raporlar ================= -->
+  <data name="Validation_ReportToNotBeforeFrom" xml:space="preserve">
+    <value>'to' darf nicht vor 'from' liegen (für einen Tagesbericht darf es gleich sein).</value>
+  </data>
+  <data name="Validation_ReportRangeTooLong" xml:space="preserve">
+    <value>Der Berichtszeitraum darf höchstens {0} Tage betragen; fragen Sie längere Zeiträume in Teilabschnitten ab.</value>
+  </data>
+
+  <!-- ================= Reservierungen / Rezervasyonlar ================= -->
+  <data name="Conflict_CheckInBeforeArrival" xml:space="preserve">
+    <value>Der Check-in ist vor dem Anreisedatum nicht möglich. Anreisedatum: {0}, heute: {1}. Aktualisieren Sie die Reservierung, um das Datum zu ändern.</value>
+  </data>
+  <data name="Conflict_CheckInRoomOutOfOrder" xml:space="preserve">
+    <value>Zimmer '{0}' ist außer Betrieb (out of order); ein Check-in ist nicht möglich. Nehmen Sie das Zimmer wieder in Betrieb oder verlegen Sie die Reservierung in ein anderes Zimmer.</value>
+  </data>
+  <data name="Validation_StayNightsRange" xml:space="preserve">
+    <value>Der Aufenthalt muss zwischen 1 und {0} Nächten liegen.</value>
+  </data>
+  <data name="Validation_RoomCapacityExceeded" xml:space="preserve">
+    <value>Zimmer '{0}' hat eine Kapazität von {1} Personen; ausgewählt wurden {2} Personen.</value>
+  </data>
+  <data name="Conflict_ReservationSameStatus" xml:space="preserve">
+    <value>Die Reservierung befindet sich bereits im Status '{0}'; ein Wechsel in denselben Status ist nicht möglich.</value>
+  </data>
+  <data name="Conflict_ReservationInvalidTransition" xml:space="preserve">
+    <value>Ungültiger Statuswechsel: '{0}' -&gt; '{1}'. Erlaubte Wechsel: {2}.</value>
+  </data>
+  <data name="Reservation_NoAllowedTransitions" xml:space="preserve">
+    <value>keine (dieser Status ist endgültig)</value>
+  </data>
+  <data name="Conflict_ReservationNotModifiable" xml:space="preserve">
+    <value>Eine Reservierung im Status '{0}' kann nicht geändert werden. Änderbare Status: Option, Confirmed, CheckedIn.</value>
+  </data>
+  <data name="Validation_CheckOutAfterCheckIn" xml:space="preserve">
+    <value>'checkOut' muss nach 'checkIn' liegen (mindestens 1 Nacht).</value>
+  </data>
+  <data name="Validation_MaxNights" xml:space="preserve">
+    <value>Der Aufenthalt darf höchstens {0} Nächte betragen.</value>
+  </data>
+  <data name="Validation_InitialReservationStatus" xml:space="preserve">
+    <value>Der Anfangsstatus darf nur 'Option' oder 'Confirmed' sein.</value>
+  </data>
+  <data name="Validation_ToAfterFrom" xml:space="preserve">
+    <value>'to' muss nach 'from' liegen.</value>
+  </data>
+
+  <!-- ================= Zimmertypen / Oda tipleri ================= -->
+  <data name="Conflict_RoomTypeCodeTaken" xml:space="preserve">
+    <value>Ein Zimmertyp mit dem Code '{0}' existiert in diesem Hotel bereits.</value>
+  </data>
+  <data name="Conflict_RoomTypeHasRooms" xml:space="preserve">
+    <value>Diesem Zimmertyp sind Zimmer zugeordnet; löschen Sie zuerst die Zimmer oder ordnen Sie sie einem anderen Typ zu.</value>
+  </data>
+  <data name="Validation_AmenitiesMaxCount" xml:space="preserve">
+    <value>Es dürfen höchstens {0} Ausstattungsschlüssel übergeben werden.</value>
+  </data>
+  <data name="Validation_AmenityMaxLength" xml:space="preserve">
+    <value>Jeder Ausstattungsschlüssel darf höchstens {0} Zeichen lang sein.</value>
+  </data>
+  <data name="Validation_AmenitiesMaxTotalLength" xml:space="preserve">
+    <value>Die Ausstattungsliste darf insgesamt {0} Zeichen nicht überschreiten.</value>
+  </data>
+  <data name="Validation_TranslationNameMaxLength" xml:space="preserve">
+    <value>Der übersetzte Name darf höchstens {0} Zeichen lang sein.</value>
+  </data>
+  <data name="Validation_TranslationDescriptionMaxLength" xml:space="preserve">
+    <value>Die übersetzte Beschreibung darf höchstens {0} Zeichen lang sein.</value>
+  </data>
+
+  <!-- ================= Zimmer / Odalar ================= -->
+  <data name="Conflict_RoomNumberTaken" xml:space="preserve">
+    <value>Zimmer '{0}' existiert in diesem Hotel bereits.</value>
+  </data>
+  <data name="Conflict_RoomHasFutureReservations" xml:space="preserve">
+    <value>Für dieses Zimmer bestehen zukünftige Reservierungen; stornieren Sie diese zuerst oder verlegen Sie sie in ein anderes Zimmer.</value>
+  </data>
+
+  <!-- ================= Schichten / Vardiyalar ================= -->
+  <data name="Conflict_ShiftAlreadyExists" xml:space="preserve">
+    <value>Für diesen Mitarbeiter existiert am {0} bereits eine Schicht; bearbeiten Sie die vorhandene Schicht.</value>
+  </data>
+  <data name="Validation_IsoWeekFormat" xml:space="preserve">
+    <value>Muss dem ISO-8601-Wochenformat entsprechen (Beispiel: 2026-W31).</value>
+  </data>
+  <data name="Validation_ToRequiredWithFrom" xml:space="preserve">
+    <value>Zusammen mit 'from' muss auch 'to' gesendet werden.</value>
+  </data>
+  <data name="Validation_FromRequiredWithTo" xml:space="preserve">
+    <value>Zusammen mit 'to' muss auch 'from' gesendet werden.</value>
+  </data>
+  <data name="Validation_ShiftRangeTooLong" xml:space="preserve">
+    <value>Der Zeitraum darf höchstens {0} Tage umfassen.</value>
+  </data>
+
+  <!-- ================= Zeiterfassung / Mesai kayitlari ================= -->
+  <data name="Conflict_NoOpenTimeEntry" xml:space="preserve">
+    <value>Für diesen Mitarbeiter existiert keine offene Zeiterfassung; es muss zuerst eingestempelt werden (clock-in).</value>
+  </data>
+  <data name="Conflict_OpenTimeEntryExists" xml:space="preserve">
+    <value>Für diesen Mitarbeiter läuft bereits eine Zeiterfassung; es muss zuerst ausgestempelt werden (clock-out).</value>
+  </data>
+  <data name="Validation_BreakMinutesRange" xml:space="preserve">
+    <value>Muss zwischen 0 und {0} liegen.</value>
+  </data>
+  <data name="Validation_ClockOutAfterClockIn" xml:space="preserve">
+    <value>Die Endzeit muss nach der Startzeit liegen.</value>
+  </data>
+  <data name="Validation_BreakExceedsWorkedTime" xml:space="preserve">
+    <value>Die Pausendauer darf die Arbeitszeit ({0} Min.) nicht überschreiten.</value>
+  </data>
+  <data name="Validation_ClockInNotInFuture" xml:space="preserve">
+    <value>Eine Zeiterfassung mit Startzeit in der Zukunft kann nicht gespeichert werden.</value>
+  </data>
+  <data name="Validation_ClockOutNotInFuture" xml:space="preserve">
+    <value>Eine Zeiterfassung mit Endzeit in der Zukunft kann nicht gespeichert werden.</value>
+  </data>
+
+  <!-- ================= Urlaub / Izinler ================= -->
+  <data name="Conflict_VacationNotCancellable" xml:space="preserve">
+    <value>Dieser Urlaubsantrag kann nicht storniert werden (Status: {0}).</value>
+  </data>
+  <data name="Forbidden_VacationCancel" xml:space="preserve">
+    <value>Sie sind nicht berechtigt, Urlaubsanträge zu stornieren.</value>
+  </data>
+  <data name="Forbidden_VacationCancelOwnOnly" xml:space="preserve">
+    <value>Sie können nur Ihren eigenen Urlaubsantrag stornieren.</value>
+  </data>
+  <data name="Conflict_VacationAlreadyDecided" xml:space="preserve">
+    <value>Über diesen Urlaubsantrag wurde bereits entschieden (Status: {0}); eine erneute Entscheidung ist nicht möglich.</value>
+  </data>
+  <data name="Conflict_VacationOverlap" xml:space="preserve">
+    <value>Für diesen Mitarbeiter besteht im Zeitraum {0} bereits ein offener oder genehmigter Urlaub.</value>
+  </data>
+  <data name="Validation_VacationToNotBeforeFrom" xml:space="preserve">
+    <value>Das Urlaubsende darf nicht vor dem Beginn liegen.</value>
+  </data>
+  <data name="Validation_VacationMaxDays" xml:space="preserve">
+    <value>Ein Urlaubsantrag darf höchstens {0} Tage umfassen.</value>
+  </data>
+</root>

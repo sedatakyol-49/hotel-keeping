@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 
 namespace HotelCore.Application.Features.TimeEntries.Common;
 
@@ -56,22 +57,21 @@ public static class TimeEntryRules
 
         if (breakMinutes is < 0 or > MaxBreakMinutes)
         {
-            errors["BreakMinutes"] = [$"0 ile {MaxBreakMinutes} arasinda olmalidir."];
+            errors["BreakMinutes"] = [Messages.BreakMinutesRange(MaxBreakMinutes)];
         }
 
         if (clockOut is DateTimeOffset end)
         {
             if (end <= clockIn)
             {
-                errors["ClockOut"] = ["Cikis saati giris saatinden sonra olmalidir."];
+                errors["ClockOut"] = [Messages.ClockOutAfterClockIn];
             }
             else if (!errors.ContainsKey("BreakMinutes"))
             {
                 var grossMinutes = (int)Math.Floor((end - clockIn).TotalMinutes);
                 if (breakMinutes > grossMinutes)
                 {
-                    errors["BreakMinutes"] =
-                        [$"Mola suresi calisma suresini ({grossMinutes} dk) asamaz."];
+                    errors["BreakMinutes"] = [Messages.BreakExceedsWorkedTime(grossMinutes)];
                 }
             }
         }

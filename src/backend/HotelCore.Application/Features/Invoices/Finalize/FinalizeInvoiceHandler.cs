@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Features.Invoices.Common;
 using HotelCore.Domain.Enums;
@@ -38,13 +39,12 @@ internal sealed class FinalizeInvoiceHandler(
 
         if (invoice.Status is not InvoiceStatus.Draft)
         {
-            throw new ConflictException(
-                $"Yalnizca taslak fatura kesinlestirilebilir (mevcut durum: {invoice.Status}).");
+            throw new ConflictException(Messages.InvoiceNotDraftForFinalize(invoice.Status));
         }
 
         if (invoice.LineItems.Count == 0)
         {
-            throw new ConflictException("Satirsiz fatura kesinlestirilemez.");
+            throw new ConflictException(Messages.InvoiceWithoutLines);
         }
 
         // Tutarlar SUNUCUDA yeniden hesaplanir: taslak uzerinde kalmis eski bir toplam

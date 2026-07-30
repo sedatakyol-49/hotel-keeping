@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,7 +38,7 @@ internal sealed class EmployeeLookup(IAppDbContext database)
 
         if (employee is null || employee.HotelId != hotelId)
         {
-            throw new NotFoundException("Calisan bulunamadi.");
+            throw new NotFoundException(Messages.EmployeeNotFound);
         }
 
         return employee;
@@ -54,6 +55,6 @@ internal sealed class EmployeeLookup(IAppDbContext database)
             .FirstOrDefaultAsync(candidate => candidate.Id == employeeId, cancellationToken)
             .ConfigureAwait(false);
 
-        return employee ?? throw new NotFoundException("Calisan bulunamadi.");
+        return employee ?? throw new NotFoundException(Messages.EmployeeNotFound);
     }
 }

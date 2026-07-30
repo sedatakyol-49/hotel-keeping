@@ -1,3 +1,5 @@
+using HotelCore.Application.Common.Localization;
+
 namespace HotelCore.Application.Common.Exceptions;
 
 /// <summary>
@@ -10,7 +12,7 @@ namespace HotelCore.Application.Common.Exceptions;
 public sealed class NotFoundException : Exception
 {
     public NotFoundException()
-        : base("Kayit bulunamadi.")
+        : base(Messages.NotFoundTitle)
     {
     }
 
@@ -25,7 +27,7 @@ public sealed class NotFoundException : Exception
     }
 
     public NotFoundException(string entityName, object key)
-        : base($"'{entityName}' kaydi bulunamadi (anahtar: {key}).")
+        : base(Messages.EntityNotFound(entityName, key))
     {
         EntityName = entityName;
     }

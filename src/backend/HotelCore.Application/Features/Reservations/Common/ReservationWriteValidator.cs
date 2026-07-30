@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 
 namespace HotelCore.Application.Features.Reservations.Common;
 
@@ -39,11 +40,11 @@ public abstract class ReservationWriteValidator<TRequest> : AbstractValidator<TR
         // Ayni gun cikis (0 gece) day-use satisidir ve bu fazda desteklenmez.
         RuleFor(request => request.CheckOut)
             .GreaterThan(request => request.CheckIn)
-            .WithMessage("'checkOut' tarihi 'checkIn' tarihinden sonra olmalidir (en az 1 gece).");
+            .WithMessage(_ => Messages.CheckOutAfterCheckIn);
 
         RuleFor(request => request.CheckOut)
             .Must((request, checkOut) => checkOut.DayNumber - request.CheckIn.DayNumber <= MaxNights)
-            .WithMessage($"Konaklama en fazla {MaxNights} gece olabilir.")
+            .WithMessage(_ => Messages.MaxNights(MaxNights))
             .When(request => request.CheckOut > request.CheckIn);
     }
 }

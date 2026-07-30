@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Features.Rooms.Common;
 using HotelCore.Domain.Entities;
@@ -49,7 +50,7 @@ internal sealed class UpdateRoomHandler(IAppDbContext database, RoomReader reade
 
         if (numberExists)
         {
-            throw new ConflictException($"'{number}' numarali oda bu otelde zaten mevcut.");
+            throw new ConflictException(Messages.RoomNumberTaken(number));
         }
 
         entity.Number = number;

@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,10 +32,7 @@ internal static class InvoicePersistence
         }
         catch (DbUpdateConcurrencyException exception)
         {
-            throw new ConflictException(
-                "Ayni anda baska bir fatura kesinlestirildigi icin fatura numarasi verilemedi. " +
-                "Hicbir numara tuketilmedi; lutfen istegi tekrarlayin.",
-                exception);
+            throw new ConflictException(Messages.InvoiceNumberSequenceRace, exception);
         }
     }
 
@@ -50,9 +48,6 @@ internal static class InvoicePersistence
             return;
         }
 
-        throw new ConflictException(
-            $"Yalnizca taslak fatura duzenlenebilir (mevcut durum: {status}). " +
-            "Kesinlesmis fatura GoBD geregi degistirilemez; duzeltme icin iptal faturasi " +
-            "(Stornorechnung) olusturun.");
+        throw new ConflictException(Messages.InvoiceNotDraft(status));
     }
 }

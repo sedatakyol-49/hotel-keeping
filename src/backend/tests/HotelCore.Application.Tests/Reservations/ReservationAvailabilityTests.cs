@@ -31,7 +31,11 @@ public sealed class ReservationAvailabilityTests
         var act = async () => await host.CreateReservationAsync(start.AddDays(1), start.AddDays(4));
 
         var thrown = await act.Should().ThrowAsync<ConflictException>();
-        thrown.Which.Message.Should().Contain("musait degil");
+
+        // Mesaj metni yerellestirildi (de/en/tr) ve sozlesmenin parcasi DEGILDIR; bu yuzden
+        // dile bagimli olmayan parcalar dogrulanir: hangi odanin, hangi rezervasyonla
+        // cakistigini kullaniciya soylemek mesajin asil isidir.
+        thrown.Which.Message.Should().Contain("RES-", "cakisan rezervasyonun numarasi mesajda olmalidir");
     }
 
     [Fact]
@@ -119,7 +123,9 @@ public sealed class ReservationAvailabilityTests
             roomId: host.OutOfOrderRoomId);
 
         var thrown = await act.Should().ThrowAsync<ConflictException>();
-        thrown.Which.Message.Should().Contain("servis disi");
+
+        // "out of order" teknik bir terimdir ve UC dilde de cevrilmeden birakilir.
+        thrown.Which.Message.Should().Contain("out of order");
     }
 
     [Fact]

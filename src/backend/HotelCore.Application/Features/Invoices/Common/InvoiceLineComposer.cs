@@ -1,6 +1,7 @@
 using System.Globalization;
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -107,7 +108,7 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
                 reservation.Folio == null ? null : (Guid?)reservation.Folio.Id))
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false)
-            ?? throw new NotFoundException("Rezervasyon bulunamadi.");
+            ?? throw new NotFoundException(Messages.ReservationNotFound);
 
         // Ayni faturanin iki kez uretilmesini engelle: iptal edilmemis bir faturasi varsa 409.
         var alreadyInvoiced = await database.Invoices
@@ -119,9 +120,7 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
 
         if (alreadyInvoiced)
         {
-            throw new ConflictException(
-                "Bu rezervasyon icin zaten iptal edilmemis bir fatura var. " +
-                "Yeni fatura kesmek icin oncekini iptal edin (Stornorechnung).");
+            throw new ConflictException(Messages.ReservationAlreadyInvoiced);
         }
 
         var nights = Math.Max(1, source.CheckOut.DayNumber - source.CheckIn.DayNumber);

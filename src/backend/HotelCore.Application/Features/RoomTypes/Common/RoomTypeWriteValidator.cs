@@ -45,25 +45,25 @@ public abstract class RoomTypeWriteValidator<TRequest> : AbstractValidator<TRequ
 
         RuleFor(request => request.Amenities)
             .Must(amenities => amenities is null || amenities.Count <= AmenityList.MaxItemCount)
-            .WithMessage($"En fazla {AmenityList.MaxItemCount} donanim anahtari gonderilebilir.")
+            .WithMessage(_ => Messages.AmenitiesMaxCount(AmenityList.MaxItemCount))
             .Must(amenities => amenities is null
                                || amenities.All(item => item.Trim().Length <= AmenityList.MaxItemLength))
-            .WithMessage($"Her donanim anahtari en fazla {AmenityList.MaxItemLength} karakter olabilir.")
+            .WithMessage(_ => Messages.AmenityMaxLength(AmenityList.MaxItemLength))
             .Must(amenities => (AmenityList.Format(amenities)?.Length ?? 0) <= AmenityList.MaxStoredLength)
-            .WithMessage($"Donanim listesi toplam {AmenityList.MaxStoredLength} karakteri gecemez.");
+            .WithMessage(_ => Messages.AmenitiesMaxTotalLength(AmenityList.MaxStoredLength));
 
         RuleFor(request => request.Translations)
             .Must(translations => translations is null
                                   || translations.Keys.All(SupportedCultures.IsSupported))
-            .WithMessage($"Desteklenen dil kodlari: {string.Join(", ", SupportedCultures.All)}.")
+            .WithMessage(_ => Messages.SupportedCultureCodeList)
             .Must(translations => translations is null
                                   || translations.Values.All(value =>
                                       value?.Name is null || value.Name.Trim().Length <= MaxNameLength))
-            .WithMessage($"Ceviri adi en fazla {MaxNameLength} karakter olabilir.")
+            .WithMessage(_ => Messages.TranslationNameMaxLength(MaxNameLength))
             .Must(translations => translations is null
                                   || translations.Values.All(value =>
                                       value?.Description is null
                                       || value.Description.Trim().Length <= MaxDescriptionLength))
-            .WithMessage($"Ceviri aciklamasi en fazla {MaxDescriptionLength} karakter olabilir.");
+            .WithMessage(_ => Messages.TranslationDescriptionMaxLength(MaxDescriptionLength));
     }
 }

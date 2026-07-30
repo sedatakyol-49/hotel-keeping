@@ -1,3 +1,5 @@
+using HotelCore.Application.Common.Localization;
+
 namespace HotelCore.Application.Common.Exceptions;
 
 /// <summary>
@@ -7,7 +9,7 @@ namespace HotelCore.Application.Common.Exceptions;
 public sealed class ForbiddenException : Exception
 {
     public ForbiddenException()
-        : base("Bu islem icin yetkiniz yok.")
+        : base(Messages.ForbiddenDefault)
     {
     }
 

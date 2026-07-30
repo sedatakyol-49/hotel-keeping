@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Features.Availability.Common;
 
 namespace HotelCore.Application.Features.Availability.GetAvailability;
@@ -16,13 +17,13 @@ public sealed class GetAvailabilityValidator : AbstractValidator<GetAvailability
 
         RuleFor(request => request.To)
             .GreaterThan(request => request.From)
-            .WithMessage("'to' tarihi 'from' tarihinden sonra olmalidir (en az 1 gece).");
+            .WithMessage(_ => Messages.ToAfterFromNight);
 
         RuleFor(request => request.To)
             .Must((request, to) =>
                 to.DayNumber - request.From.DayNumber <= AvailabilityLimits.MaxAvailabilityRangeDays)
-            .WithMessage(
-                $"Tarih araligi en fazla {AvailabilityLimits.MaxAvailabilityRangeDays} gun olabilir.")
+            .WithMessage(_ =>
+                Messages.AvailabilityRangeTooLong(AvailabilityLimits.MaxAvailabilityRangeDays))
             .When(request => request.To > request.From);
     }
 }

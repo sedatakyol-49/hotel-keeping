@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Features.Hr.Common;
 using HotelCore.Application.Features.Vacations.Common;
@@ -47,8 +48,7 @@ internal sealed class CancelVacationHandler(
 
         if (vacation.Status is not (VacationStatus.Pending or VacationStatus.Approved))
         {
-            throw new ConflictException(
-                $"Bu izin talebi iptal edilemez (durum: {vacation.Status}).");
+            throw new ConflictException(Messages.VacationNotCancellable(vacation.Status));
         }
 
         if (vacation.Status is VacationStatus.Approved)
@@ -87,12 +87,12 @@ internal sealed class CancelVacationHandler(
 
         if (!HasPermission(Permissions.VacationsRequest))
         {
-            throw new ForbiddenException("Izin talebi iptali icin yetkiniz yok.");
+            throw new ForbiddenException(Messages.VacationCancelForbidden);
         }
 
         if (employeeUserId is null || employeeUserId != currentUser.UserId)
         {
-            throw new ForbiddenException("Yalnizca kendi izin talebinizi iptal edebilirsiniz.");
+            throw new ForbiddenException(Messages.VacationCancelOwnOnly);
         }
     }
 

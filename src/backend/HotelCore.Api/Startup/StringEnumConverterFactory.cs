@@ -1,4 +1,5 @@
 using System.Text.Json;
+using HotelCore.Application.Common.Localization;
 using System.Text.Json.Serialization;
 
 namespace HotelCore.Api.Startup;
@@ -44,7 +45,7 @@ internal sealed class StringEnumConverterFactory : JsonConverterFactory
         {
             if (reader.TokenType is not JsonTokenType.String)
             {
-                throw new JsonException($"Deger metin olmalidir. Izin verilen degerler: {AllowedValues}.");
+                throw new JsonException(Messages.EnumMustBeString(AllowedValues));
             }
 
             var raw = reader.GetString();
@@ -55,7 +56,7 @@ internal sealed class StringEnumConverterFactory : JsonConverterFactory
                 return parsed;
             }
 
-            throw new JsonException($"'{raw}' gecerli bir deger degil. Izin verilen degerler: {AllowedValues}.");
+            throw new JsonException(Messages.EnumInvalidValue(raw, AllowedValues));
         }
 
         public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)

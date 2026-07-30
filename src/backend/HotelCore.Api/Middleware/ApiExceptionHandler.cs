@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using HotelCore.Api.Startup;
 using HotelCore.Application.Common.Exceptions;
+using HotelCore.Application.Common.Localization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ValidationException = HotelCore.Application.Common.Exceptions.ValidationException;
@@ -23,6 +24,12 @@ namespace HotelCore.Api.Middleware;
 /// <c>traceId</c> döner; istisna mesajı/stack trace <b>sadece Development'ta</b> eklenir.
 /// Ayrıntı her hâlükârda sunucu log'una yazılır.
 /// </para>
+/// <para>
+/// <b>i18n:</b> <c>title</c>/<c>detail</c> metinleri <see cref="Messages"/> üzerinden isteğin
+/// dilinde üretilir; <c>detail</c> zaten Application katmanında yerelleştirilmiş istisna
+/// mesajıdır. Böylece <c>title</c>, <c>detail</c> ve <c>errors</c> aynı dilde döner. Log
+/// mesajları bilinçli olarak çevrilmez (geliştiriciye yöneliktir).
+/// </para>
 /// </summary>
 public sealed class ApiExceptionHandler(
     IProblemDetailsService problemDetailsService,
@@ -30,17 +37,17 @@ public sealed class ApiExceptionHandler(
     ILogger<ApiExceptionHandler> logger)
     : IExceptionHandler
 {
-    private const string UnhandledTitle = "Beklenmeyen bir hata olustu.";
-
-    private const string UnhandledDetail =
-        "Istek islenirken beklenmeyen bir hata olustu. Destek talebinde traceId degerini paylasin.";
-
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
+
+        // Bu handler boru hattında UseRequestLocalization'dan DAHA DIŞARIDA çalışır; o yüzden
+        // isteğin dili yeniden yürürlüğe konmadan başlıklar sunucu dilinde üretilirdi
+        // (bkz. RequestCultureScope).
+        using var culture = RequestCultureScope.Apply(httpContext);
 
         var (statusCode, title, detail) = Map(exception);
 
@@ -83,29 +90,32 @@ public sealed class ApiExceptionHandler(
     {
         ValidationException validation => (
             StatusCodes.Status400BadRequest,
-            "Dogrulama hatasi.",
+            Messages.BadRequestTitle,
             validation.Message),
         AuthenticationException authentication => (
             StatusCodes.Status401Unauthorized,
-            "Kimlik dogrulama basarisiz.",
+            Messages.UnauthorizedTitle,
             authentication.Message),
         ForbiddenException forbidden => (
             StatusCodes.Status403Forbidden,
-            "Erisim reddedildi.",
+            Messages.ForbiddenTitle,
             forbidden.Message),
         NotFoundException notFound => (
             StatusCodes.Status404NotFound,
-            "Kayit bulunamadi.",
+            Messages.NotFoundTitle,
             notFound.Message),
         ConflictException conflict => (
             StatusCodes.Status409Conflict,
-            "Islem mevcut durumla celisiyor.",
+            Messages.ConflictTitle,
             conflict.Message),
         OperationCanceledException => (
             StatusCodes.Status499ClientClosedRequest,
-            "Istek iptal edildi.",
-            "Istemci istegi tamamlanmadan kapatti."),
-        _ => (StatusCodes.Status500InternalServerError, UnhandledTitle, UnhandledDetail)
+            Messages.ClientClosedRequestTitle,
+            Messages.ClientClosedRequestDetail),
+        _ => (
+            StatusCodes.Status500InternalServerError,
+            Messages.UnhandledTitle,
+            Messages.UnhandledDetail)
     };
 
     private void LogException(HttpContext httpContext, Exception exception, int statusCode)

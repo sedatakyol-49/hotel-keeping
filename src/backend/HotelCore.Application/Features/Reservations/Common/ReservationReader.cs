@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Models;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
@@ -186,10 +187,7 @@ internal sealed class ReservationReader(IAppDbContext database)
         {
             throw new ValidationException(new Dictionary<string, string[]>(StringComparer.Ordinal)
             {
-                ["Adults"] =
-                [
-                    $"'{room.Number}' numarali odanin kapasitesi {room.Capacity} kisi; {guests} kisi secildi."
-                ]
+                ["Adults"] = [Messages.RoomCapacityExceeded(room.Number, room.Capacity, guests)]
             });
         }
     }

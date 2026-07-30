@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Models;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
@@ -106,8 +107,7 @@ internal sealed class GuestReader(IAppDbContext database, IDateTimeProvider cloc
 
         if (hasActiveReservations)
         {
-            throw new ConflictException(
-                "Bu misafirin aktif veya gelecek tarihli rezervasyonu var; once rezervasyonlari iptal edin.");
+            throw new ConflictException(Messages.GuestHasActiveReservations);
         }
     }
 

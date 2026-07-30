@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Models;
 using HotelCore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -72,8 +73,7 @@ internal sealed class TimeEntryReader(IAppDbContext database)
         var open = await FindOpenEntryAsync(employeeId, excludeId: null, cancellationToken)
             .ConfigureAwait(false);
 
-        return open ?? throw new ConflictException(
-            "Bu calisanin acik bir mesai kaydi yok; once giris (clock-in) yapilmalidir.");
+        return open ?? throw new ConflictException(Messages.NoOpenTimeEntry);
     }
 
     /// <summary>
@@ -90,8 +90,7 @@ internal sealed class TimeEntryReader(IAppDbContext database)
 
         if (open is not null)
         {
-            throw new ConflictException(
-                "Bu calisanin devam eden bir mesai kaydi var; once cikis (clock-out) yapilmalidir.");
+            throw new ConflictException(Messages.OpenTimeEntryExists);
         }
     }
 

@@ -1,6 +1,6 @@
-using System.Globalization;
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Features.Invoices.Common;
 using HotelCore.Domain.Entities;
@@ -61,7 +61,7 @@ internal sealed class AddInvoicePaymentHandler(
         {
             throw new ValidationException(new Dictionary<string, string[]>(StringComparer.Ordinal)
             {
-                ["PaidAt"] = ["Odeme zamani gelecekte olamaz."]
+                ["PaidAt"] = [Messages.PaymentDateInFuture]
             });
         }
 
@@ -74,13 +74,8 @@ internal sealed class AddInvoicePaymentHandler(
 
         if (amount > outstanding)
         {
-            throw new ConflictException(string.Format(
-                CultureInfo.InvariantCulture,
-                "Odeme tutari kalan bakiyeyi asiyor. Kalan: {0:0.00} {1}, gonderilen: {2:0.00} {1}. " +
-                "Fazla odeme faturaya kaydedilemez.",
-                outstanding,
-                invoice.Currency,
-                amount));
+            throw new ConflictException(
+                Messages.PaymentExceedsOutstanding(outstanding, invoice.Currency, amount));
         }
 
         var payment = new Payment
@@ -142,23 +137,20 @@ internal sealed class AddInvoicePaymentHandler(
         switch (invoice.Status)
         {
             case InvoiceStatus.Draft:
-                throw new ConflictException(
-                    "Taslak faturaya odeme kaydedilemez. Once faturayi kesinlestirin (finalize).");
+                throw new ConflictException(Messages.PaymentOnDraftInvoice);
             case InvoiceStatus.Cancelled:
-                throw new ConflictException("Iptal edilmis faturaya odeme kaydedilemez.");
+                throw new ConflictException(Messages.PaymentOnCancelledInvoice);
             case InvoiceStatus.Paid:
-                throw new ConflictException("Fatura zaten tamamen odenmis.");
+                throw new ConflictException(Messages.InvoiceAlreadyPaid);
             case InvoiceStatus.Finalized:
                 break;
             default:
-                throw new ConflictException($"Bu durumda odeme kaydedilemez: {invoice.Status}.");
+                throw new ConflictException(Messages.PaymentNotAllowedInStatus(invoice.Status));
         }
 
         if (invoice.GrossAmount <= 0m)
         {
-            throw new ConflictException(
-                "Tutari sifir veya negatif olan belgeye (orn. iptal faturasi) odeme kaydedilemez; " +
-                "iade akisi bu fazda desteklenmiyor.");
+            throw new ConflictException(Messages.PaymentOnNonPositiveInvoice);
         }
     }
 }

@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -32,8 +33,7 @@ internal sealed class DeleteRoomTypeHandler(IAppDbContext database)
 
         if (hasRooms)
         {
-            throw new ConflictException(
-                "Bu oda tipine bagli odalar var; once odalari silin veya baska bir tipe tasiyin.");
+            throw new ConflictException(Messages.RoomTypeHasRooms);
         }
 
         database.RoomTypes.Remove(entity);

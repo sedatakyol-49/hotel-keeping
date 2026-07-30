@@ -1,3 +1,4 @@
+using System.Globalization;
 using AwesomeAssertions;
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Features.Reservations.Cancel;
@@ -49,7 +50,12 @@ public sealed class ReservationStatusTests
         var act = async () => await host.Dispatcher.Send(new CheckInReservationRequest(reservation));
 
         var thrown = await act.Should().ThrowAsync<ConflictException>();
-        thrown.Which.Message.Should().Contain("Check-in giris tarihinden once yapilamaz");
+
+        // Mesaj metni yerellestirildi; dile bagimli olmayan parca giris tarihidir
+        // (mesajdaki tarihler her dilde ISO 8601 biciminde yazilir).
+        thrown.Which.Message.Should().Contain(
+            host.Today.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            "kullaniciya hangi tarihten once check-in yapamayacagi soylenmelidir");
     }
 
     [Fact]
@@ -81,7 +87,9 @@ public sealed class ReservationStatusTests
         var act = async () => await host.Dispatcher.Send(new CheckInReservationRequest(reservation));
 
         var thrown = await act.Should().ThrowAsync<ConflictException>();
-        thrown.Which.Message.Should().Contain("servis disi");
+
+        // "out of order" teknik terim olarak uc dilde de cevrilmez.
+        thrown.Which.Message.Should().Contain("out of order");
     }
 
     [Fact]
@@ -136,7 +144,9 @@ public sealed class ReservationStatusTests
         var act = async () => await host.Dispatcher.Send(new CheckOutReservationRequest(reservation));
 
         var thrown = await act.Should().ThrowAsync<ConflictException>();
-        thrown.Which.Message.Should().Contain("Gecersiz durum gecisi");
+
+        // Durum adlari enum adlaridir, cevrilmez: denenen gecis her dilde ayni yazilir.
+        thrown.Which.Message.Should().Contain("'Option' -> 'CheckedOut'");
     }
 
     [Fact]
@@ -214,7 +224,9 @@ public sealed class ReservationStatusTests
         });
 
         var thrown = await act.Should().ThrowAsync<ConflictException>();
-        thrown.Which.Message.Should().Contain("Degistirilebilir durumlar");
+
+        // Izin verilen durumlarin listesi enum adlarindan olusur; uc dilde de aynidir.
+        thrown.Which.Message.Should().Contain("Option, Confirmed, CheckedIn");
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using HotelCore.Application.Common.Exceptions;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Enums;
 
 namespace HotelCore.Application.Features.Reservations.Common;
@@ -51,8 +52,7 @@ internal static class ReservationStatusMachine
     {
         if (from == to)
         {
-            throw new ConflictException(
-                $"Rezervasyon zaten '{from}' durumunda; ayni duruma gecis yapilamaz.");
+            throw new ConflictException(Messages.ReservationSameStatus(from));
         }
 
         var allowed = AllowedTransitions.TryGetValue(from, out var targets) ? targets : [];
@@ -62,12 +62,7 @@ internal static class ReservationStatusMachine
             return;
         }
 
-        var allowedText = allowed.Length == 0
-            ? "yok (bu durum nihaidir)"
-            : string.Join(", ", allowed);
-
-        throw new ConflictException(
-            $"Gecersiz durum gecisi: '{from}' -> '{to}'. Izin verilen gecisler: {allowedText}.");
+        throw new ConflictException(Messages.ReservationInvalidTransition(from, to, allowed));
     }
 
     /// <summary>
@@ -85,8 +80,6 @@ internal static class ReservationStatusMachine
             return;
         }
 
-        throw new ConflictException(
-            $"'{status}' durumundaki rezervasyon degistirilemez. " +
-            "Degistirilebilir durumlar: Option, Confirmed, CheckedIn.");
+        throw new ConflictException(Messages.ReservationNotModifiable(status));
     }
 }

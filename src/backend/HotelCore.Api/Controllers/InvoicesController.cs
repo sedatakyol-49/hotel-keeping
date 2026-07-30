@@ -1,4 +1,5 @@
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Common.Models;
 using HotelCore.Application.Features.Invoices.AddPayment;
@@ -167,10 +168,8 @@ public sealed class InvoicesController(IDispatcher dispatcher) : ControllerBase
         StatusCode(StatusCodes.Status501NotImplemented, new ProblemDetails
         {
             Status = StatusCodes.Status501NotImplemented,
-            Title = "Fatura PDF uretimi henuz uygulanmadi.",
-            Detail =
-                "PDF/ZUGFeRD uretimi sonraki fazda eklenecek (IInvoiceExporter portu hazir). " +
-                $"Fatura verisi GET /api/v1/invoices/{id} ile yapilandirilmis olarak alinabilir.",
+            Title = Messages.InvoicePdfNotImplementedTitle,
+            Detail = Messages.InvoicePdfNotImplementedDetail(id),
             Type = "https://tools.ietf.org/html/rfc9110#section-15.6.2",
             Instance = $"{Request.Method} {Request.Path}"
         });

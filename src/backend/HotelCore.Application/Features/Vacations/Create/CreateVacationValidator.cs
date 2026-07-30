@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Features.Vacations.Common;
 
 namespace HotelCore.Application.Features.Vacations.Create;
@@ -20,13 +21,13 @@ public sealed class CreateVacationValidator : AbstractValidator<CreateVacationRe
 
         RuleFor(request => request.To)
             .GreaterThanOrEqualTo(request => request.From)
-            .WithMessage("Izin bitisi baslangictan once olamaz.");
+            .WithMessage(_ => Messages.VacationToNotBeforeFrom);
 
         // RequestedDays precision(5,2) ile sinirli; ayrica yillik izin bir yili asmaz.
         RuleFor(request => request.To)
             .Must((request, to) =>
                 VacationDays.Calculate(request.From, to) <= VacationDays.MaxDaysPerRequest)
             .When(request => request.To >= request.From)
-            .WithMessage($"Bir izin talebi en fazla {VacationDays.MaxDaysPerRequest} gun olabilir.");
+            .WithMessage(_ => Messages.VacationMaxDays(VacationDays.MaxDaysPerRequest));
     }
 }

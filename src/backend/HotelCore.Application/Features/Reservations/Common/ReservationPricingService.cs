@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -58,7 +59,7 @@ internal sealed class ReservationPricingService(IAppDbContext database)
             // Validator bu durumu zaten yakalar; burada savunma amaçlı bir guard var.
             throw new ValidationException(new Dictionary<string, string[]>(StringComparer.Ordinal)
             {
-                ["CheckOut"] = [$"Konaklama 1 ile {MaxNights} gece arasinda olmalidir."]
+                ["CheckOut"] = [Messages.StayNightsRange(MaxNights)]
             });
         }
 

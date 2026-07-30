@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -109,10 +110,7 @@ internal sealed class ShiftReader(IAppDbContext database)
 
         if (exists)
         {
-            var day = FormattableString.Invariant($"{date:yyyy-MM-dd}");
-
-            throw new ConflictException(
-                $"Bu calisanin {day} gunu icin zaten bir vardiyasi var; mevcut vardiyayi guncelleyin.");
+            throw new ConflictException(Messages.ShiftAlreadyExists(date));
         }
     }
 }

@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,7 +32,7 @@ internal sealed class HeadOfficeReader(IAppDbContext database, ICurrentUser curr
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return settings ?? throw new NotFoundException("Head Office bulunamadi.");
+        return settings ?? throw new NotFoundException(Messages.HeadOfficeNotFound);
     }
 
     public async Task<HeadOffice> GetTrackedAsync(CancellationToken cancellationToken)
@@ -42,7 +43,7 @@ internal sealed class HeadOfficeReader(IAppDbContext database, ICurrentUser curr
             .FirstOrDefaultAsync(candidate => candidate.Id == id, cancellationToken)
             .ConfigureAwait(false);
 
-        return headOffice ?? throw new NotFoundException("Head Office bulunamadi.");
+        return headOffice ?? throw new NotFoundException(Messages.HeadOfficeNotFound);
     }
 
     /// <summary>
@@ -51,5 +52,5 @@ internal sealed class HeadOfficeReader(IAppDbContext database, ICurrentUser curr
     /// </summary>
     private Guid RequireHeadOfficeId() =>
         currentUser.HeadOfficeId
-        ?? throw new ForbiddenException("Kimlikte bagli bir Head Office bulunamadi.");
+        ?? throw new ForbiddenException(Messages.NoHeadOfficeInIdentity);
 }

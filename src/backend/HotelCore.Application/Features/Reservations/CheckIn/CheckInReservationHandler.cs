@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Features.Reservations.Common;
 using HotelCore.Domain.Entities;
@@ -37,9 +38,7 @@ internal sealed class CheckInReservationHandler(
         var today = DateOnly.FromDateTime(clock.UtcNow.UtcDateTime);
         if (today < reservation.CheckIn)
         {
-            throw new ConflictException(
-                $"Check-in giris tarihinden once yapilamaz. Giris tarihi: {reservation.CheckIn:yyyy-MM-dd}, " +
-                $"bugun: {today:yyyy-MM-dd}. Tarihi degistirmek icin rezervasyonu guncelleyin.");
+            throw new ConflictException(Messages.CheckInBeforeArrival(reservation.CheckIn, today));
         }
 
         var room = await database.Rooms
@@ -49,9 +48,7 @@ internal sealed class CheckInReservationHandler(
 
         if (room.IsOutOfOrder)
         {
-            throw new ConflictException(
-                $"'{room.Number}' numarali oda servis disi (out of order); check-in yapilamaz. " +
-                "Odayi servise alin veya rezervasyonu baska odaya tasiyin.");
+            throw new ConflictException(Messages.CheckInRoomOutOfOrder(room.Number));
         }
 
         reservation.Status = ReservationStatus.CheckedIn;

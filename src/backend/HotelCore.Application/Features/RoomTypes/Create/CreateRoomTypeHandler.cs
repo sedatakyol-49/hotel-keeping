@@ -35,7 +35,7 @@ internal sealed class CreateRoomTypeHandler(
 
         if (codeExists)
         {
-            throw new ConflictException($"'{code}' kodlu oda tipi bu otelde zaten mevcut.");
+            throw new ConflictException(Messages.RoomTypeCodeTaken(code));
         }
 
         var entity = new RoomType

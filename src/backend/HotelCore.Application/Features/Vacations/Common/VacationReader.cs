@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Models;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
@@ -84,8 +85,7 @@ internal sealed class VacationReader(IAppDbContext database)
 
         if (vacation.Status is not VacationStatus.Pending)
         {
-            throw new ConflictException(
-                $"Bu izin talebi zaten karara baglandi (durum: {vacation.Status}); tekrar karar verilemez.");
+            throw new ConflictException(Messages.VacationAlreadyDecided(vacation.Status));
         }
 
         return vacation;
@@ -119,10 +119,7 @@ internal sealed class VacationReader(IAppDbContext database)
 
         if (overlaps)
         {
-            var range = FormattableString.Invariant($"{from:yyyy-MM-dd} - {to:yyyy-MM-dd}");
-
-            throw new ConflictException(
-                $"Bu calisanin {range} araliginda bekleyen veya onaylanmis bir izni var.");
+            throw new ConflictException(Messages.VacationOverlap(from, to));
         }
     }
 
@@ -215,7 +212,7 @@ internal sealed class VacationReader(IAppDbContext database)
         if (employeeId is not null && rows.Count == 0)
         {
             // Calisan yok, baska otelde ya da istenen yildan once ayrilmis.
-            throw new NotFoundException("Calisan bulunamadi.");
+            throw new NotFoundException(Messages.EmployeeNotFound);
         }
 
         return rows.ConvertAll(row => ToResponse(row, year));

@@ -42,14 +42,14 @@ public sealed class UpdateHotelSettingsValidator : AbstractValidator<UpdateHotel
         RuleFor(request => request.DefaultCulture)
             .NotEmpty()
             .Must(SupportedCultures.IsSupported)
-            .WithMessage($"Desteklenen diller: {string.Join(", ", SupportedCultures.All)}.");
+            .WithMessage(_ => Messages.SupportedCultureList);
 
         // ISO 4217: tam 3 buyuk harf. Kod listesi dogrulanmaz (yeni para birimi eklenince
         // uygulamanin guncellenmesi gerekmesin diye), yalnizca bicim.
         RuleFor(request => request.Currency)
             .NotEmpty()
             .Matches("^[A-Za-z]{3}$")
-            .WithMessage("Para birimi ISO 4217 bicimi olmalidir (3 harf).");
+            .WithMessage(_ => Messages.CurrencyFormat);
 
         RuleFor(request => request.TaxProfile).NotNull();
 
@@ -65,7 +65,7 @@ public sealed class UpdateHotelSettingsValidator : AbstractValidator<UpdateHotel
             RuleFor(request => request.TaxProfile.CityTaxChildAgeLimit)
                 .InclusiveBetween(0, MaxChildAgeLimit)
                 .When(request => request.TaxProfile.CityTaxChildAgeLimit is not null)
-                .WithMessage($"Yas siniri 0 ile {MaxChildAgeLimit} arasinda olmalidir.");
+                .WithMessage(_ => Messages.ChildAgeLimit(MaxChildAgeLimit));
 
             // DIKKAT: cityTaxExemptChildren = true iken yas siniri ZORUNLU DEGILDIR. Muafiyetin
             // varligi hesabi belirler (cocuklar sayilmaz); sinir yalnizca belgelenen dayanaktir ve

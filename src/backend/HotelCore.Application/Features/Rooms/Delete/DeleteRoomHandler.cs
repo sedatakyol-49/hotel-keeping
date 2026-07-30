@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
@@ -40,8 +41,7 @@ internal sealed class DeleteRoomHandler(IAppDbContext database, IDateTimeProvide
 
         if (hasUpcomingReservations)
         {
-            throw new ConflictException(
-                "Bu odanin gelecek tarihli rezervasyonu var; once rezervasyonlari iptal edin veya baska odaya tasiyin.");
+            throw new ConflictException(Messages.RoomHasFutureReservations);
         }
 
         database.Rooms.Remove(entity);

@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Models;
 
 namespace HotelCore.Application.Features.Reservations.List;
@@ -22,7 +23,7 @@ public sealed class ListReservationsValidator : AbstractValidator<ListReservatio
 
         RuleFor(request => request.To)
             .GreaterThan(request => request.From)
-            .WithMessage("'to' tarihi 'from' tarihinden sonra olmalidir.")
+            .WithMessage(_ => Messages.ToAfterFrom)
             .When(request => request.From is not null && request.To is not null);
     }
 }

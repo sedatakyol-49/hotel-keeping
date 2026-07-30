@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Features.Invoices.Common;
 using HotelCore.Domain.Entities;
@@ -55,7 +56,7 @@ internal sealed class CancelInvoiceHandler(
 
         if (invoice.Status is InvoiceStatus.Cancelled)
         {
-            throw new ConflictException("Fatura zaten iptal edilmis.");
+            throw new ConflictException(Messages.InvoiceAlreadyCancelled);
         }
 
         if (invoice.Status is InvoiceStatus.Draft)

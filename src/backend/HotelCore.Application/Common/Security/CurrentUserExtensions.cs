@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 
 namespace HotelCore.Application.Common.Security;
 
@@ -20,10 +21,7 @@ public static class CurrentUserExtensions
         return currentUser.HotelId
                ?? throw new ValidationException(new Dictionary<string, string[]>(StringComparer.Ordinal)
                {
-                   ["X-Hotel-Id"] =
-                   [
-                       "Kayit olusturmak icin aktif otel secilmelidir (X-Hotel-Id header'i)."
-                   ]
+                   ["X-Hotel-Id"] = [Messages.HotelHeaderRequired]
                });
     }
 }

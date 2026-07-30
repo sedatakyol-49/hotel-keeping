@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Interfaces;
 using HotelCore.Application.Features.TimeEntries.Common;
 
@@ -24,6 +25,6 @@ public sealed class ClockOutValidator : AbstractValidator<ClockOutRequest>
 
         RuleFor(request => request.ClockOut)
             .Must(clockOut => TimeEntryRules.IsNotInFuture(clockOut, clock))
-            .WithMessage("Gelecek tarihli mesai cikisi kaydedilemez.");
+            .WithMessage(_ => Messages.ClockOutNotInFuture);
     }
 }

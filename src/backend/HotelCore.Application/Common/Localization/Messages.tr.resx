@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Turkce (tr) mesaj kaynagi. Anahtar kumesi Messages.resx (notr/Almanca) ile BIREBIR aynidir.
+    NOT: Bu dosyadaki metinler diyakritikleri ile yazilir (ö, ü, ş, ğ, ı, ç, İ). Onceki kodda
+    ASCII'ye indirgenmis olan metinler burada duzeltilmistir.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="Problem_BadRequest_Title" xml:space="preserve">
+    <value>Doğrulama hatası.</value>
+  </data>
+  <data name="Problem_Unauthorized_Title" xml:space="preserve">
+    <value>Kimlik doğrulama başarısız.</value>
+  </data>
+  <data name="Problem_Forbidden_Title" xml:space="preserve">
+    <value>Erişim reddedildi.</value>
+  </data>
+  <data name="Problem_NotFound_Title" xml:space="preserve">
+    <value>Kayıt bulunamadı.</value>
+  </data>
+  <data name="Problem_Conflict_Title" xml:space="preserve">
+    <value>İşlem mevcut durumla çelişiyor.</value>
+  </data>
+  <data name="Problem_ClientClosedRequest_Title" xml:space="preserve">
+    <value>İstek iptal edildi.</value>
+  </data>
+  <data name="Problem_ClientClosedRequest_Detail" xml:space="preserve">
+    <value>İstemci isteği tamamlanmadan kapattı.</value>
+  </data>
+  <data name="Problem_Unhandled_Title" xml:space="preserve">
+    <value>Beklenmeyen bir hata oluştu.</value>
+  </data>
+  <data name="Problem_Unhandled_Detail" xml:space="preserve">
+    <value>İstek işlenirken beklenmeyen bir hata oluştu. Destek talebinde traceId değerini paylaşın.</value>
+  </data>
+  <data name="Problem_InvoicePdfNotImplemented_Title" xml:space="preserve">
+    <value>Fatura PDF üretimi henüz uygulanmadı.</value>
+  </data>
+  <data name="Problem_InvoicePdfNotImplemented_Detail" xml:space="preserve">
+    <value>PDF/ZUGFeRD üretimi sonraki fazda eklenecek (IInvoiceExporter portu hazır). Fatura verisi GET /api/v1/invoices/{0} ile yapılandırılmış olarak alınabilir.</value>
+  </data>
+  <data name="Validation_EnumMustBeString" xml:space="preserve">
+    <value>Değer metin olmalıdır. İzin verilen değerler: {0}.</value>
+  </data>
+  <data name="Validation_EnumInvalidValue" xml:space="preserve">
+    <value>'{0}' geçerli bir değer değil. İzin verilen değerler: {1}.</value>
+  </data>
+
+  <data name="Error_Forbidden_Default" xml:space="preserve">
+    <value>Bu işlem için yetkiniz yok.</value>
+  </data>
+  <data name="Error_Validation_Default" xml:space="preserve">
+    <value>Bir veya daha fazla doğrulama hatası oluştu.</value>
+  </data>
+  <data name="Auth_InvalidCredentials" xml:space="preserve">
+    <value>E-posta veya parola hatalı.</value>
+  </data>
+  <data name="NotFound_Entity" xml:space="preserve">
+    <value>'{0}' kaydı bulunamadı (anahtar: {1}).</value>
+  </data>
+
+  <data name="Entity_Room" xml:space="preserve">
+    <value>Oda</value>
+  </data>
+  <data name="Entity_RoomType" xml:space="preserve">
+    <value>Oda tipi</value>
+  </data>
+  <data name="Entity_Reservation" xml:space="preserve">
+    <value>Rezervasyon</value>
+  </data>
+  <data name="Entity_Guest" xml:space="preserve">
+    <value>Misafir</value>
+  </data>
+  <data name="Entity_Employee" xml:space="preserve">
+    <value>Çalışan</value>
+  </data>
+  <data name="Entity_Invoice" xml:space="preserve">
+    <value>Fatura</value>
+  </data>
+  <data name="Entity_RatePlan" xml:space="preserve">
+    <value>Fiyat planı</value>
+  </data>
+  <data name="Entity_Shift" xml:space="preserve">
+    <value>Vardiya</value>
+  </data>
+  <data name="Entity_TimeEntry" xml:space="preserve">
+    <value>Mesai kaydı</value>
+  </data>
+  <data name="Entity_VacationRequest" xml:space="preserve">
+    <value>İzin talebi</value>
+  </data>
+  <data name="Entity_Department" xml:space="preserve">
+    <value>Departman</value>
+  </data>
+  <data name="Entity_Hotel" xml:space="preserve">
+    <value>Otel</value>
+  </data>
+  <data name="Entity_HeadOffice" xml:space="preserve">
+    <value>Head Office</value>
+  </data>
+
+  <data name="Validation_HotelHeaderRequired" xml:space="preserve">
+    <value>Kayıt oluşturmak için aktif otel seçilmelidir (X-Hotel-Id header'ı).</value>
+  </data>
+  <data name="Validation_InvalidGuid" xml:space="preserve">
+    <value>Geçerli bir GUID olmalıdır.</value>
+  </data>
+  <data name="Forbidden_HotelAccess" xml:space="preserve">
+    <value>Bu otele erişim yetkiniz yok (otel: {0}).</value>
+  </data>
+
+  <data name="Auth_NotAuthenticated" xml:space="preserve">
+    <value>Kimlik doğrulanmamış.</value>
+  </data>
+  <data name="Auth_UserInactiveOrMissing" xml:space="preserve">
+    <value>Kullanıcı bulunamadı veya pasif.</value>
+  </data>
+  <data name="Auth_InvalidRefreshToken" xml:space="preserve">
+    <value>Refresh token geçersiz veya süresi dolmuş.</value>
+  </data>
+
+  <data name="Conflict_RoomOutOfOrder" xml:space="preserve">
+    <value>'{0}' numaralı oda servis dışı (out of order); rezervasyon alınamaz.</value>
+  </data>
+  <data name="Conflict_RoomNotAvailable" xml:space="preserve">
+    <value>'{0}' numaralı oda {1} - {2} aralığında müsait değil: '{3}' rezervasyonu ({4} - {5}) ile çakışıyor. (Çıkış günü ile aynı günün girişi çakışma SAYILMAZ.)</value>
+  </data>
+  <data name="Validation_ToAfterFrom_Night" xml:space="preserve">
+    <value>'to' tarihi 'from' tarihinden sonra olmalıdır (en az 1 gece).</value>
+  </data>
+  <data name="Validation_ToAfterFrom_Day" xml:space="preserve">
+    <value>'to' tarihi 'from' tarihinden sonra olmalıdır (en az 1 gün).</value>
+  </data>
+  <data name="Validation_AvailabilityRangeTooLong" xml:space="preserve">
+    <value>Tarih aralığı en fazla {0} gün olabilir.</value>
+  </data>
+  <data name="Validation_OccupancyRangeTooLong" xml:space="preserve">
+    <value>Doluluk grid'i aralığı en fazla {0} gün olabilir; daha uzun dönemler için aralığı bölerek sorgulayın.</value>
+  </data>
+
+  <data name="NotFound_Department" xml:space="preserve">
+    <value>Departman bulunamadı.</value>
+  </data>
+  <data name="Conflict_DepartmentNameTaken" xml:space="preserve">
+    <value>'{0}' adlı departman bu otelde zaten mevcut.</value>
+  </data>
+  <data name="Conflict_DepartmentHasEmployees" xml:space="preserve">
+    <value>Bu departmana bağlı çalışanlar var; önce onları başka departmana taşıyın.</value>
+  </data>
+
+  <data name="NotFound_Employee" xml:space="preserve">
+    <value>Çalışan bulunamadı.</value>
+  </data>
+  <data name="Conflict_StaffNumberTaken" xml:space="preserve">
+    <value>'{0}' personel numarası bu otelde zaten kullanılıyor.</value>
+  </data>
+
+  <data name="NotFound_Guest" xml:space="preserve">
+    <value>Misafir bulunamadı.</value>
+  </data>
+  <data name="Conflict_GuestHasActiveReservations" xml:space="preserve">
+    <value>Bu misafirin aktif veya gelecek tarihli rezervasyonu var; önce rezervasyonları iptal edin.</value>
+  </data>
+  <data name="Validation_SupportedCultures" xml:space="preserve">
+    <value>Desteklenen diller: {0}.</value>
+  </data>
+  <data name="Validation_SupportedCultureCodes" xml:space="preserve">
+    <value>Desteklenen dil kodları: {0}.</value>
+  </data>
+
+  <data name="NotFound_HeadOffice" xml:space="preserve">
+    <value>Head Office bulunamadı.</value>
+  </data>
+  <data name="Forbidden_NoHeadOffice" xml:space="preserve">
+    <value>Kimlikte bağlı bir Head Office bulunamadı.</value>
+  </data>
+  <data name="NotFound_Hotel" xml:space="preserve">
+    <value>Otel bulunamadı.</value>
+  </data>
+  <data name="Validation_CurrencyFormat" xml:space="preserve">
+    <value>Para birimi ISO 4217 biçimi olmalıdır (3 harf).</value>
+  </data>
+  <data name="Validation_ChildAgeLimit" xml:space="preserve">
+    <value>Yaş sınırı 0 ile {0} arasında olmalıdır.</value>
+  </data>
+
+  <data name="NotFound_Reservation" xml:space="preserve">
+    <value>Rezervasyon bulunamadı.</value>
+  </data>
+  <data name="Validation_PaymentDateInFuture" xml:space="preserve">
+    <value>Ödeme zamanı gelecekte olamaz.</value>
+  </data>
+  <data name="Conflict_PaymentExceedsOutstanding" xml:space="preserve">
+    <value>Ödeme tutarı kalan bakiyeyi aşıyor. Kalan: {0:0.00} {1}, gönderilen: {2:0.00} {1}. Fazla ödeme faturaya kaydedilemez.</value>
+  </data>
+  <data name="Conflict_PaymentOnDraft" xml:space="preserve">
+    <value>Taslak faturaya ödeme kaydedilemez. Önce faturayı kesinleştirin (finalize).</value>
+  </data>
+  <data name="Conflict_PaymentOnCancelled" xml:space="preserve">
+    <value>İptal edilmiş faturaya ödeme kaydedilemez.</value>
+  </data>
+  <data name="Conflict_InvoiceAlreadyPaid" xml:space="preserve">
+    <value>Fatura zaten tamamen ödenmiş.</value>
+  </data>
+  <data name="Conflict_PaymentNotAllowedInStatus" xml:space="preserve">
+    <value>Bu durumda ödeme kaydedilemez: {0}.</value>
+  </data>
+  <data name="Conflict_PaymentOnNonPositiveInvoice" xml:space="preserve">
+    <value>Tutarı sıfır veya negatif olan belgeye (örn. iptal faturası) ödeme kaydedilemez; iade akışı bu fazda desteklenmiyor.</value>
+  </data>
+  <data name="Conflict_InvoiceAlreadyCancelled" xml:space="preserve">
+    <value>Fatura zaten iptal edilmiş.</value>
+  </data>
+  <data name="Conflict_ReservationAlreadyInvoiced" xml:space="preserve">
+    <value>Bu rezervasyon için zaten iptal edilmemiş bir fatura var. Yeni fatura kesmek için öncekini iptal edin (Stornorechnung).</value>
+  </data>
+  <data name="Conflict_InvoiceNumberSequenceRace" xml:space="preserve">
+    <value>Aynı anda başka bir fatura kesinleştirildiği için fatura numarası verilemedi. Hiçbir numara tüketilmedi; lütfen isteği tekrarlayın.</value>
+  </data>
+  <data name="Conflict_InvoiceNotDraft" xml:space="preserve">
+    <value>Yalnızca taslak fatura düzenlenebilir (mevcut durum: {0}). Kesinleşmiş fatura GoBD gereği değiştirilemez; düzeltme için iptal faturası (Stornorechnung) oluşturun.</value>
+  </data>
+  <data name="Conflict_InvoiceNotDraftForFinalize" xml:space="preserve">
+    <value>Yalnızca taslak fatura kesinleştirilebilir (mevcut durum: {0}).</value>
+  </data>
+  <data name="Conflict_InvoiceWithoutLines" xml:space="preserve">
+    <value>Satırsız fatura kesinleştirilemez.</value>
+  </data>
+  <data name="Conflict_InvoiceGuestFromReservation" xml:space="preserve">
+    <value>Rezervasyona bağlı faturanın misafiri değiştirilemez; misafir rezervasyondan gelir.</value>
+  </data>
+  <data name="Validation_InvoiceMaxLineItems" xml:space="preserve">
+    <value>Bir faturada en fazla {0} satır olabilir.</value>
+  </data>
+  <data name="Validation_InvoiceGuestRequired" xml:space="preserve">
+    <value>Rezervasyon verilmediğinde misafir (guestId) zorunludur.</value>
+  </data>
+  <data name="Validation_InvoiceLinesNotAllowed" xml:space="preserve">
+    <value>Rezervasyondan üretilen faturaya elle satır gönderilemez; satırlar rezervasyon ve folio'dan türetilir.</value>
+  </data>
+  <data name="Validation_InvoiceNeedsReservationOrLines" xml:space="preserve">
+    <value>Fatura satırsız oluşturulamaz: ya reservationId ya da en az bir lineItems öğesi verilmelidir.</value>
+  </data>
+  <data name="Validation_InvoiceNeedsLines" xml:space="preserve">
+    <value>Fatura satırsız kaydedilemez: en az bir lineItems öğesi verilmelidir.</value>
+  </data>
+  <data name="Validation_ToNotBeforeFrom" xml:space="preserve">
+    <value>'to' tarihi 'from' tarihinden önce olamaz.</value>
+  </data>
+
+  <data name="Conflict_RatePlanOverlap" xml:space="preserve">
+    <value>Bu oda tipi ve kanal ({0}) için tarih aralığı çakışan bir fiyat planı var: '{1}' ({2} - {3}). Aynı gece için iki fiyat geçerli olamaz.</value>
+  </data>
+  <data name="RatePlan_AllChannels" xml:space="preserve">
+    <value>tüm kanallar</value>
+  </data>
+  <data name="Conflict_RatePlanInUse" xml:space="preserve">
+    <value>Bu fiyat planı rezervasyonlarda kullanıldığı için silinemez; planı pasife alın (isActive = false).</value>
+  </data>
+  <data name="Validation_ValidToNotBeforeValidFrom" xml:space="preserve">
+    <value>'validTo' tarihi 'validFrom' tarihinden önce olamaz.</value>
+  </data>
+
+  <data name="Validation_ReportToNotBeforeFrom" xml:space="preserve">
+    <value>'to' tarihi 'from' tarihinden önce olamaz (tek günlük rapor için eşit olabilir).</value>
+  </data>
+  <data name="Validation_ReportRangeTooLong" xml:space="preserve">
+    <value>Rapor aralığı en fazla {0} gün olabilir; daha uzun dönemler için aralığı bölerek sorgulayın.</value>
+  </data>
+
+  <data name="Conflict_CheckInBeforeArrival" xml:space="preserve">
+    <value>Check-in giriş tarihinden önce yapılamaz. Giriş tarihi: {0}, bugün: {1}. Tarihi değiştirmek için rezervasyonu güncelleyin.</value>
+  </data>
+  <data name="Conflict_CheckInRoomOutOfOrder" xml:space="preserve">
+    <value>'{0}' numaralı oda servis dışı (out of order); check-in yapılamaz. Odayı servise alın veya rezervasyonu başka odaya taşıyın.</value>
+  </data>
+  <data name="Validation_StayNightsRange" xml:space="preserve">
+    <value>Konaklama 1 ile {0} gece arasında olmalıdır.</value>
+  </data>
+  <data name="Validation_RoomCapacityExceeded" xml:space="preserve">
+    <value>'{0}' numaralı odanın kapasitesi {1} kişi; {2} kişi seçildi.</value>
+  </data>
+  <data name="Conflict_ReservationSameStatus" xml:space="preserve">
+    <value>Rezervasyon zaten '{0}' durumunda; aynı duruma geçiş yapılamaz.</value>
+  </data>
+  <data name="Conflict_ReservationInvalidTransition" xml:space="preserve">
+    <value>Geçersiz durum geçişi: '{0}' -&gt; '{1}'. İzin verilen geçişler: {2}.</value>
+  </data>
+  <data name="Reservation_NoAllowedTransitions" xml:space="preserve">
+    <value>yok (bu durum nihaidir)</value>
+  </data>
+  <data name="Conflict_ReservationNotModifiable" xml:space="preserve">
+    <value>'{0}' durumundaki rezervasyon değiştirilemez. Değiştirilebilir durumlar: Option, Confirmed, CheckedIn.</value>
+  </data>
+  <data name="Validation_CheckOutAfterCheckIn" xml:space="preserve">
+    <value>'checkOut' tarihi 'checkIn' tarihinden sonra olmalıdır (en az 1 gece).</value>
+  </data>
+  <data name="Validation_MaxNights" xml:space="preserve">
+    <value>Konaklama en fazla {0} gece olabilir.</value>
+  </data>
+  <data name="Validation_InitialReservationStatus" xml:space="preserve">
+    <value>Başlangıç durumu yalnızca 'Option' veya 'Confirmed' olabilir.</value>
+  </data>
+  <data name="Validation_ToAfterFrom" xml:space="preserve">
+    <value>'to' tarihi 'from' tarihinden sonra olmalıdır.</value>
+  </data>
+
+  <data name="Conflict_RoomTypeCodeTaken" xml:space="preserve">
+    <value>'{0}' kodlu oda tipi bu otelde zaten mevcut.</value>
+  </data>
+  <data name="Conflict_RoomTypeHasRooms" xml:space="preserve">
+    <value>Bu oda tipine bağlı odalar var; önce odaları silin veya başka bir tipe taşıyın.</value>
+  </data>
+  <data name="Validation_AmenitiesMaxCount" xml:space="preserve">
+    <value>En fazla {0} donanım anahtarı gönderilebilir.</value>
+  </data>
+  <data name="Validation_AmenityMaxLength" xml:space="preserve">
+    <value>Her donanım anahtarı en fazla {0} karakter olabilir.</value>
+  </data>
+  <data name="Validation_AmenitiesMaxTotalLength" xml:space="preserve">
+    <value>Donanım listesi toplam {0} karakteri geçemez.</value>
+  </data>
+  <data name="Validation_TranslationNameMaxLength" xml:space="preserve">
+    <value>Çeviri adı en fazla {0} karakter olabilir.</value>
+  </data>
+  <data name="Validation_TranslationDescriptionMaxLength" xml:space="preserve">
+    <value>Çeviri açıklaması en fazla {0} karakter olabilir.</value>
+  </data>
+
+  <data name="Conflict_RoomNumberTaken" xml:space="preserve">
+    <value>'{0}' numaralı oda bu otelde zaten mevcut.</value>
+  </data>
+  <data name="Conflict_RoomHasFutureReservations" xml:space="preserve">
+    <value>Bu odanın gelecek tarihli rezervasyonu var; önce rezervasyonları iptal edin veya başka odaya taşıyın.</value>
+  </data>
+
+  <data name="Conflict_ShiftAlreadyExists" xml:space="preserve">
+    <value>Bu çalışanın {0} günü için zaten bir vardiyası var; mevcut vardiyayı güncelleyin.</value>
+  </data>
+  <data name="Validation_IsoWeekFormat" xml:space="preserve">
+    <value>ISO 8601 hafta biçimi olmalıdır (örnek: 2026-W31).</value>
+  </data>
+  <data name="Validation_ToRequiredWithFrom" xml:space="preserve">
+    <value>'from' ile birlikte 'to' da gönderilmelidir.</value>
+  </data>
+  <data name="Validation_FromRequiredWithTo" xml:space="preserve">
+    <value>'to' ile birlikte 'from' da gönderilmelidir.</value>
+  </data>
+  <data name="Validation_ShiftRangeTooLong" xml:space="preserve">
+    <value>Aralık en fazla {0} gün olabilir.</value>
+  </data>
+
+  <data name="Conflict_NoOpenTimeEntry" xml:space="preserve">
+    <value>Bu çalışanın açık bir mesai kaydı yok; önce giriş (clock-in) yapılmalıdır.</value>
+  </data>
+  <data name="Conflict_OpenTimeEntryExists" xml:space="preserve">
+    <value>Bu çalışanın devam eden bir mesai kaydı var; önce çıkış (clock-out) yapılmalıdır.</value>
+  </data>
+  <data name="Validation_BreakMinutesRange" xml:space="preserve">
+    <value>0 ile {0} arasında olmalıdır.</value>
+  </data>
+  <data name="Validation_ClockOutAfterClockIn" xml:space="preserve">
+    <value>Çıkış saati giriş saatinden sonra olmalıdır.</value>
+  </data>
+  <data name="Validation_BreakExceedsWorkedTime" xml:space="preserve">
+    <value>Mola süresi çalışma süresini ({0} dk) aşamaz.</value>
+  </data>
+  <data name="Validation_ClockInNotInFuture" xml:space="preserve">
+    <value>Gelecek tarihli mesai girişi kaydedilemez.</value>
+  </data>
+  <data name="Validation_ClockOutNotInFuture" xml:space="preserve">
+    <value>Gelecek tarihli mesai çıkışı kaydedilemez.</value>
+  </data>
+
+  <data name="Conflict_VacationNotCancellable" xml:space="preserve">
+    <value>Bu izin talebi iptal edilemez (durum: {0}).</value>
+  </data>
+  <data name="Forbidden_VacationCancel" xml:space="preserve">
+    <value>İzin talebi iptali için yetkiniz yok.</value>
+  </data>
+  <data name="Forbidden_VacationCancelOwnOnly" xml:space="preserve">
+    <value>Yalnızca kendi izin talebinizi iptal edebilirsiniz.</value>
+  </data>
+  <data name="Conflict_VacationAlreadyDecided" xml:space="preserve">
+    <value>Bu izin talebi zaten karara bağlandı (durum: {0}); tekrar karar verilemez.</value>
+  </data>
+  <data name="Conflict_VacationOverlap" xml:space="preserve">
+    <value>Bu çalışanın {0} aralığında bekleyen veya onaylanmış bir izni var.</value>
+  </data>
+  <data name="Validation_VacationToNotBeforeFrom" xml:space="preserve">
+    <value>İzin bitişi başlangıçtan önce olamaz.</value>
+  </data>
+  <data name="Validation_VacationMaxDays" xml:space="preserve">
+    <value>Bir izin talebi en fazla {0} gün olabilir.</value>
+  </data>
+</root>

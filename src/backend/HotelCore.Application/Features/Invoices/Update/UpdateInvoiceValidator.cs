@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Features.Invoices.Common;
 
 namespace HotelCore.Application.Features.Invoices.Update;
@@ -16,6 +17,6 @@ public sealed class UpdateInvoiceValidator : InvoiceWriteValidator<UpdateInvoice
         // PUT tam degisim: satirsiz bir fatura anlamsizdir.
         RuleFor(request => request.LineItems)
             .Must(items => items is { Count: > 0 })
-            .WithMessage("Fatura satirsiz kaydedilemez: en az bir lineItems ogesi verilmelidir.");
+            .WithMessage(_ => Messages.InvoiceNeedsLines);
     }
 }

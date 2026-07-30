@@ -19,13 +19,13 @@ public abstract class InvoiceWriteValidator<TRequest> : AbstractValidator<TReque
     {
         RuleFor(request => request.Culture)
             .Must(SupportedCultures.IsSupported)
-            .WithMessage($"Desteklenen diller: {string.Join(", ", SupportedCultures.All)}.")
+            .WithMessage(_ => Messages.SupportedCultureList)
             .When(request => request.Culture is not null);
 
         RuleFor(request => request.LineItems)
             .NotNull()
             .Must(items => items is null || items.Count <= MaxLineItems)
-            .WithMessage($"Bir faturada en fazla {MaxLineItems} satir olabilir.");
+            .WithMessage(_ => Messages.InvoiceMaxLineItems(MaxLineItems));
 
         RuleForEach(request => request.LineItems).SetValidator(new InvoiceLineInputValidator());
     }

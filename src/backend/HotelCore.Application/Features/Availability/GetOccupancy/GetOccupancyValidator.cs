@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Features.Availability.Common;
 
 namespace HotelCore.Application.Features.Availability.GetOccupancy;
@@ -17,14 +18,13 @@ public sealed class GetOccupancyValidator : AbstractValidator<GetOccupancyReques
 
         RuleFor(request => request.To)
             .GreaterThan(request => request.From)
-            .WithMessage("'to' tarihi 'from' tarihinden sonra olmalidir (en az 1 gun).");
+            .WithMessage(_ => Messages.ToAfterFromDay);
 
         RuleFor(request => request.To)
             .Must((request, to) =>
                 to.DayNumber - request.From.DayNumber <= AvailabilityLimits.MaxOccupancyRangeDays)
-            .WithMessage(
-                $"Doluluk grid'i araligi en fazla {AvailabilityLimits.MaxOccupancyRangeDays} gun olabilir; " +
-                "daha uzun donemler icin araligi bolerek sorgulayin.")
+            .WithMessage(_ =>
+                Messages.OccupancyRangeTooLong(AvailabilityLimits.MaxOccupancyRangeDays))
             .When(request => request.To > request.From);
     }
 }

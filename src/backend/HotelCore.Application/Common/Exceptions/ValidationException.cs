@@ -1,3 +1,5 @@
+using HotelCore.Application.Common.Localization;
+
 namespace HotelCore.Application.Common.Exceptions;
 
 /// <summary>
@@ -27,7 +29,7 @@ public sealed class ValidationException : Exception
     }
 
     public ValidationException(IReadOnlyDictionary<string, string[]> errors)
-        : base("Bir veya daha fazla dogrulama hatasi olustu.")
+        : base(Messages.ValidationDefault)
     {
         Errors = errors ?? EmptyErrors;
     }

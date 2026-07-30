@@ -2,6 +2,16 @@
 
   <!-- Application: use-case handler'ları, DTO'lar, validation, mapping, port arayüzleri. -->
 
+  <PropertyGroup>
+    <!--
+      i18n (architecture.md §8): nötr Messages.resx'in dili ALMANCA'dır. Bu ayar derleyiciye
+      NeutralResourcesLanguageAttribute("de") ürettirir; böylece "de"/"de-DE" istekleri uydu
+      (satellite) assembly aranmadan doğrudan ana assembly'deki kaynağa düşer ve ayrı bir
+      Messages.de.resx tutmak gerekmez. Diğer diller: Messages.en.resx / Messages.tr.resx.
+    -->
+    <NeutralLanguage>de</NeutralLanguage>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\HotelCore.Domain\HotelCore.Domain.csproj" />
   </ItemGroup>

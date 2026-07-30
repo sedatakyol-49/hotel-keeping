@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Features.Departments.Common;
 using Microsoft.EntityFrameworkCore;
@@ -26,8 +27,7 @@ internal sealed class DeleteDepartmentHandler(IAppDbContext database, Department
 
         if (hasEmployees)
         {
-            throw new ConflictException(
-                "Bu departmana bagli calisanlar var; once onlari baska departmana tasiyin.");
+            throw new ConflictException(Messages.DepartmentHasEmployees);
         }
 
         database.Departments.Remove(department);

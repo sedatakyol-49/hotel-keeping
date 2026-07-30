@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -147,12 +148,11 @@ internal sealed class RatePlanReader(IAppDbContext database)
 
         if (conflict is not null)
         {
-            var channelText = channel?.ToString() ?? "tum kanallar";
-
-            throw new ConflictException(
-                $"Bu oda tipi ve kanal ({channelText}) icin tarih araligi cakisan bir fiyat plani var: " +
-                $"'{conflict.Name}' ({conflict.ValidFrom:yyyy-MM-dd} - {conflict.ValidTo:yyyy-MM-dd}). " +
-                "Ayni gece icin iki fiyat gecerli olamaz.");
+            throw new ConflictException(Messages.RatePlanOverlap(
+                channel,
+                conflict.Name,
+                conflict.ValidFrom,
+                conflict.ValidTo));
         }
     }
 
@@ -170,8 +170,7 @@ internal sealed class RatePlanReader(IAppDbContext database)
 
         if (isUsed)
         {
-            throw new ConflictException(
-                "Bu fiyat plani rezervasyonlarda kullanildigi icin silinemez; plani pasife alin (isActive = false).");
+            throw new ConflictException(Messages.RatePlanInUse);
         }
     }
 

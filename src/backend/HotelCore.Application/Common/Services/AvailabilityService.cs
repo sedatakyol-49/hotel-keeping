@@ -1,5 +1,6 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,8 +48,7 @@ internal sealed class AvailabilityService(IAppDbContext database) : IAvailabilit
 
         if (room.IsOutOfOrder)
         {
-            throw new ConflictException(
-                $"'{room.Number}' numarali oda servis disi (out of order); rezervasyon alinamaz.");
+            throw new ConflictException(Messages.RoomOutOfOrder(room.Number));
         }
 
         var conflict = await OverlappingQuery(roomId, checkIn, checkOut, excludeReservationId)
@@ -63,10 +63,13 @@ internal sealed class AvailabilityService(IAppDbContext database) : IAvailabilit
 
         if (conflict is not null)
         {
-            throw new ConflictException(
-                $"'{room.Number}' numarali oda {checkIn:yyyy-MM-dd} - {checkOut:yyyy-MM-dd} araliginda musait degil: " +
-                $"'{conflict.ReservationNumber}' rezervasyonu ({conflict.CheckIn:yyyy-MM-dd} - {conflict.CheckOut:yyyy-MM-dd}) " +
-                "ile cakisiyor. (Cikis gunu ile ayni gunun girisi cakisma SAYILMAZ.)");
+            throw new ConflictException(Messages.RoomNotAvailable(
+                room.Number,
+                checkIn,
+                checkOut,
+                conflict.ReservationNumber,
+                conflict.CheckIn,
+                conflict.CheckOut));
         }
     }
 

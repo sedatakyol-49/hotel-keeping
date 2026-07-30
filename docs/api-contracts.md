@@ -13,6 +13,19 @@
 - **Sayfalama:** `?page=1&pageSize=20` → yanıt `{ items, page, pageSize, totalCount }`.
 - **Hata formatı:** `ProblemDetails` — `{ type, title, status, detail, errors? }`.
 
+**Hata mesajlarının dili.** `title`, `detail` ve `errors` **üçü de** isteğin diline göre döner.
+Çözüm sırası: query string → cookie → `Accept-Language` → JWT `culture` claim'i → varsayılan `de`.
+Desteklenen diller `de | en | tr`; desteklenmeyen bir dil `de`'ye düşer. Yanıt `Content-Language`
+başlığıyla aktif dili bildirir.
+
+> **Mesaj metinleri sözleşmenin parçası DEĞİLDİR** ve dile göre değişir. İstemci mantığı metne
+> değil `status` + `type` + `errors` anahtarlarına dayanmalıdır. `errors` anahtarları (PascalCase
+> alan adları) ve `type` URI'ları dilden bağımsızdır.
+
+Mesaj gövdesindeki **tarihler her dilde ISO 8601** (`yyyy-MM-dd`), **para tutarları aktif kültüre
+göre** biçimlenir (`de: 1.234,50`). Enum/durum adları, alan adları ve teknik terimler
+(`Stornorechnung`, `finalize`, `out of order`, `X-Hotel-Id`) çevrilmez.
+
 ## JWT Claim Şeması
 ```
 sub          -> userId

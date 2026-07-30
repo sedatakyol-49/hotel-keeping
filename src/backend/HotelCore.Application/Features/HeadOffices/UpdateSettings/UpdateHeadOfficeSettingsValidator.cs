@@ -15,6 +15,6 @@ public sealed class UpdateHeadOfficeSettingsValidator
         RuleFor(request => request.DefaultCulture)
             .NotEmpty()
             .Must(SupportedCultures.IsSupported)
-            .WithMessage($"Desteklenen diller: {string.Join(", ", SupportedCultures.All)}.");
+            .WithMessage(_ => Messages.SupportedCultureList);
     }
 }
