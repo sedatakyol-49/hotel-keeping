@@ -113,16 +113,19 @@ describe('HubPage — modul kart izgarasi', () => {
     fixture.detectChanges();
 
     // `/rooms/types` -> Rooms.Manage, `/housekeeping` -> Housekeeping.View gerektirir.
-    expect(cardPaths(fixture)).toEqual(['/rooms']);
+    // `/settings` **izin gerektirmez**: ekranin ilk karti arayuz dilidir (kisisel
+    // tercih), yonetim kartlari sayfa icinde izne gore gizlenir.
+    expect(cardPaths(fixture)).toEqual(['/rooms', '/settings']);
     // Hub'in kendisi (`/dashboard`) kart olarak tekrar etmez -> overview bolumu yok.
-    expect(sectionKeys(fixture)).toEqual(['nav.section.operations']);
+    expect(sectionKeys(fixture)).toEqual(['nav.section.operations', 'nav.section.system']);
   });
 
   it('Rooms.View olmayan kullaniciya oda kartini hic render etmez', async () => {
     const fixture = render([PERMISSIONS.InvoicesView]);
 
-    expect(cardPaths(fixture)).toEqual(['/invoices']);
-    expect(sectionKeys(fixture)).toEqual(['nav.section.finance']);
+    expect(cardPaths(fixture)).not.toContain('/rooms');
+    expect(cardPaths(fixture)).toEqual(['/invoices', '/settings']);
+    expect(sectionKeys(fixture)).toEqual(['nav.section.finance', 'nav.section.system']);
   });
 
   it('tum kartlari suzulen bolumun basligini da gizler', async () => {
@@ -132,7 +135,8 @@ describe('HubPage — modul kart izgarasi', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(cardPaths(fixture)).toEqual(['/housekeeping']);
+    // `/settings` izin gerektirmedigi icin her rolde durur; suzulen sey finans bolumudur.
+    expect(cardPaths(fixture)).toEqual(['/housekeeping', '/settings']);
     expect(sectionKeys(fixture)).not.toContain('nav.section.finance');
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).not.toContain('nav.invoices');

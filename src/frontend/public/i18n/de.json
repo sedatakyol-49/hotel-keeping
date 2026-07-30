@@ -1278,6 +1278,7 @@
   "settings": {
     "title": "Einstellungen",
     "subtitle": "Hotelprofil, Steuerprofil, Rollen und Berechtigungen.",
+    "subtitlePersonal": "Persönliche Darstellung — Sprache der Oberfläche.",
     "empty": {
       "title": "Noch keine Einstellungen verfügbar",
       "description": "Steuersätze und Kurtaxe werden je Hotel gepflegt und nicht im Code hinterlegt."

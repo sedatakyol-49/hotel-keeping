@@ -12,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
 import { SettingsApi } from '../../core/api/settings.api';
 import { toApiError } from '../../core/interceptors/problem-details.mapper';
 import { SUPPORTED_LANGUAGES, type AppLanguage } from '../../core/models/language.model';
+import { PERMISSIONS } from '../../core/models/permission.model';
 import type { ApiError } from '../../core/models/problem-details.model';
 import {
   COUNTRIES,
@@ -20,6 +21,7 @@ import {
   type HotelListItemResponse,
   type HotelResponse,
 } from '../../core/models/settings.model';
+import { AuthStore } from '../../core/state/auth.store';
 import { LanguagePicker } from '../../layout/language-picker/language-picker';
 import { applyApiFieldErrors, serverErrorMessages } from '../../shared/forms/api-field-errors';
 import { decimalRangeValidator, parseDecimal } from '../../shared/forms/numeric-validators';
@@ -33,6 +35,19 @@ type SettingsFormName = 'hotel' | 'headOffice';
 
 /**
  * Ayarlar ekrani — dil tercihi, otel kunyesi + vergi profili, marka ayarlari.
+ *
+ * IKI KATMANLI EKRAN:
+ * 1. **Darstellung / Gorunum** karti (arayuz dili) — kisisel tercih, izin
+ *    gerektirmez, oturum acmis herkese gorunur.
+ * 2. **Otel kunyesi + Head Office** kartlari — `Settings.Manage` gerektirir.
+ *
+ * IZINSIZ KULLANICIDA KARTLAR **GIZLENIR** (salt-okunur gosterilmez): salt-okunur
+ * bir kart yine de `GET /hotels` ve `GET /head-office/settings` verisine
+ * ihtiyac duyardi, sunucu ise bu uclari ayni izinle koruyor — yani ekranda bos
+ * ya da kirik bir kart kalirdi. Bu yuzden izin yoksa **istek de atilmaz**.
+ *
+ * Bu istemci tarafi ayrim bir **guvenlik siniri degildir**, yalnizca gurultu
+ * azaltmadir: kaydetme uclarinin yetki denetimi sunucuda oldugu gibi durur.
  *
  * Otel listesi `GET /hotels` ile gelir (JWT'deki otel listesi degil): erisim
  * `UserHotelAccess` tablosundan dogrulanir, boylece erisim iptali token suresinin
@@ -51,6 +66,12 @@ type SettingsFormName = 'hotel' | 'headOffice';
 export class SettingsPage {
   private readonly api = inject(SettingsApi);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly authStore = inject(AuthStore);
+
+  /** Yonetim kartlari (otel kunyesi, vergi profili, Head Office) gorunur mu. */
+  protected readonly canManageSettings = computed(() =>
+    this.authStore.hasPermission(PERMISSIONS.SettingsManage),
+  );
 
   protected readonly languages = SUPPORTED_LANGUAGES;
   protected readonly countries = COUNTRIES;
@@ -111,6 +132,12 @@ export class SettingsPage {
   }
 
   protected async load(): Promise<void> {
+    // Izin yoksa yonetim kartlari hic cizilmez; bos yere 403 toplamayalim.
+    if (!this.canManageSettings()) {
+      this.loading.set(false);
+      return;
+    }
+
     this.loading.set(true);
     this.loadError.set(null);
 

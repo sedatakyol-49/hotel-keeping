@@ -16,16 +16,15 @@ function render() {
   return {
     fixture,
     element,
-    setCollapsed(collapsed: boolean) {
-      fixture.componentRef.setInput('sidebarCollapsed', collapsed);
-      fixture.detectChanges();
-    },
     setMenuOpen(open: boolean) {
       fixture.componentRef.setInput('menuOpen', open);
       fixture.detectChanges();
     },
-    toggle(): HTMLButtonElement | null {
-      return element.querySelector<HTMLButtonElement>('[data-testid="sidebar-toggle"]');
+    header(): HTMLElement | null {
+      return element.querySelector('header');
+    },
+    brand(): HTMLElement | null {
+      return element.querySelector<HTMLElement>('[data-testid="topbar-brand"]');
     },
     menuButton(): HTMLButtonElement | null {
       return element.querySelector<HTMLButtonElement>('[data-testid="menu-toggle"]');
@@ -44,60 +43,45 @@ beforeEach(() => {
   });
 });
 
-describe('Topbar — kenar cubugu daraltma dugmesi', () => {
-  it('genis durumda "daralt" etiketiyle basili olmayan durumu bildirir', () => {
+describe('Topbar — marka header in en solunda', () => {
+  it('marka blogunu header in **ilk** ogesi olarak cizer', () => {
     const view = render();
 
+    // Duzen istegi: "logo header'in en solunda". DOM sirasi = gorsel sira
+    // (header duz bir flex satiri; marka blogunda `order-*` yardimcisi yok).
+    expect(view.header()?.firstElementChild).toBe(view.brand());
+  });
+
+  it('markayi her ekran boyutunda gosterir (eski `lg:hidden` kisiti kalkti)', () => {
+    const view = render();
+    const classes = view.brand()?.className ?? '';
+
+    expect(classes).not.toContain('hidden');
+    expect(classes).not.toContain('lg:hidden');
+    expect(view.brand()?.querySelector('[data-testid="brand-mark"]')).not.toBeNull();
+  });
+
+  it('erisilebilir adi isaret tasir, gorunur metin tekrardir ve i18n den gelir', () => {
+    const view = render();
+    const mark = view.brand()?.querySelector('[data-testid="brand-mark"]');
+
+    // 375px'te ad metni gizlendigi icin ad isarette durmali.
+    expect(mark?.getAttribute('role')).toBe('img');
     // Ceviri dosyasi birim testte yuklenmedigi icin `translate` anahtari dondurur;
-    // dogrulanan sey **hangi anahtarin hangi duruma bagli oldugu**.
-    expect(view.toggle()?.getAttribute('aria-pressed')).toBe('false');
-    expect(view.toggle()?.getAttribute('aria-label')).toBe('nav.collapseSidebar');
-    expect(view.toggle()?.getAttribute('title')).toBe('nav.collapseSidebar');
+    // dogrulanan sey **adin koda gomulmedigi**, `common.appName` den geldigi.
+    expect(mark?.getAttribute('aria-label')).toBe('common.appName');
+    // Gorunur ad ayni bilgiyi tekrar ettigi icin ekran okuyucudan gizlenir.
+    expect(view.brand()?.querySelector('p[aria-hidden="true"]')?.textContent?.trim()).toBe(
+      'common.appName',
+    );
   });
 
-  it('daraltilmis durumda "genislet" etiketine ve basili duruma gecer', () => {
+  it('sol dolguyu `lg` de kenar cubugu kalemleriyle ayni hatta ceker', () => {
     const view = render();
-    view.setCollapsed(true);
+    const classes = view.header()?.className ?? '';
 
-    expect(view.toggle()?.getAttribute('aria-pressed')).toBe('true');
-    expect(view.toggle()?.getAttribute('aria-label')).toBe('nav.expandSidebar');
-    expect(view.toggle()?.getAttribute('title')).toBe('nav.expandSidebar');
-  });
-
-  it('ham « / » karakteri yerine satir ici SVG ikon cizer ve yonu duruma gore cevirir', () => {
-    const view = render();
-
-    expect(view.toggle()?.textContent).not.toMatch(/[«»]/);
-    expect(view.toggle()?.querySelector('svg')).not.toBeNull();
-    expect(view.toggle()?.querySelector('[data-testid="icon-panel-collapse"]')).not.toBeNull();
-
-    view.setCollapsed(true);
-    expect(view.toggle()?.querySelector('[data-testid="icon-panel-expand"]')).not.toBeNull();
-    expect(view.toggle()?.querySelector('[data-testid="icon-panel-collapse"]')).toBeNull();
-  });
-
-  it('ikonu ekran okuyucudan gizler; ad yalnizca dugmede durur', () => {
-    const view = render();
-    const icon = view.toggle()?.querySelector('svg');
-
-    expect(icon?.getAttribute('aria-hidden')).toBe('true');
-    expect(icon?.getAttribute('focusable')).toBe('false');
-  });
-
-  it('dokunmatik hedef ve cetvel cerceve dilini korur', () => {
-    const view = render();
-    const classes = view.toggle()?.className ?? '';
-
-    expect(classes).toContain('touch-target');
-    expect(classes).toContain('border-rule');
-  });
-
-  it('kenar cubugu gizliyken dugme hic cizilmez', () => {
-    const view = render();
-    view.fixture.componentRef.setInput('sidebarToggleVisible', false);
-    view.fixture.detectChanges();
-
-    expect(view.toggle()).toBeNull();
+    // Kenar cubugu kalemleri `px-4`; header `lg:pl-4` ile ayni dikey hatta oturur.
+    expect(classes).toContain('lg:pl-4');
   });
 });
 
@@ -113,20 +97,31 @@ describe('Topbar — mobil menu dugmesi', () => {
     expect(view.menuButton()?.getAttribute('aria-expanded')).toBe('true');
     expect(view.menuButton()?.getAttribute('aria-label')).toBe('nav.closeMenu');
   });
+
+  it('markadan sonra gelir; marka en solda kalir', () => {
+    const view = render();
+
+    expect(view.brand()?.nextElementSibling).toBe(view.menuButton());
+  });
 });
 
-describe('Topbar — marka', () => {
-  it('mobil marka blogunda erisilebilir adi isaret tasir, gorunur metin tekrardir', () => {
+describe('Topbar — tasinan denetimler', () => {
+  it('kenar cubugu daraltma dugmesini artik barindirmaz (kenar cubuguna tasindi)', () => {
     const view = render();
-    const mark = view.element.querySelector('hc-brand-mark [data-testid="brand-mark"]');
 
-    expect(mark).not.toBeNull();
-    // 375px'te ad metni gizlendigi icin ad isarette durmali.
-    expect(mark?.getAttribute('role')).toBe('img');
-    expect(mark?.getAttribute('aria-label')).toBe('common.appName');
-    // Gorunur ad ayni bilgiyi tekrar ettigi icin ekran okuyucudan gizlenir.
-    expect(view.element.querySelector('p[aria-hidden="true"]')?.textContent?.trim()).toBe(
-      'common.appName',
-    );
+    expect(view.element.querySelector('[data-testid="sidebar-toggle"]')).toBeNull();
+  });
+
+  it('dil seciciyi artik barindirmaz (dil Ayarlar ekranindan secilir)', () => {
+    const view = render();
+
+    expect(view.element.querySelector('hc-language-picker')).toBeNull();
+  });
+
+  it('otel secici ve kullanici menusu ust cubukta kalir', () => {
+    const view = render();
+
+    expect(view.element.querySelector('hc-hotel-switcher')).not.toBeNull();
+    expect(view.element.querySelector('hc-user-menu')).not.toBeNull();
   });
 });

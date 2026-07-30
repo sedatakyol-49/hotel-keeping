@@ -4,32 +4,58 @@
   [attr.aria-label]="'nav.mainNavigation' | translate"
 >
   <!--
-    Marka blogu. `relative`: rail modundaki `sr-only` marka adi kabugun kirpma
-    cercevesine bagli kalsin (bkz. shell.html aciklamasi ve shell.spec.ts).
+    Ust blok = **cubugun kendi denetimi**. Marka isareti artik header'in en
+    solunda durdugu icin buradaki marka blogu kaldirildi; yerine daraltma
+    dugmesi geldi (denetim, denetledigi seyin yaninda durur).
+
+    Mobil cekmecede (`allowCollapse = false`) daraltma anlamsizdir — orada
+    gezinme zaten tam genislikte acilir — bu yuzden blok hic cizilmez.
+
+    Yukseklik: 44px dugme + 2 x 6px dolgu = ust cubukla ayni 3.5rem ritmi.
+    Rail'de yatay dolgu 4px'e iner: 3.5rem (56px) icinde 44px dokunmatik hedef
+    ortalanarak sigar.
   -->
-  <div
-    class="relative border-b border-rule py-4"
-    [class.px-4]="!collapsed()"
-    [class.px-2]="collapsed()"
-  >
-    @if (collapsed()) {
-      <!-- Rail: yalnizca isaret sigar; ad ekran okuyucuda kalir. -->
-      <div class="flex justify-center text-ink">
-        <hc-brand-mark [size]="32" />
-      </div>
-      <span class="sr-only">{{ 'common.appName' | translate }}</span>
-    } @else {
-      <div class="flex items-center gap-3 text-ink">
-        <hc-brand-mark [size]="32" />
-        <div class="min-w-0">
-          <p class="truncate font-serif text-2xl leading-none text-ink">
-            {{ 'common.appName' | translate }}
-          </p>
-          <p class="mt-1 eyebrow">{{ 'common.tagline' | translate }}</p>
-        </div>
-      </div>
-    }
-  </div>
+  @if (allowCollapse()) {
+    <div
+      class="flex items-center border-b border-rule py-1.5"
+      [class.px-4]="!collapsed()"
+      [class.justify-end]="!collapsed()"
+      [class.px-1]="collapsed()"
+      [class.justify-center]="collapsed()"
+      data-testid="sidebar-control-row"
+    >
+      <button
+        type="button"
+        class="flex touch-target items-center justify-center border border-rule text-ink hover:bg-paper-sunken hover:border-rule-strong"
+        [attr.aria-pressed]="collapsed()"
+        [attr.aria-label]="(collapsed() ? 'nav.expandSidebar' : 'nav.collapseSidebar') | translate"
+        [attr.title]="(collapsed() ? 'nav.expandSidebar' : 'nav.collapseSidebar') | translate"
+        data-testid="sidebar-toggle"
+        (click)="toggleCollapsed()"
+      >
+        <!--
+          Panel gostergesi: solda kenar cubugunun kenari (dikey cetvel), yaninda
+          hareket yonunu gosteren sivri chevron. Daraltilmisken ok disa (genislet),
+          genisken ice (daralt) bakar.
+        -->
+        <svg
+          class="hc-icon"
+          viewBox="0 0 16 16"
+          fill="none"
+          aria-hidden="true"
+          focusable="false"
+          [attr.data-testid]="collapsed() ? 'icon-panel-expand' : 'icon-panel-collapse'"
+        >
+          <path d="M4 2.5v11" />
+          @if (collapsed()) {
+            <path d="M8 4.5L12 8l-4 3.5" />
+          } @else {
+            <path d="M12 4.5L8 8l4 3.5" />
+          }
+        </svg>
+      </button>
+    </div>
+  }
 
   <div class="flex-1 overflow-y-auto py-2">
     <ul>

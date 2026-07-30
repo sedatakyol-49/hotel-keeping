@@ -200,7 +200,11 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       {
         path: '/settings',
         labelKey: 'nav.settings',
-        permissions: [PERMISSIONS.SettingsManage],
+        // **Izin gerektirmez** (bilincli): ekranin ilk karti arayuz dili — kisisel
+        // bir tercih. Rota da `Settings.Manage` istemiyor (bkz. settings.routes.ts);
+        // kalemi filtreleseydik sayfa erisilebilir ama **bulunamaz** olurdu.
+        // Yonetim kartlari sayfa icinde izne gore gizlenir.
+        permissions: [],
         // Backend uclari hazir (GET/PUT /hotels/{id}/settings, /head-office/settings).
         hub: { descriptionKey: 'hub.cards.settings.description' },
       },

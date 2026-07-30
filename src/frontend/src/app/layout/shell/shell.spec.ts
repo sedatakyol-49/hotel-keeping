@@ -98,9 +98,50 @@ describe('Shell — kabuk duzeni', () => {
 
     expect(element.querySelector('hc-sidebar')).toBeNull();
     expect(element.querySelector('[aria-controls="hc-mobile-drawer"]')).toBeNull();
-    // Topbar hub'da da kalir: otel ve dil secimi erisilebilir olmalidir.
+    // Topbar hub'da da kalir: marka ve otel secimi erisilebilir olmalidir.
     expect(element.querySelector('hc-topbar')).not.toBeNull();
     expect(element.querySelector('hc-hotel-switcher')).not.toBeNull();
+  });
+
+  it('logoyu hub dahil her rotada header in en solunda tutar', async () => {
+    const harness = await RouterTestingHarness.create('/dashboard');
+    const element = harness.fixture.nativeElement as HTMLElement;
+    const header = element.querySelector('hc-topbar header');
+
+    expect(header?.firstElementChild?.getAttribute('data-testid')).toBe('topbar-brand');
+    expect(header?.querySelector('[data-testid="brand-mark"]')).not.toBeNull();
+
+    await harness.navigateByUrl('/rooms');
+    harness.detectChanges();
+
+    const moduleHeader = element.querySelector('hc-topbar header');
+    expect(moduleHeader?.firstElementChild?.getAttribute('data-testid')).toBe('topbar-brand');
+  });
+
+  it('kenar cubugu daraltma dugmesini yalnizca kenar cubugu icinde barindirir', async () => {
+    // Hub: cubuk yok -> dugme de yok (daraltilacak bir sey yoktur).
+    const harness = await RouterTestingHarness.create('/dashboard');
+    const element = harness.fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('[data-testid="sidebar-toggle"]')).toBeNull();
+
+    await harness.navigateByUrl('/rooms');
+    harness.detectChanges();
+
+    const toggle = element.querySelector('[data-testid="sidebar-toggle"]');
+    expect(toggle).not.toBeNull();
+    // Ust cubukta degil, kenar cubugunun icinde.
+    expect(toggle?.closest('hc-sidebar')).not.toBeNull();
+    expect(toggle?.closest('hc-topbar')).toBeNull();
+  });
+
+  it('dil seciciyi kabugun hicbir yerinde (ust cubuk / altbilgi) cizmez', async () => {
+    const harness = await RouterTestingHarness.create('/rooms');
+    const element = harness.fixture.nativeElement as HTMLElement;
+
+    // Dil tercihi tek yerde yonetilir: Ayarlar ekrani (ve giris ekrani).
+    expect(element.querySelector('hc-language-picker')).toBeNull();
+    expect(element.querySelector('footer hc-language-picker')).toBeNull();
   });
 
   it('bir module girildiginde kenar cubugu ve menu dugmesi geri gelir', async () => {

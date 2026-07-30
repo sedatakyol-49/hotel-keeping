@@ -1,403 +1,425 @@
 <div class="space-y-6">
+  <!--
+    Alt baslik izne gore degisir: yalnizca dil kartini gorebilen bir kullaniciya
+    "Otel profili, vergi profili, roller ve yetkiler" demek yaniltici olurdu.
+  -->
   <hc-page-header
     titleKey="settings.title"
-    subtitleKey="settings.subtitle"
+    [subtitleKey]="canManageSettings() ? 'settings.subtitle' : 'settings.subtitlePersonal'"
     eyebrowKey="nav.section.system"
   />
 
-  @if (loading()) {
-    <div class="border border-rule bg-paper-raised px-4 py-8">
-      <hc-spinner labelKey="common.loading" [showLabel]="true" />
-    </div>
-  } @else if (loadError(); as error) {
-    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
-      <p class="label-mono text-danger">{{ 'settings.loadFailed' | translate }}</p>
-      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
-      <div class="mt-4">
-        <hc-button variant="secondary" (pressed)="load()">
-          {{ 'common.retry' | translate }}
-        </hc-button>
+  <!--
+    Darstellung / Gorunum — **kisisel** tercih: izin gerektirmez, veri yuklemesine
+    de bagli degildir. Bu yuzden yukleme/hata durumunun disinda, en ustte durur.
+  -->
+  <hc-card
+    titleKey="settings.appearance"
+    headingId="settings-appearance"
+    data-testid="settings-appearance-card"
+  >
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="label-mono text-ink">{{ 'language.label' | translate }}</p>
+        <p class="mt-1 max-w-prose text-sm text-ink-muted">
+          {{ 'settings.languageHint' | translate }}
+        </p>
       </div>
+      <hc-language-picker />
     </div>
-  } @else {
-    <hc-card titleKey="settings.appearance" headingId="settings-appearance">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p class="label-mono text-ink">{{ 'language.label' | translate }}</p>
-          <p class="mt-1 max-w-prose text-sm text-ink-muted">
-            {{ 'settings.languageHint' | translate }}
-          </p>
+  </hc-card>
+
+  <!--
+    Yonetim kartlari yalnizca `Settings.Manage` ile cizilir. Istemci tarafi
+    gizleme guvenlik siniri degildir — uclarin yetki denetimi sunucudadir.
+  -->
+  @if (canManageSettings()) {
+    @if (loading()) {
+      <div class="border border-rule bg-paper-raised px-4 py-8">
+        <hc-spinner labelKey="common.loading" [showLabel]="true" />
+      </div>
+    } @else if (loadError(); as error) {
+      <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+        <p class="label-mono text-danger">{{ 'settings.loadFailed' | translate }}</p>
+        <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+        <div class="mt-4">
+          <hc-button variant="secondary" (pressed)="load()">
+            {{ 'common.retry' | translate }}
+          </hc-button>
         </div>
-        <hc-language-picker />
       </div>
-    </hc-card>
-
-    <!-- ---------------- Otel ayarlari ---------------- -->
-    <hc-card titleKey="settings.hotel.title" headingId="settings-hotel">
-      @if (hotels().length === 0) {
-        <p class="text-sm text-ink-muted">{{ 'settings.hotel.noAccess' | translate }}</p>
-      } @else {
-        @if (canSwitchHotel()) {
-          <div class="mb-5 border-b border-rule pb-4">
-            <label class="hc-label" for="settings-hotel-select">
-              {{ 'settings.hotel.select' | translate }}
-            </label>
-            <select
-              id="settings-hotel-select"
-              class="hc-input mt-1"
-              data-testid="settings-hotel-select"
-              [value]="selectedHotelId()"
-              (change)="selectHotel($any($event.target).value)"
-            >
-              @for (hotel of hotels(); track hotel.id) {
-                <option [value]="hotel.id">{{ hotel.name }} · {{ hotel.city }}</option>
-              }
-            </select>
-          </div>
-        }
-
-        <form [formGroup]="hotelForm" novalidate (ngSubmit)="saveHotel()">
-          @if (hotelFormErrors().length > 0) {
-            <ul
-              class="mb-4 border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
-              role="alert"
-            >
-              @for (message of hotelFormErrors(); track message) {
-                <li>{{ message }}</li>
-              }
-            </ul>
-          }
-          @if (hotelSaved()) {
-            <p
-              class="mb-4 border border-success bg-success-tint px-3 py-2 text-sm text-success"
-              role="status"
-              data-testid="settings-hotel-saved"
-            >
-              {{ 'settings.saved' | translate }}
-            </p>
-          }
-
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div class="sm:col-span-2">
-              <label class="hc-label" for="settings-name">
-                {{ 'settings.hotel.name' | translate }}
-              </label>
-              <input
-                id="settings-name"
-                class="hc-input mt-1"
-                type="text"
-                formControlName="name"
-                [attr.maxlength]="limits.nameMaxLength"
-                [attr.aria-invalid]="invalid('hotel', 'name')"
-              />
-              @if (invalid('hotel', 'name')) {
-                <p class="mt-1 text-xs text-danger">
-                  {{ 'settings.validation.nameRequired' | translate }}
-                </p>
-              }
-              @for (message of serverErrors('hotel', 'name'); track message) {
-                <p class="mt-1 text-xs text-danger">{{ message }}</p>
-              }
-            </div>
-
-            <div>
-              <label class="hc-label" for="settings-country">
-                {{ 'settings.hotel.country' | translate }}
-              </label>
-              <select id="settings-country" class="hc-input mt-1" formControlName="country">
-                @for (country of countries; track country) {
-                  <option [value]="country">{{ 'country.' + country | translate }}</option>
-                }
-              </select>
-            </div>
-
-            <div>
-              <label class="hc-label" for="settings-city">
-                {{ 'settings.hotel.city' | translate }}
-              </label>
-              <input
-                id="settings-city"
-                class="hc-input mt-1"
-                type="text"
-                formControlName="city"
-                [attr.maxlength]="limits.cityMaxLength"
-                [attr.aria-invalid]="invalid('hotel', 'city')"
-              />
-              @if (invalid('hotel', 'city')) {
-                <p class="mt-1 text-xs text-danger">
-                  {{ 'settings.validation.cityRequired' | translate }}
-                </p>
-              }
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="hc-label" for="settings-address">
-                {{ 'settings.hotel.addressLine' | translate }}
-              </label>
-              <input
-                id="settings-address"
-                class="hc-input mt-1"
-                type="text"
-                formControlName="addressLine"
-                [attr.maxlength]="limits.addressMaxLength"
-              />
-            </div>
-
-            <div>
-              <label class="hc-label" for="settings-postal">
-                {{ 'settings.hotel.postalCode' | translate }}
-              </label>
-              <input
-                id="settings-postal"
-                class="hc-input mt-1"
-                type="text"
-                formControlName="postalCode"
-                [attr.maxlength]="limits.postalCodeMaxLength"
-              />
-            </div>
-
-            <div>
-              <label class="hc-label" for="settings-phone">
-                {{ 'settings.hotel.phone' | translate }}
-              </label>
-              <input
-                id="settings-phone"
-                class="hc-input mt-1"
-                type="tel"
-                formControlName="phone"
-                [attr.maxlength]="limits.phoneMaxLength"
-              />
-            </div>
-
-            <div>
-              <label class="hc-label" for="settings-email">
-                {{ 'settings.hotel.email' | translate }}
-              </label>
-              <input
-                id="settings-email"
-                class="hc-input mt-1"
-                type="email"
-                formControlName="email"
-                [attr.maxlength]="limits.emailMaxLength"
-                [attr.aria-invalid]="invalid('hotel', 'email')"
-              />
-              @if (invalid('hotel', 'email')) {
-                <p class="mt-1 text-xs text-danger">
-                  {{ 'settings.validation.email' | translate }}
-                </p>
-              }
-            </div>
-
-            <div>
-              <label class="hc-label" for="settings-tax-number">
-                {{ 'settings.hotel.taxNumber' | translate }}
-              </label>
-              <input
-                id="settings-tax-number"
-                class="hc-input mt-1"
-                type="text"
-                formControlName="taxNumber"
-                [attr.maxlength]="limits.taxNumberMaxLength"
-              />
-              <p class="mt-1 text-xs text-ink-faint">
-                {{ 'settings.hotel.taxNumberHint' | translate }}
-              </p>
-            </div>
-
-            <div>
-              <label class="hc-label" for="settings-culture">
-                {{ 'settings.hotel.defaultCulture' | translate }}
-              </label>
-              <select id="settings-culture" class="hc-input mt-1" formControlName="defaultCulture">
-                @for (language of languages; track language) {
-                  <option [value]="language">{{ 'language.' + language | translate }}</option>
-                }
-              </select>
-            </div>
-
-            <div>
-              <label class="hc-label" for="settings-currency">
-                {{ 'settings.hotel.currency' | translate }}
-              </label>
-              <input
-                id="settings-currency"
-                class="hc-input mt-1 numeric"
-                type="text"
-                formControlName="currency"
-                maxlength="3"
-                [attr.aria-invalid]="invalid('hotel', 'currency')"
-              />
-              @if (invalid('hotel', 'currency')) {
-                <p class="mt-1 text-xs text-danger">
-                  {{ 'settings.validation.currency' | translate }}
-                </p>
-              }
-              @for (message of serverErrors('hotel', 'currency'); track message) {
-                <p class="mt-1 text-xs text-danger">{{ message }}</p>
-              }
-            </div>
-          </div>
-
-          <!-- Vergi profili: oranlar koda hardcode edilmez, burada yonetilir -->
-          <fieldset class="mt-6 border border-rule">
-            <legend class="mx-3 px-1 label-mono text-ink-muted">
-              {{ 'settings.tax.title' | translate }}
-            </legend>
-
-            <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-3">
-              <div>
-                <label class="hc-label" for="settings-vat">
-                  {{ 'settings.tax.vatRate' | translate }}
-                </label>
-                <input
-                  id="settings-vat"
-                  class="hc-input mt-1 numeric"
-                  type="text"
-                  inputmode="decimal"
-                  formControlName="vatRate"
-                  [attr.aria-invalid]="invalid('hotel', 'vatRate')"
-                />
-                @if (invalid('hotel', 'vatRate')) {
-                  <p class="mt-1 text-xs text-danger">
-                    {{ 'settings.validation.percent' | translate }}
-                  </p>
-                }
-              </div>
-
-              <div>
-                <label class="hc-label" for="settings-vat-reduced">
-                  {{ 'settings.tax.reducedVatRate' | translate }}
-                </label>
-                <input
-                  id="settings-vat-reduced"
-                  class="hc-input mt-1 numeric"
-                  type="text"
-                  inputmode="decimal"
-                  formControlName="reducedVatRate"
-                  [attr.aria-invalid]="invalid('hotel', 'reducedVatRate')"
-                />
-                @if (invalid('hotel', 'reducedVatRate')) {
-                  <p class="mt-1 text-xs text-danger">
-                    {{ 'settings.validation.percent' | translate }}
-                  </p>
-                }
-              </div>
-
-              <div>
-                <label class="hc-label" for="settings-city-tax">
-                  {{ 'settings.tax.cityTaxPerPersonNight' | translate }}
-                </label>
-                <input
-                  id="settings-city-tax"
-                  class="hc-input mt-1 numeric"
-                  type="text"
-                  inputmode="decimal"
-                  formControlName="cityTaxPerPersonNight"
-                  [attr.aria-invalid]="invalid('hotel', 'cityTaxPerPersonNight')"
-                />
-                <p class="mt-1 text-xs text-ink-faint">
-                  {{ 'settings.tax.cityTaxHint' | translate }}
-                </p>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label class="flex min-h-touch items-center gap-2 text-sm text-ink">
-                  <input type="checkbox" formControlName="cityTaxEnabled" />
-                  {{ 'settings.tax.cityTaxEnabled' | translate }}
-                </label>
-              </div>
-            </div>
-          </fieldset>
-
-          <div class="mt-6 flex justify-end">
-            <hc-button type="submit" [busy]="hotelSaving()" data-testid="settings-hotel-save">
-              {{ 'common.save' | translate }}
-            </hc-button>
-          </div>
-        </form>
-      }
-    </hc-card>
-
-    <!-- ---------------- Marka (Head Office) ayarlari ---------------- -->
-    <hc-card titleKey="settings.headOffice.title" headingId="settings-head-office">
-      @if (headOfficeUnavailable()) {
-        <p class="text-sm text-ink-muted">{{ 'settings.headOffice.unavailable' | translate }}</p>
-      } @else {
-        <form [formGroup]="headOfficeForm" novalidate (ngSubmit)="saveHeadOffice()">
-          @if (headOfficeFormErrors().length > 0) {
-            <ul
-              class="mb-4 border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
-              role="alert"
-            >
-              @for (message of headOfficeFormErrors(); track message) {
-                <li>{{ message }}</li>
-              }
-            </ul>
-          }
-          @if (headOfficeSaved()) {
-            <p
-              class="mb-4 border border-success bg-success-tint px-3 py-2 text-sm text-success"
-              role="status"
-            >
-              {{ 'settings.saved' | translate }}
-            </p>
-          }
-
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label class="hc-label" for="settings-brand">
-                {{ 'settings.headOffice.brandName' | translate }}
-              </label>
-              <input
-                id="settings-brand"
-                class="hc-input mt-1"
-                type="text"
-                formControlName="brandName"
-                [attr.maxlength]="limits.brandNameMaxLength"
-                [attr.aria-invalid]="invalid('headOffice', 'brandName')"
-              />
-              <p class="mt-1 text-xs text-ink-faint">
-                {{ 'settings.headOffice.brandNameHint' | translate }}
-              </p>
-              @if (invalid('headOffice', 'brandName')) {
-                <p class="mt-1 text-xs text-danger">
-                  {{ 'settings.validation.nameRequired' | translate }}
-                </p>
-              }
-              @for (message of serverErrors('headOffice', 'brandName'); track message) {
-                <p class="mt-1 text-xs text-danger">{{ message }}</p>
-              }
-            </div>
-
-            <div>
-              <label class="hc-label" for="settings-ho-culture">
-                {{ 'settings.headOffice.defaultCulture' | translate }}
+    } @else {
+      <!-- ---------------- Otel ayarlari ---------------- -->
+      <hc-card titleKey="settings.hotel.title" headingId="settings-hotel">
+        @if (hotels().length === 0) {
+          <p class="text-sm text-ink-muted">{{ 'settings.hotel.noAccess' | translate }}</p>
+        } @else {
+          @if (canSwitchHotel()) {
+            <div class="mb-5 border-b border-rule pb-4">
+              <label class="hc-label" for="settings-hotel-select">
+                {{ 'settings.hotel.select' | translate }}
               </label>
               <select
-                id="settings-ho-culture"
+                id="settings-hotel-select"
                 class="hc-input mt-1"
-                formControlName="defaultCulture"
+                data-testid="settings-hotel-select"
+                [value]="selectedHotelId()"
+                (change)="selectHotel($any($event.target).value)"
               >
-                @for (language of languages; track language) {
-                  <option [value]="language">{{ 'language.' + language | translate }}</option>
+                @for (hotel of hotels(); track hotel.id) {
+                  <option [value]="hotel.id">{{ hotel.name }} · {{ hotel.city }}</option>
                 }
               </select>
             </div>
-          </div>
-
-          @if (headOffice(); as office) {
-            <p class="mt-3 label-mono text-ink-faint">
-              {{ 'settings.headOffice.hotelCount' | translate: { count: office.hotelCount } }}
-            </p>
           }
 
-          <div class="mt-6 flex justify-end">
-            <hc-button type="submit" [busy]="headOfficeSaving()">
-              {{ 'common.save' | translate }}
-            </hc-button>
-          </div>
-        </form>
-      }
-    </hc-card>
+          <form [formGroup]="hotelForm" novalidate (ngSubmit)="saveHotel()">
+            @if (hotelFormErrors().length > 0) {
+              <ul
+                class="mb-4 border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
+                role="alert"
+              >
+                @for (message of hotelFormErrors(); track message) {
+                  <li>{{ message }}</li>
+                }
+              </ul>
+            }
+            @if (hotelSaved()) {
+              <p
+                class="mb-4 border border-success bg-success-tint px-3 py-2 text-sm text-success"
+                role="status"
+                data-testid="settings-hotel-saved"
+              >
+                {{ 'settings.saved' | translate }}
+              </p>
+            }
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="sm:col-span-2">
+                <label class="hc-label" for="settings-name">
+                  {{ 'settings.hotel.name' | translate }}
+                </label>
+                <input
+                  id="settings-name"
+                  class="hc-input mt-1"
+                  type="text"
+                  formControlName="name"
+                  [attr.maxlength]="limits.nameMaxLength"
+                  [attr.aria-invalid]="invalid('hotel', 'name')"
+                />
+                @if (invalid('hotel', 'name')) {
+                  <p class="mt-1 text-xs text-danger">
+                    {{ 'settings.validation.nameRequired' | translate }}
+                  </p>
+                }
+                @for (message of serverErrors('hotel', 'name'); track message) {
+                  <p class="mt-1 text-xs text-danger">{{ message }}</p>
+                }
+              </div>
+
+              <div>
+                <label class="hc-label" for="settings-country">
+                  {{ 'settings.hotel.country' | translate }}
+                </label>
+                <select id="settings-country" class="hc-input mt-1" formControlName="country">
+                  @for (country of countries; track country) {
+                    <option [value]="country">{{ 'country.' + country | translate }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="hc-label" for="settings-city">
+                  {{ 'settings.hotel.city' | translate }}
+                </label>
+                <input
+                  id="settings-city"
+                  class="hc-input mt-1"
+                  type="text"
+                  formControlName="city"
+                  [attr.maxlength]="limits.cityMaxLength"
+                  [attr.aria-invalid]="invalid('hotel', 'city')"
+                />
+                @if (invalid('hotel', 'city')) {
+                  <p class="mt-1 text-xs text-danger">
+                    {{ 'settings.validation.cityRequired' | translate }}
+                  </p>
+                }
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="hc-label" for="settings-address">
+                  {{ 'settings.hotel.addressLine' | translate }}
+                </label>
+                <input
+                  id="settings-address"
+                  class="hc-input mt-1"
+                  type="text"
+                  formControlName="addressLine"
+                  [attr.maxlength]="limits.addressMaxLength"
+                />
+              </div>
+
+              <div>
+                <label class="hc-label" for="settings-postal">
+                  {{ 'settings.hotel.postalCode' | translate }}
+                </label>
+                <input
+                  id="settings-postal"
+                  class="hc-input mt-1"
+                  type="text"
+                  formControlName="postalCode"
+                  [attr.maxlength]="limits.postalCodeMaxLength"
+                />
+              </div>
+
+              <div>
+                <label class="hc-label" for="settings-phone">
+                  {{ 'settings.hotel.phone' | translate }}
+                </label>
+                <input
+                  id="settings-phone"
+                  class="hc-input mt-1"
+                  type="tel"
+                  formControlName="phone"
+                  [attr.maxlength]="limits.phoneMaxLength"
+                />
+              </div>
+
+              <div>
+                <label class="hc-label" for="settings-email">
+                  {{ 'settings.hotel.email' | translate }}
+                </label>
+                <input
+                  id="settings-email"
+                  class="hc-input mt-1"
+                  type="email"
+                  formControlName="email"
+                  [attr.maxlength]="limits.emailMaxLength"
+                  [attr.aria-invalid]="invalid('hotel', 'email')"
+                />
+                @if (invalid('hotel', 'email')) {
+                  <p class="mt-1 text-xs text-danger">
+                    {{ 'settings.validation.email' | translate }}
+                  </p>
+                }
+              </div>
+
+              <div>
+                <label class="hc-label" for="settings-tax-number">
+                  {{ 'settings.hotel.taxNumber' | translate }}
+                </label>
+                <input
+                  id="settings-tax-number"
+                  class="hc-input mt-1"
+                  type="text"
+                  formControlName="taxNumber"
+                  [attr.maxlength]="limits.taxNumberMaxLength"
+                />
+                <p class="mt-1 text-xs text-ink-faint">
+                  {{ 'settings.hotel.taxNumberHint' | translate }}
+                </p>
+              </div>
+
+              <div>
+                <label class="hc-label" for="settings-culture">
+                  {{ 'settings.hotel.defaultCulture' | translate }}
+                </label>
+                <select
+                  id="settings-culture"
+                  class="hc-input mt-1"
+                  formControlName="defaultCulture"
+                >
+                  @for (language of languages; track language) {
+                    <option [value]="language">{{ 'language.' + language | translate }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="hc-label" for="settings-currency">
+                  {{ 'settings.hotel.currency' | translate }}
+                </label>
+                <input
+                  id="settings-currency"
+                  class="hc-input mt-1 numeric"
+                  type="text"
+                  formControlName="currency"
+                  maxlength="3"
+                  [attr.aria-invalid]="invalid('hotel', 'currency')"
+                />
+                @if (invalid('hotel', 'currency')) {
+                  <p class="mt-1 text-xs text-danger">
+                    {{ 'settings.validation.currency' | translate }}
+                  </p>
+                }
+                @for (message of serverErrors('hotel', 'currency'); track message) {
+                  <p class="mt-1 text-xs text-danger">{{ message }}</p>
+                }
+              </div>
+            </div>
+
+            <!-- Vergi profili: oranlar koda hardcode edilmez, burada yonetilir -->
+            <fieldset class="mt-6 border border-rule">
+              <legend class="mx-3 px-1 label-mono text-ink-muted">
+                {{ 'settings.tax.title' | translate }}
+              </legend>
+
+              <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-3">
+                <div>
+                  <label class="hc-label" for="settings-vat">
+                    {{ 'settings.tax.vatRate' | translate }}
+                  </label>
+                  <input
+                    id="settings-vat"
+                    class="hc-input mt-1 numeric"
+                    type="text"
+                    inputmode="decimal"
+                    formControlName="vatRate"
+                    [attr.aria-invalid]="invalid('hotel', 'vatRate')"
+                  />
+                  @if (invalid('hotel', 'vatRate')) {
+                    <p class="mt-1 text-xs text-danger">
+                      {{ 'settings.validation.percent' | translate }}
+                    </p>
+                  }
+                </div>
+
+                <div>
+                  <label class="hc-label" for="settings-vat-reduced">
+                    {{ 'settings.tax.reducedVatRate' | translate }}
+                  </label>
+                  <input
+                    id="settings-vat-reduced"
+                    class="hc-input mt-1 numeric"
+                    type="text"
+                    inputmode="decimal"
+                    formControlName="reducedVatRate"
+                    [attr.aria-invalid]="invalid('hotel', 'reducedVatRate')"
+                  />
+                  @if (invalid('hotel', 'reducedVatRate')) {
+                    <p class="mt-1 text-xs text-danger">
+                      {{ 'settings.validation.percent' | translate }}
+                    </p>
+                  }
+                </div>
+
+                <div>
+                  <label class="hc-label" for="settings-city-tax">
+                    {{ 'settings.tax.cityTaxPerPersonNight' | translate }}
+                  </label>
+                  <input
+                    id="settings-city-tax"
+                    class="hc-input mt-1 numeric"
+                    type="text"
+                    inputmode="decimal"
+                    formControlName="cityTaxPerPersonNight"
+                    [attr.aria-invalid]="invalid('hotel', 'cityTaxPerPersonNight')"
+                  />
+                  <p class="mt-1 text-xs text-ink-faint">
+                    {{ 'settings.tax.cityTaxHint' | translate }}
+                  </p>
+                </div>
+
+                <div class="sm:col-span-3">
+                  <label class="flex min-h-touch items-center gap-2 text-sm text-ink">
+                    <input type="checkbox" formControlName="cityTaxEnabled" />
+                    {{ 'settings.tax.cityTaxEnabled' | translate }}
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="mt-6 flex justify-end">
+              <hc-button type="submit" [busy]="hotelSaving()" data-testid="settings-hotel-save">
+                {{ 'common.save' | translate }}
+              </hc-button>
+            </div>
+          </form>
+        }
+      </hc-card>
+
+      <!-- ---------------- Marka (Head Office) ayarlari ---------------- -->
+      <hc-card titleKey="settings.headOffice.title" headingId="settings-head-office">
+        @if (headOfficeUnavailable()) {
+          <p class="text-sm text-ink-muted">{{ 'settings.headOffice.unavailable' | translate }}</p>
+        } @else {
+          <form [formGroup]="headOfficeForm" novalidate (ngSubmit)="saveHeadOffice()">
+            @if (headOfficeFormErrors().length > 0) {
+              <ul
+                class="mb-4 border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
+                role="alert"
+              >
+                @for (message of headOfficeFormErrors(); track message) {
+                  <li>{{ message }}</li>
+                }
+              </ul>
+            }
+            @if (headOfficeSaved()) {
+              <p
+                class="mb-4 border border-success bg-success-tint px-3 py-2 text-sm text-success"
+                role="status"
+              >
+                {{ 'settings.saved' | translate }}
+              </p>
+            }
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label class="hc-label" for="settings-brand">
+                  {{ 'settings.headOffice.brandName' | translate }}
+                </label>
+                <input
+                  id="settings-brand"
+                  class="hc-input mt-1"
+                  type="text"
+                  formControlName="brandName"
+                  [attr.maxlength]="limits.brandNameMaxLength"
+                  [attr.aria-invalid]="invalid('headOffice', 'brandName')"
+                />
+                <p class="mt-1 text-xs text-ink-faint">
+                  {{ 'settings.headOffice.brandNameHint' | translate }}
+                </p>
+                @if (invalid('headOffice', 'brandName')) {
+                  <p class="mt-1 text-xs text-danger">
+                    {{ 'settings.validation.nameRequired' | translate }}
+                  </p>
+                }
+                @for (message of serverErrors('headOffice', 'brandName'); track message) {
+                  <p class="mt-1 text-xs text-danger">{{ message }}</p>
+                }
+              </div>
+
+              <div>
+                <label class="hc-label" for="settings-ho-culture">
+                  {{ 'settings.headOffice.defaultCulture' | translate }}
+                </label>
+                <select
+                  id="settings-ho-culture"
+                  class="hc-input mt-1"
+                  formControlName="defaultCulture"
+                >
+                  @for (language of languages; track language) {
+                    <option [value]="language">{{ 'language.' + language | translate }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            @if (headOffice(); as office) {
+              <p class="mt-3 label-mono text-ink-faint">
+                {{ 'settings.headOffice.hotelCount' | translate: { count: office.hotelCount } }}
+              </p>
+            }
+
+            <div class="mt-6 flex justify-end">
+              <hc-button type="submit" [busy]="headOfficeSaving()">
+                {{ 'common.save' | translate }}
+              </hc-button>
+            </div>
+          </form>
+        }
+      </hc-card>
+    }
   }
 </div>

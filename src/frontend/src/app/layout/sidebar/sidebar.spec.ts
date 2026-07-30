@@ -165,6 +165,14 @@ describe('Sidebar — ana menu ve alt menuler', () => {
     expect(element.querySelector('[data-testid="nav-link"][data-path="/rooms"]')).not.toBeNull();
     expect(element.querySelector('[data-testid="nav-link"][data-path="/rooms/types"]')).toBeNull();
   });
+
+  it('Ayarlar kalemini izinden bagimsiz gosterir (dil karti herkese aciktir)', async () => {
+    // `Settings.Manage` yok: rota da guard tasimadigi icin kalem gizlenirse
+    // sayfa "erisilebilir ama bulunamaz" olurdu.
+    const { element } = await render('/dashboard', [PERMISSIONS.RoomsView]);
+
+    expect(element.querySelector('[data-testid="nav-link"][data-path="/settings"]')).not.toBeNull();
+  });
 });
 
 describe('SidebarState — kalici tercihler', () => {
@@ -218,28 +226,6 @@ describe('Sidebar — daraltilmis (rail) mod', () => {
     expect(toggle?.getAttribute('title')).toBe('nav.section.operations');
   });
 
-  it('rail modunda marka isaretini cizer, tam adi `sr-only` birakir', async () => {
-    const { element, fixture, state } = await render('/dashboard', ALL);
-    const brandBlock = element.querySelector('nav > div');
-
-    // Genis moddayken de isaret vardir; ad ise gorunur metindir.
-    expect(brandBlock?.querySelector('[data-testid="brand-mark"]')).not.toBeNull();
-    expect(brandBlock?.querySelector('.sr-only')).toBeNull();
-
-    state.toggleCollapsed();
-    fixture.detectChanges();
-
-    const rail = element.querySelector('nav > div');
-    const mark = rail?.querySelector('[data-testid="brand-mark"]');
-
-    expect(mark).not.toBeNull();
-    // Isaret susleme; ad ekran okuyucuya `sr-only` metinle verilir.
-    expect(mark?.getAttribute('aria-hidden')).toBe('true');
-    expect(rail?.querySelector('.sr-only')?.textContent?.trim()).toBe('common.appName');
-    // Eski tek harfli "H" gosterimi kalmamali.
-    expect(rail?.textContent?.replace(/\s/g, '')).toBe('common.appName');
-  });
-
   it('mobil cekmecede daraltma devre disi kalir', async () => {
     const { fixture, state } = await render('/dashboard', ALL);
 
@@ -249,5 +235,93 @@ describe('Sidebar — daraltilmis (rail) mod', () => {
 
     const nav = (fixture.nativeElement as HTMLElement).querySelector('nav');
     expect(nav?.classList.contains('hc-rail')).toBe(false);
+  });
+});
+
+/**
+ * Bu blok ust cubuktan (`topbar.spec.ts`) **tasindi**: daraltma dugmesi artik
+ * kenar cubugunun kendi ust blogunda durur. Dogrulanan davranis aynidir —
+ * yalnizca yeri degisti.
+ */
+describe('Sidebar — daraltma dugmesi (ust cubuktan tasindi)', () => {
+  function toggle(element: HTMLElement): HTMLButtonElement | null {
+    return element.querySelector<HTMLButtonElement>('[data-testid="sidebar-toggle"]');
+  }
+
+  it('dugme kenar cubugunun **ust blogunda** durur; marka blogu buradan kalkti', async () => {
+    const { element } = await render('/dashboard', ALL);
+    const controlRow = element.querySelector('nav > [data-testid="sidebar-control-row"]');
+
+    // Ust blok gezinme listesinden **once** gelir (cubugun basligi konumunda).
+    expect(element.querySelector('nav')?.firstElementChild).toBe(controlRow);
+    expect(controlRow?.querySelector('[data-testid="sidebar-toggle"]')).not.toBeNull();
+    // Marka artik header'in en solunda: kenar cubugunda isaret/ad kalmadi.
+    expect(element.querySelector('[data-testid="brand-mark"]')).toBeNull();
+  });
+
+  it('genis durumda "daralt" etiketiyle basili olmayan durumu bildirir', async () => {
+    const { element } = await render('/dashboard', ALL);
+
+    // Ceviri dosyasi birim testte yuklenmedigi icin `translate` anahtari dondurur;
+    // dogrulanan sey **hangi anahtarin hangi duruma bagli oldugu**.
+    expect(toggle(element)?.getAttribute('aria-pressed')).toBe('false');
+    expect(toggle(element)?.getAttribute('aria-label')).toBe('nav.collapseSidebar');
+    expect(toggle(element)?.getAttribute('title')).toBe('nav.collapseSidebar');
+  });
+
+  it('tiklaninca rail moduna gecer ve etiketi "genislet" e cevirir', async () => {
+    const { element, fixture, state } = await render('/dashboard', ALL);
+
+    toggle(element)?.click();
+    fixture.detectChanges();
+
+    expect(state.collapsed()).toBe(true);
+    expect(toggle(element)?.getAttribute('aria-pressed')).toBe('true');
+    expect(toggle(element)?.getAttribute('aria-label')).toBe('nav.expandSidebar');
+    expect(toggle(element)?.getAttribute('title')).toBe('nav.expandSidebar');
+  });
+
+  it('rail (3.5rem) modunda erisilebilir kalir: dugme cizilir, yatay dolgu daralir', async () => {
+    const { element, fixture, state } = await render('/dashboard', ALL);
+
+    state.toggleCollapsed();
+    fixture.detectChanges();
+
+    const row = element.querySelector('[data-testid="sidebar-control-row"]');
+    expect(toggle(element)).not.toBeNull();
+    // 3.5rem = 56px rail icinde 44px dokunmatik hedef: dolgu 4px'e iner (2 x 4 + 44 <= 56).
+    expect(row?.classList.contains('px-1')).toBe(true);
+    expect(row?.classList.contains('px-4')).toBe(false);
+    expect(row?.classList.contains('justify-center')).toBe(true);
+    expect(toggle(element)?.className).toContain('touch-target');
+    expect(toggle(element)?.className).toContain('border-rule');
+  });
+
+  it('ham « / » karakteri yerine satir ici SVG ikon cizer ve yonu duruma gore cevirir', async () => {
+    const { element, fixture, state } = await render('/dashboard', ALL);
+
+    expect(toggle(element)?.textContent).not.toMatch(/[«»]/);
+    const icon = toggle(element)?.querySelector('svg');
+    expect(icon).not.toBeNull();
+    // Ikon susleme; erisilebilir ad dugmede durur.
+    expect(icon?.getAttribute('aria-hidden')).toBe('true');
+    expect(icon?.getAttribute('focusable')).toBe('false');
+    expect(toggle(element)?.querySelector('[data-testid="icon-panel-collapse"]')).not.toBeNull();
+
+    state.toggleCollapsed();
+    fixture.detectChanges();
+
+    expect(toggle(element)?.querySelector('[data-testid="icon-panel-expand"]')).not.toBeNull();
+    expect(toggle(element)?.querySelector('[data-testid="icon-panel-collapse"]')).toBeNull();
+  });
+
+  it('mobil cekmecede hic cizilmez (orada gezinme tam genislikte acilir)', async () => {
+    const { element, fixture } = await render('/dashboard', ALL);
+
+    fixture.componentRef.setInput('allowCollapse', false);
+    fixture.detectChanges();
+
+    expect(element.querySelector('[data-testid="sidebar-control-row"]')).toBeNull();
+    expect(toggle(element)).toBeNull();
   });
 });

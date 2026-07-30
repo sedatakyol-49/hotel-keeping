@@ -6,7 +6,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 import { NotificationStore } from '../../core/state/notification.store';
 import { shouldHideSidebar } from '../chrome';
-import { LanguagePicker } from '../language-picker/language-picker';
 import { Sidebar } from '../sidebar/sidebar';
 import { SidebarState } from '../sidebar-state';
 import { Topbar } from '../topbar/topbar';
@@ -17,13 +16,17 @@ import { Topbar } from '../topbar/topbar';
  *
  * Hub rotasi (`/dashboard`) `HIDE_SIDEBAR` bayragini tasidigi icin orada kenar
  * cubugu ve mobil menu dugmesi hic render edilmez; bir module girildiginde
- * kabuk normal duzenine doner. Topbar (marka, otel/dil secici, kullanici
- * menusu) her iki durumda da yerinde kalir.
+ * kabuk normal duzenine doner. Topbar (marka, otel secici, kullanici menusu)
+ * her iki durumda da yerinde kalir.
+ *
+ * Kenar cubugunu daraltma dugmesi cubugun kendi ust blogundadir; bu yuzden hub
+ * ekraninda dogal olarak gorunmez — orada daraltilacak bir cubuk zaten yoktur.
+ * Kabuk daralma **durumunu** yine de okur: sutun genisligini o belirler.
  */
 @Component({
   selector: 'hc-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, TranslatePipe, Sidebar, Topbar, LanguagePicker],
+  imports: [RouterOutlet, TranslatePipe, Sidebar, Topbar],
   templateUrl: './shell.html',
   host: {
     '(document:keydown.escape)': 'closeDrawer()',
@@ -61,10 +64,6 @@ export class Shell {
 
   protected closeDrawer(): void {
     this.drawerOpen.set(false);
-  }
-
-  protected toggleSidebar(): void {
-    this.sidebarState.toggleCollapsed();
   }
 
   private syncNavigationVisibility(): void {

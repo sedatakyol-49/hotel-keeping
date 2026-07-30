@@ -15,7 +15,6 @@ import { filter } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { AuthStore } from '../../core/state/auth.store';
-import { BrandMark } from '../../shared/ui/brand-mark/brand-mark';
 import { NAV_SECTIONS, filterNavSections, type NavItem } from '../navigation';
 import { SidebarState } from '../sidebar-state';
 
@@ -53,13 +52,32 @@ interface SidebarGroup {
  *
  * Daraltilmis (rail) modda ana kalemler kisa tipografik gosterimle durur ve alt
  * menu ucan panel olarak acilir (bkz. bilesen stilleri).
+ *
+ * Cubugun **kendi denetimi** (daraltma dugmesi) ust blogundadir; marka isareti
+ * ise ust cubugun en solunda durur (bkz. `topbar.ts`).
  */
 @Component({
   selector: 'hc-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TranslatePipe, BrandMark],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './sidebar.html',
   styles: `
+    /*
+     * Daraltma dugmesinin cizimi (ust cubuktaki menu ikonuyla ayni dil).
+     * Yalnizca cizim ozellikleri; cerceve ve dokunmatik hedef sablondaki
+     * cetvel dilinden gelir.
+     */
+    .hc-icon {
+      width: 1.125rem;
+      height: 1.125rem;
+      stroke: currentColor;
+      stroke-width: 1.25;
+      /* Kesin uclar ve sivri kose: defter dilinde yuvarlatma yok. */
+      stroke-linecap: butt;
+      stroke-linejoin: miter;
+      shape-rendering: geometricPrecision;
+    }
+
     /*
      * Alt menu gecisi: kullanicinin gozunu yormayan kisa bir acilma.
      * grid-template-rows yaklasimi sabit yukseklik gerektirmedigi icin
@@ -190,6 +208,15 @@ export class Sidebar {
 
   protected toggle(groupKey: string): void {
     this.sidebarState.toggleGroup(groupKey);
+  }
+
+  /**
+   * Rail moduna gecer / geri doner. Durum `SidebarState` uzerinden kalicidir;
+   * kabuk ayni sinyali okuyup sutun genisligini ayarlar — bu yuzden dugmenin
+   * kabuga cikip geri inen bir olay tasimasina gerek yoktur.
+   */
+  protected toggleCollapsed(): void {
+    this.sidebarState.toggleCollapsed();
   }
 }
 

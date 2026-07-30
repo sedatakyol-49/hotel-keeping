@@ -1278,6 +1278,7 @@
   "settings": {
     "title": "Ayarlar",
     "subtitle": "Otel profili, vergi profili, roller ve yetkiler.",
+    "subtitlePersonal": "Kişisel görünüm — arayüz dili.",
     "empty": {
       "title": "Henüz ayar bulunmuyor",
       "description": "KDV oranları ve konaklama vergisi otel bazında yönetilir, koda gömülmez."

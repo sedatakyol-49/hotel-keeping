@@ -1278,6 +1278,7 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Hotel profile, tax profile, roles and permissions.",
+    "subtitlePersonal": "Personal appearance — the interface language.",
     "empty": {
       "title": "No settings available yet",
       "description": "VAT rates and city tax are maintained per hotel and are never hardcoded."
