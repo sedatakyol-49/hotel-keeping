@@ -61,27 +61,16 @@ public sealed class InvoiceFromReservationTests(PostgresFixture fixture)
     }
 
     /// <summary>
-    /// <b>BILINEN HATA (raporlandi, uygulama kodu DEGISTIRILMEDI).</b>
+    /// Oda ucretinin <b>tek kaynagi folio'dur</b>: rezervasyon modulu satiri yazar ve tarih/oda
+    /// degisiminde gunceller, fatura uretimi onu <b>tasir</b> — yeniden hesaplamaz.
     /// <para>
-    /// Rezervasyondan uretilen faturada oda ucreti <b>iki kez</b> yer aliyor:
-    /// <list type="number">
-    ///   <item><c>ReservationFolioService.SyncRoomChargeAsync</c> rezervasyon olusturulurken
-    ///         folio'ya bir <c>RoomCharge</c> satiri yazar,</item>
-    ///   <item><c>InvoiceLineComposer.BuildFromReservationAsync</c> ise hem rezervasyondan
-    ///         <b>yeni</b> bir <c>RoomCharge</c> satiri uretir hem de folio'nun faturalanmamis
-    ///         tum satirlarini (yani ayni oda ucretini) faturaya tasir.</item>
-    /// </list>
-    /// Sonuc: 2 gece x 120,00 = 240,00 olmasi gereken konaklama 480,00 faturalaniyor.
-    /// </para>
-    /// <para>
-    /// Test bilincli olarak <b>mevcut davranisi sabitler</b> (yesil kalsin diye beklenti
-    /// zayiflatilmadi; dogru deger yorumda acikca yazili). Hata duzeltildiginde bu test
-    /// KIRILACAKTIR ve tek yapilmasi gereken beklentiyi <c>reservation.TotalAmount</c>'a
-    /// cekmektir.
+    /// Bu test bir regresyonu kilitler: fatura uretimi bir donem hem folio satirini tasiyor hem
+    /// rezervasyondan ikinci bir <c>RoomCharge</c> uretiyordu ve 2 gece x 120,00 konaklama
+    /// 480,00 faturalaniyordu.
     /// </para>
     /// </summary>
     [RequiresPostgresFact]
-    public async Task The_room_charge_is_currently_billed_twice_known_defect()
+    public async Task The_room_charge_is_billed_exactly_once_and_comes_from_the_folio()
     {
         await using var scenario = await BookingScenario.StartAsync(fixture);
         var reservation = await scenario.CreateReservationAsync(
@@ -96,13 +85,24 @@ public sealed class InvoiceFromReservationTests(PostgresFixture fixture)
 
         reservation.TotalAmount.Should().Be(240m, "2 gece x 120,00 dogru konaklama tutaridir");
 
-        roomCharges.Should().HaveCount(2, "biri folio'dan tasiniyor, digeri rezervasyondan yeniden uretiliyor");
-        roomCharges.Sum(line => line.LineGross)
-            .Should().Be(480m, "DOGRUSU 240,00 olmaliydi — bkz. sinif belgesindeki bilinen hata");
+        roomCharges.Should().ContainSingle("oda ucreti faturada tam olarak bir kez yer alir");
+        roomCharges[0].LineGross.Should().Be(240m, "tutar reservation.TotalAmount ile birebir esittir");
+        roomCharges[0].LineNet.Should().Be(224.30m);
+        roomCharges[0].LineVat.Should().Be(15.70m);
+        roomCharges[0].VatRate.Should().Be(7.00m, "konaklama indirimli KDV oranina tabidir");
+        roomCharges[0].Quantity.Should().Be(2m);
 
         // Kurtaxe dogru: 2 yetiskin x 2 gece x 3,00 = 12,00.
         invoice.CityTaxAmount.Should().Be(12m);
-        invoice.GrossAmount.Should().Be(492m, "480,00 (cift oda ucreti) + 12,00 Kurtaxe");
+        invoice.GrossAmount.Should().Be(252m, "240,00 konaklama + 12,00 Kurtaxe");
+
+        // Satirin gercekten folio'dan geldigini kilitle: yeniden uretilseydi FolioId bos olurdu.
+        var folioId = await scenario.Host.Database.InvoiceLineItems
+            .Where(line => line.InvoiceId == invoice.Id && line.Type == InvoiceLineType.RoomCharge)
+            .Select(line => line.FolioId)
+            .FirstAsync();
+
+        folioId.Should().NotBeNull("oda ucreti folio'dan tasinir, faturada yeniden uretilmez");
     }
 
     [RequiresPostgresFact]

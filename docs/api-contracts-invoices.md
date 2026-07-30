@@ -119,6 +119,36 @@ Draft ──finalize──► Finalized ──ödeme tamamlanınca──► Paid
 // → 200 + InvoiceDetailResponse (ödeme ayrı adreslenebilir kaynak değil, bu yüzden 201 değil)
 ```
 
+#### Rezervasyondan fatura üretimi — oda ücretinin tek kaynağı
+
+`POST /api/v1/invoices` gövdesinde `reservationId` verildiğinde satırlar **sunucuda** şu sırayla kurulur:
+
+1. **Konaklama ve ekstralar folio'dan gelir.** Folio (`GET /api/v1/reservations/{id}/folio`) konaklama
+   boyunca açık hesaptır; faturalanmamış satırları (`invoiceId = null`) faturaya **taşınır**. Satır
+   `folioId`'sini korur (masrafın kaynağı izlenebilir kalır) ve `invoiceId` dolduğu için **ikinci bir
+   faturaya taşınamaz**.
+2. **Oda ücreti faturada yeniden hesaplanmaz.** `RoomCharge` satırının sahibi rezervasyon modülüdür:
+   rezervasyon oluşturulurken yazılır, `PUT /api/v1/reservations/{id}` ile tarih/oda/kanal
+   değiştiğinde güncellenir. Fiyat **gece gece** hesaplanır; sezon geçişinde geceler farklı fiyat
+   planlarına düşebilir. Bu nedenle faturadaki `unitPrice` bir **gösterim ortalamasıdır**
+   (`brüt toplam / gece`); kesin tutar her zaman `lineNet + lineVat`'tır ve `miktar × birim fiyat`
+   çarpımına **eşit olmayabilir** (ör. 3 gece / 440,00 → `unitPrice = 146,67`, `lineGross = 440,00`).
+3. **Geri düşüş:** folio'da faturalanmamış bir `RoomCharge` yoksa (folio'suz eski kayıt veya satırın
+   kesinleşmiş bir faturada kalması) oda ücreti `reservation.totalAmount`'tan tek satır olarak
+   üretilir. Sonuç folio yolundakiyle aynıdır.
+4. **Kurtaxe** folio'da tutulmaz; her zaman fatura üretiminde eklenir:
+   `(vergiye tabi kişi × gece) × cityTaxPerPersonNight`, `type = CityTax`, `vatRate = 0`,
+   `cityTaxAmount`'ta ayrı gösterilir ve `netAmount`'a **dâhil edilmez**.
+
+> **Garanti:** rezervasyondan üretilen bir faturada oda ücreti **tam olarak bir kez** yer alır ve
+> toplamı `reservation.totalAmount`'a **kuruşu kuruşuna** eşittir.
+> `grossAmount == netAmount + vatAmount + cityTaxAmount` her zaman doğrudur.
+
+**Taslak iptali:** `POST /api/v1/invoices/{id}/cancel` bir taslakta folio kaynaklı satırları folio'ya
+geri bırakır (`invoiceId = null`) — konaklama satırı dâhil; masraf kaybolmaz ve rezervasyon yeniden
+faturalanabilir. Faturaya özgü satırlar (Kurtaxe, elle girilenler) iptal edilen taslakta kalır.
+Kesinleşmiş faturada satırlar **koparılmaz** (GoBD); iptal `Stornorechnung` üretir.
+
 #### Liste filtreleri
 
 ```

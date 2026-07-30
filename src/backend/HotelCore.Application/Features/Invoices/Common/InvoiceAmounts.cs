@@ -98,6 +98,40 @@ internal static class InvoiceAmounts
     }
 
     /// <summary>
+    /// Satır tutarlarını <b>verilen brüt tutardan</b> yazar — <c>miktar × birim fiyat</c> çarpımı
+    /// yeniden yapılmaz.
+    /// <para>
+    /// <b>Neden gerekli:</b> konaklama gece gece fiyatlanır
+    /// (<c>ReservationPricingService</c>: sezon geçişinde geceler farklı planlara düşebilir), bu
+    /// yüzden brüt <b>toplam</b> otoriter değerdir; birim fiyat yalnızca gösterim amaçlı bir
+    /// ortalamadır. Örnek: 3 gece / 250,00 → birim fiyat 83,33 ve çarpım 249,99 ederdi; fatura
+    /// böylece <c>Reservation.TotalAmount</c> ile uzlaştırılamaz hâle gelir ve 1 kuruş kaçardı.
+    /// </para>
+    /// Yuvarlama ve "KDV = brüt − net" kalanı kuralı <see cref="ComputeLine"/> ile aynıdır.
+    /// </summary>
+    public static void ApplyLineAmountsFromGross(InvoiceLineItem line, decimal gross, decimal vatRate)
+    {
+        ArgumentNullException.ThrowIfNull(line);
+
+        var rounded = Round(gross);
+
+        line.VatRate = vatRate;
+
+        if (vatRate <= 0m)
+        {
+            line.LineNet = rounded;
+            line.LineVat = 0m;
+
+            return;
+        }
+
+        var net = Round(rounded / (1m + (vatRate / 100m)));
+
+        line.LineNet = net;
+        line.LineVat = rounded - net;
+    }
+
+    /// <summary>
     /// Fatura toplamlarını satırlardan hesaplar.
     /// <c>NetAmount</c> = KDV'li satırların net toplamı, <c>CityTaxAmount</c> = Kurtaxe satırları,
     /// <c>GrossAmount</c> = net + KDV + Kurtaxe.
