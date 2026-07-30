@@ -24,6 +24,8 @@ internal sealed class ReservationReader(IAppDbContext database)
     {
         ArgumentNullException.ThrowIfNull(query);
 
+        // SAYIM VE LISTE AYNI KUMEYI GORMEK ZORUNDA: koddaki tek filtre boru hatti ikisini de
+        // besler (bkz. ApplyFilters -> "oda gorunurlugu" kosulu).
         var filtered = ApplyFilters(database.Reservations, query);
 
         var totalCount = await filtered.CountAsync(cancellationToken).ConfigureAwait(false);
@@ -226,10 +228,52 @@ internal sealed class ReservationReader(IAppDbContext database)
             FolioId = row.FolioId,
         };
 
-    private static IQueryable<Reservation> ApplyFilters(
+    /// <summary>
+    /// Liste filtreleri. <b>Sayım da liste de bu boru hattından geçer</b> — aksi hâlde
+    /// <c>totalCount</c> ile dönen satır sayısı ayrışır.
+    /// <para>
+    /// <b>Oda görünürlüğü koşulu (gerçek bir hatanın karşılığı):</b> liste, takvim sırasını
+    /// kurmak için <c>Reservation.Room.Number</c> üzerinden sıralar. <c>Room</c> <b>zorunlu</b>
+    /// bir navigasyon olduğu için EF Core sıralamada <c>INNER JOIN</c> üretir ve <c>Room</c>'un
+    /// global query filter'ı (soft-delete + tenant) JOIN'e taşınır: odası soft-delete edilmiş
+    /// rezervasyon <b>satırlarda görünmez</b>. Sayım ise sıralama içermediği için o JOIN'i hiç
+    /// üretmez ve aynı rezervasyonu <b>sayar</b> → <c>items = 9</c> ama <c>totalCount = 10</c>,
+    /// arayüzde "1–9 / 10" ve "Sayfa 1 / 1".
+    /// </para>
+    /// <para>
+    /// Çözüm, kısıtı EF'in JOIN stratejisine bırakmak yerine <b>açıkça</b> ve <b>tek yerde</b>
+    /// yazmaktır: yalnızca odası görünür olan rezervasyonlar listelenir ve <b>aynı koşul sayıma
+    /// da uygulanır</b>. <c>database.Rooms</c> zaten global filtreliyken kullanıldığı için bu bir
+    /// tenant bypass'ı değildir; "oda hâlâ var mı?" sorusu kullanıcının görebildiği odalar
+    /// üzerinden sorulur. Böylece <c>totalCount</c>, istemcinin gerçekten sayfalayabildiği küme
+    /// hakkında bir söz olur ve sağlayıcının JOIN kararı değişse bile ikisi ayrışamaz.
+    /// </para>
+    /// <para>
+    /// <b>Yön seçimi (dışlamak, dâhil etmek değil):</b> odası silinmiş bir rezervasyon
+    /// <see cref="GetAsync"/> izdüşümünde de görünmez (aynı zorunlu navigasyon, aynı JOIN →
+    /// <c>404</c>), <c>InvoiceLineComposer</c> de onu okuyamaz. Yani kayıt zaten sistemin geri
+    /// kalanında görünmezdi; listeyi de aynı kümeye çekmek API'yi <b>tutarlı</b> yapar. Ters yön
+    /// (rezervasyonu listede tutup oda numarasını boş göstermek) yalnızca soft-delete filtresi
+    /// atlanarak mümkündü — bu, tenant izolasyonunun tek noktadan yönetilmesi kuralını çiğnerdi.
+    /// </para>
+    /// <para>
+    /// <b>Bilinen sonuç (ürün kararı gerektirir):</b> odası silinmiş bir rezervasyon (ki
+    /// <c>DeleteRoomHandler</c> yalnızca <i>geçmiş</i> tarihli rezervasyonlu odanın silinmesine
+    /// izin verir) rezervasyon uçlarından erişilemez hâle gelir. Tutar kaybolmaz — rapor tarafı
+    /// rezervasyonları <c>Room</c>'a hiç bakmadan okur ve konaklama
+    /// <c>unbilledRoomRevenueGross</c>'ta görünmeye devam eder — ama faturalanamaz. Kalıcı çözüm
+    /// oda silmenin kuralını sıkılaştırmaktır (faturalanmamış rezervasyonu olan oda silinemesin);
+    /// bu, mevcut silme kuralı bilinçli olduğu için ayrı bir karara bırakılmıştır.
+    /// </para>
+    /// </summary>
+    private IQueryable<Reservation> ApplyFilters(
         IQueryable<Reservation> query,
         ReservationListQuery filter)
     {
+        var visibleRooms = database.Rooms;
+
+        query = query.Where(reservation => visibleRooms.Any(room => room.Id == reservation.RoomId));
+
         if (filter.Status is ReservationStatus status)
         {
             query = query.Where(reservation => reservation.Status == status);

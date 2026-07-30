@@ -87,7 +87,9 @@ internal sealed class ReservationFolioService(IAppDbContext database)
         // gördüğü) tutarlardır. Yuvarlama satır bazında yapılır ki net + KDV = brüt olsun.
         var net = Math.Round(gross / (1 + (vatRate / 100m)), 2, MidpointRounding.AwayFromZero);
 
-        line.Description = $"Ubernachtung {reservation.CheckIn:yyyy-MM-dd} - {reservation.CheckOut:yyyy-MM-dd}";
+        // Folio satirinin acikamasi Almancadir (folio otel ici bir defterdir). Umlaut KORUNUR:
+        // kolon/JSON UTF-8'dir, ASCII'ye indirgemek yalnizca yazim hatasi uretir.
+        line.Description = $"Übernachtung {reservation.CheckIn:yyyy-MM-dd} - {reservation.CheckOut:yyyy-MM-dd}";
         line.Quantity = nights;
 
         // Gecelik birim fiyat gösterim içindir; kesin toplam LineNet + LineVat'tır (sezon

@@ -296,6 +296,9 @@
   <data name="Validation_InvoiceLinesNotAllowed" xml:space="preserve">
     <value>Rezervasyondan üretilen faturaya elle satır gönderilemez; satırlar rezervasyon ve folio'dan türetilir.</value>
   </data>
+  <data name="Validation_InvoiceReservationLinesServerOwned" xml:space="preserve">
+    <value>Rezervasyondan üretilen faturada lineItems yalnızca Extra türünde satır taşıyabilir; RoomCharge ve CityTax satırlarını sunucu üretir ve korur.</value>
+  </data>
   <data name="Validation_InvoiceNeedsReservationOrLines" xml:space="preserve">
     <value>Fatura satırsız oluşturulamaz: ya reservationId ya da en az bir lineItems öğesi verilmelidir.</value>
   </data>

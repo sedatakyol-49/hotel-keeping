@@ -8,8 +8,14 @@ namespace HotelCore.Application.Features.Invoices.Update;
 /// <c>PUT /api/v1/invoices/{id}</c> — <b>yalnızca taslak</b> fatura düzenlenebilir.
 /// Kesinleşmiş faturaya PUT → <b>409</b> (GoBD §6.1).
 /// <para>
-/// Satırlar <b>tamamen değiştirilir</b> (PUT semantiği). Rezervasyon bağı (<c>reservationId</c>)
-/// değiştirilemez — faturanın kaynağı sonradan başka bir rezervasyona kaydırılamaz.
+/// <b>Elle</b> kesilen faturada satırlar <b>tamamen değiştirilir</b> (PUT semantiği).
+/// <b>Rezervasyondan üretilen</b> faturada gövde yalnızca <c>Extra</c> satırları değiştirir;
+/// <c>RoomCharge</c> ve <c>CityTax</c> sunucunundur ve korunur (gövdede gelirlerse <b>400</b>) —
+/// gerekçe: <see cref="UpdateInvoiceHandler"/>.
+/// </para>
+/// <para>
+/// Rezervasyon bağı (<c>reservationId</c>) değiştirilemez — faturanın kaynağı sonradan başka bir
+/// rezervasyona kaydırılamaz.
 /// </para>
 /// </summary>
 public sealed record UpdateInvoiceRequest : IRequest<InvoiceDetailResponse>, IInvoiceWriteRequest
@@ -27,6 +33,10 @@ public sealed record UpdateInvoiceRequest : IRequest<InvoiceDetailResponse>, IIn
     /// <summary>Fatura dili (<c>de|en|tr</c>); verilmezse mevcut dil korunur.</summary>
     public string? Culture { get; init; }
 
-    /// <summary>Yeni satır kümesi — en az bir satır zorunludur.</summary>
+    /// <summary>
+    /// Yeni satır kümesi. Fatura <b>sonuçta</b> en az bir satır içermelidir; rezervasyondan
+    /// üretilen faturada sunucunun satırları korunduğu için boş dizi geçerlidir
+    /// ("elle eklenen tüm ekstraları kaldır").
+    /// </summary>
     public IReadOnlyList<InvoiceLineInput> LineItems { get; init; } = [];
 }

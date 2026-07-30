@@ -9,7 +9,31 @@ using HotelCore.Domain.Enums;
 namespace HotelCore.Application.Features.Invoices.Update;
 
 /// <summary>
-/// Taslak faturayı günceller (satırlar tamamen değiştirilir, tutarlar yeniden hesaplanır).
+/// Taslak faturayı günceller (tutarlar her zaman sunucuda yeniden hesaplanır).
+///
+/// <para><b>PUT'un kapsamı faturanın kaynağına göre değişir — bilinçli bir karardır:</b>
+/// <list type="bullet">
+///   <item><b>Elle kesilen fatura</b> (<c>reservationId == null</c>): satırların tamamı
+///   istemcinindir → <b>tam değişim</b>. Gövde ne diyorsa fatura odur.</item>
+///   <item><b>Rezervasyondan üretilen fatura</b>: <c>RoomCharge</c> ve <c>CityTax</c> satırlarının
+///   sahibi <b>sunucudur</b> (konaklama satırı folio'dan taşınır, Kurtaxe otelin vergi
+///   profilinden üretilir). PUT bu satırları <b>korur</b> ve gövdeyi yalnızca faturanın kendi
+///   <c>Extra</c> satırlarına uygular. Gövdede <c>RoomCharge</c>/<c>CityTax</c> gelirse
+///   <b>400</b>.</item>
+/// </list></para>
+///
+/// <para><b>Neden koruma (a), reddetme (b) değil:</b> gerçek hata şuydu — 486,00 €'luk bir taslağa
+/// tek bir <c>Extra</c> PUT'lamak oda ücretini ve Kurtaxe'yi <b>sessizce siliyor</b>, fatura
+/// 108,00 €'ya düşüyordu. Bu, sözleşmedeki "rezervasyondan üretilen faturada oda ücreti tam olarak
+/// bir kez yer alır ve toplamı <c>reservation.totalAmount</c>'a kuruşu kuruşuna eşittir"
+/// garantisini çiğniyor; finalize edildikten sonra da düzeltilemiyordu (GoBD). PUT'u tümüyle
+/// reddetmek (409) garantiyi korurdu ama <b>ekstra ekleme yolunu tamamen kapatırdı</b>: folio'ya
+/// satır ekleyen bir uç yoktur (<c>/reservations/{id}/folio</c> yalnızca GET), yani ekstra girmenin
+/// başka yolu kalmazdı. Eksik satırları sunucunun yeniden üretmesi (c) ise folio muhasebesini
+/// bozar: konaklama satırı folio'da <i>tüketilmiş</i> bir kalemdir, "yeniden üretmek" onu ikinci
+/// kez yaratmak demektir (daha önce düzeltilmiş bir çift faturalama hatası). Geriye kalan tek
+/// tutarlı seçenek, sunucunun sahibi olduğu satırları PUT'un kapsamı dışında tutmaktır.</para>
+///
 /// <para>
 /// <b>GoBD §6.1:</b> yalnızca <c>Draft</c> düzenlenebilir; <c>Finalized/Paid/Cancelled</c> için
 /// <b>409</b> döner. Bu kural burada anlamlı mesajla, ayrıca <c>AppDbContext</c> guard'ında
@@ -32,6 +56,12 @@ internal sealed class UpdateInvoiceHandler(
     InvoiceAuditWriter audit)
     : IRequestHandler<UpdateInvoiceRequest, InvoiceDetailResponse>
 {
+    /// <summary>
+    /// Yeni gönderilen ekstraların geçici sıra numarası ofseti — korunan satırların
+    /// (en fazla <c>MaxLineItems</c> = 200) üstünde kalmasını garanti eder.
+    /// </summary>
+    private const int AppendedOffset = 1_000;
+
     public async Task<InvoiceDetailResponse> Handle(
         UpdateInvoiceRequest request,
         CancellationToken cancellationToken)
@@ -71,10 +101,27 @@ internal sealed class UpdateInvoiceHandler(
             invoice.Culture = SupportedCultures.Normalize(request.Culture!);
         }
 
-        // Tam degisim: folio kaynakli satirlar folio'ya geri doner (silinmez), faturaya ozgu
-        // satirlar silinir ve yerlerine gonderilen satirlar yazilir.
-        InvoiceLineComposer.ReleaseFolioLines(invoice);
-        composer.RemoveOwnLines(invoice);
+        var fromReservation = invoice.ReservationId is not null;
+
+        if (fromReservation)
+        {
+            // Sunucunun sahibi oldugu satirlar (folio'dan tasinan konaklama + ekstralar, uretilen
+            // Kurtaxe) DOKUNULMADAN kalir; govde yalnizca faturanin kendi Extra satirlarini
+            // degistirir. Boylece oda ucreti faturada tam olarak bir kez ve dogru tutarla durur.
+            EnsureOnlyExtraLines(request.LineItems);
+            composer.RemoveOwnExtraLines(invoice);
+        }
+        else
+        {
+            // Tam degisim: folio kaynakli satirlar folio'ya geri doner (silinmez), faturaya ozgu
+            // satirlar silinir ve yerlerine gonderilen satirlar yazilir.
+            InvoiceLineComposer.ReleaseFolioLines(invoice);
+            composer.RemoveOwnLines(invoice);
+        }
+
+        // Silmelerden SONRA, yeni satirlar eklenmeden ONCE okunur: EF fixup yeni satiri
+        // invoice.LineItems'a kendisi ekleyecegi icin sonra okumak korunan kumeyi kirletirdi.
+        var preservedLines = invoice.LineItems.ToList();
 
         var replacementLines = InvoiceLineComposer.BuildManualLines(
             invoice.HotelId,
@@ -95,16 +142,45 @@ internal sealed class UpdateInvoiceHandler(
             //     acar. Bu yuzden koleksiyona elle EKLENMEZ ve toplamlar asagida acik listeden
             //     hesaplanir.
             line.InvoiceId = invoice.Id;
+
+            if (fromReservation)
+            {
+                // Yeni ekstralar korunan satirlarin ARDINA dussun: BuildManualLines sirayi 0'dan
+                // baslattigi icin ofset olmadan mevcut sortOrder'larla cakisirdi. Nihai numaralama
+                // ResequenceForDocument'te 0..n olarak yeniden yazilir.
+                line.SortOrder += AppendedOffset;
+            }
+
             database.InvoiceLineItems.Add(line);
         }
 
-        // Toplamlar navigation koleksiyonundan degil ACIK listeden hesaplanir: mevcut satirlar
-        // yukarida tamamen kaldirildigi icin faturanin nihai satir kumesi tam olarak budur.
-        InvoiceAmounts.ApplyTotals(invoice, replacementLines);
+        // Faturanin NIHAI satir kumesi: korunanlar + gonderilenler.
+        List<InvoiceLineItem> allLines = [.. preservedLines, .. replacementLines];
+
+        // Satirsiz fatura anlamsizdir. Kontrol validator'da degil BURADA: rezervasyona bagli
+        // faturada bos bir "lineItems" mesru bir istektir ("tum elle eklenen ekstralari kaldir")
+        // ve sunucunun satirlari zaten yerinde durur; elle kesilen faturada ise bos gövde
+        // gercekten satirsiz bir belge uretirdi. Ayrim ancak faturanin kaynagi bilinerek yapilir.
+        if (allLines.Count == 0)
+        {
+            throw new ValidationException(new Dictionary<string, string[]>(StringComparer.Ordinal)
+            {
+                ["LineItems"] = [Messages.InvoiceNeedsLines]
+            });
+        }
+
+        if (fromReservation)
+        {
+            ResequenceForDocument(allLines);
+        }
+
+        // Toplamlar navigation koleksiyonundan degil ACIK listeden hesaplanir (EF fixup nedeniyle
+        // koleksiyon beklenmedik sekilde degisebilir; bkz. yukaridaki not).
+        InvoiceAmounts.ApplyTotals(invoice, allLines);
 
         audit.Append(invoice, InvoiceAuditAction.Updated, new
         {
-            changedFields = CollectChangedFields(before, invoice, replacementLines.Count),
+            changedFields = CollectChangedFields(before, invoice, allLines.Count),
             guestId = new
             {
                 old = before.GuestId,
@@ -118,7 +194,7 @@ internal sealed class UpdateInvoiceHandler(
             lineCount = new
             {
                 old = before.LineCount,
-                @new = replacementLines.Count
+                @new = allLines.Count
             },
             netAmount = new { old = before.NetAmount, @new = invoice.NetAmount },
             vatAmount = new { old = before.VatAmount, @new = invoice.VatAmount },
@@ -131,6 +207,53 @@ internal sealed class UpdateInvoiceHandler(
         await database.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return await reader.GetDetailAsync(invoice.Id, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Rezervasyondan üretilen faturada istemci gövdesi <b>yalnızca</b> <c>Extra</c> satır
+    /// taşıyabilir. <c>RoomCharge</c> ve <c>CityTax</c> sunucunun ürettiği kalemlerdir: oda ücreti
+    /// folio'dan gelir ve <c>reservation.totalAmount</c>'a kuruşu kuruşuna eşittir, Kurtaxe otelin
+    /// vergi profilinden hesaplanır. İstemcinin bunları göndermesine izin vermek ya ikinci bir
+    /// konaklama satırı (çift faturalama) ya da tutarı elle değiştirme yolu açardı; <b>sessizce
+    /// yok saymak</b> ise kullanıcıya gönderdiğini kaydettiğini düşündürürdü. Bu yüzden açıkça
+    /// <b>400</b> döner.
+    /// </summary>
+    private static void EnsureOnlyExtraLines(IReadOnlyList<InvoiceLineInput> lineItems)
+    {
+        if (!lineItems.Any(line => line.Type is not InvoiceLineType.Extra))
+        {
+            return;
+        }
+
+        throw new ValidationException(new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["LineItems"] = [Messages.InvoiceReservationLinesServerOwned]
+        });
+    }
+
+    /// <summary>
+    /// Belge sırasını yeniden kurar: <b>konaklama → ekstralar → Kurtaxe</b>. Korunan satırlar
+    /// kendi aralarındaki sırayı sürdürür, yeni ekstralar mevcut ekstraların ardına düşer
+    /// (<see cref="AppendedOffset"/> sıralamada onları sona iter, sonra hepsi 0..n olarak yeniden
+    /// numaralanır). Kurtaxe'nin faturanın <b>en altında</b> kalması alışıldık okumadır; sıra
+    /// yalnızca taslakta değişir, kesinleşmiş belgeye dokunulmaz.
+    /// </summary>
+    private static void ResequenceForDocument(List<InvoiceLineItem> lines)
+    {
+        var ordered = lines
+            .OrderBy(line => line.Type switch
+            {
+                InvoiceLineType.RoomCharge => 0,
+                InvoiceLineType.CityTax => 2,
+                _ => 1
+            })
+            .ThenBy(line => line.SortOrder)
+            .ToList();
+
+        for (var index = 0; index < ordered.Count; index++)
+        {
+            ordered[index].SortOrder = index;
+        }
     }
 
     /// <summary>

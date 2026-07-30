@@ -109,6 +109,11 @@ builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = 
     // Kültür kapsamı şart: bu geri çağırım da localization middleware'inin dışında çalışabilir.
     using var culture = RequestCultureScope.Apply(context.HttpContext);
 
+    // Yanıt aktif dili başlıkla da bildirir (api-contracts.md). Bu geri çağırım, istisnadan
+    // doğmayan ProblemDetails yanıtlarını da (UseStatusCodePages, 401/403) kapsar;
+    // ApiExceptionHandler ayrıca kendi yolunda çağırır — işlem etkisizdir (idempotent).
+    ProblemDetailsResponseHeaders.Apply(context.HttpContext);
+
     var localizedTitle = Messages.TitleForStatusCode(context.ProblemDetails.Status);
     if (localizedTitle is not null)
     {

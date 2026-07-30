@@ -110,12 +110,16 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
             .ConfigureAwait(false)
             ?? throw new NotFoundException(Messages.ReservationNotFound);
 
-        // Ayni faturanin iki kez uretilmesini engelle: iptal edilmemis bir faturasi varsa 409.
+        // Ayni faturanin iki kez uretilmesini engelle: rezervasyonun YURURLUKTEKI bir faturasi
+        // varsa 409. "Yururlukte"nin tanimi tek yerdedir (InvoiceEffectiveness): iptal edilmemis
+        // VE kendisi Stornorechnung olmayan fatura. Storno'yu dislamak sart: iptal faturasi
+        // orijinalin ReservationId'sini tasir ve Finalized'dir, dolayisiyla yalnizca duruma
+        // bakan bir kosul onu "acik fatura" sanip rezervasyonu KALICI olarak faturalanamaz
+        // birakirdi (iptal -> storno -> yeni fatura yolu kapanirdi).
         var alreadyInvoiced = await database.Invoices
-            .AnyAsync(
-                invoice => invoice.ReservationId == reservationId
-                           && invoice.Status != InvoiceStatus.Cancelled,
-                cancellationToken)
+            .Where(invoice => invoice.ReservationId == reservationId)
+            .Effective()
+            .AnyAsync(cancellationToken)
             .ConfigureAwait(false);
 
         if (alreadyInvoiced)
@@ -312,14 +316,24 @@ internal sealed class InvoiceLineComposer(IAppDbContext database)
 
     /// <summary>
     /// Faturaya özgü (folio kaynaklı olmayan) satırları siler — PUT'un "tam değişim" semantiği.
-    /// Yalnızca taslak faturada çağrılır; kesinleşmiş faturada <c>AppDbContext</c> guard'ı zaten
-    /// reddeder.
+    /// Yalnızca <b>elle</b> (rezervasyonsuz) faturada çağrılır; kesinleşmiş faturada
+    /// <c>AppDbContext</c> guard'ı zaten reddeder.
     /// </summary>
-    public void RemoveOwnLines(Invoice invoice)
+    public void RemoveOwnLines(Invoice invoice) => RemoveOwnLines(invoice, _ => true);
+
+    /// <summary>
+    /// Faturaya özgü satırlardan yalnızca <b>ekstraları</b> siler. Rezervasyona bağlı faturada
+    /// PUT'un kapsamı budur: konaklama satırı ve Kurtaxe <b>sunucunun</b> ürettiği kalemlerdir ve
+    /// istemci gövdesiyle silinemez (bkz. <see cref="Update.UpdateInvoiceHandler"/>).
+    /// </summary>
+    public void RemoveOwnExtraLines(Invoice invoice) =>
+        RemoveOwnLines(invoice, line => line.Type is InvoiceLineType.Extra);
+
+    private void RemoveOwnLines(Invoice invoice, Func<InvoiceLineItem, bool> predicate)
     {
         ArgumentNullException.ThrowIfNull(invoice);
 
-        foreach (var line in invoice.LineItems.Where(line => line.FolioId is null).ToList())
+        foreach (var line in invoice.LineItems.Where(line => line.FolioId is null && predicate(line)).ToList())
         {
             database.InvoiceLineItems.Remove(line);
             invoice.LineItems.Remove(line);

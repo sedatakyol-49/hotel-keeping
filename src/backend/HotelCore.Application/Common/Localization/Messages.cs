@@ -256,6 +256,13 @@ public static class Messages
 
     public static string InvoiceLinesNotAllowed => Text("Validation_InvoiceLinesNotAllowed");
 
+    /// <summary>
+    /// Rezervasyondan üretilen faturada <c>PUT</c> gövdesi yalnızca <c>Extra</c> satır taşıyabilir
+    /// (oda ücreti ve Kurtaxe sunucunundur).
+    /// </summary>
+    public static string InvoiceReservationLinesServerOwned =>
+        Text("Validation_InvoiceReservationLinesServerOwned");
+
     public static string InvoiceNeedsReservationOrLines =>
         Text("Validation_InvoiceNeedsReservationOrLines");
 

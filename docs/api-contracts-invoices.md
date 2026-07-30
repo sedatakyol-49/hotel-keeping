@@ -12,7 +12,7 @@
 | GET | `/invoices` | `Invoices.View` | Sayfalı + filtreli |
 | GET | `/invoices/{id}` | `Invoices.View` | Satırlar + ödemeler + **denetim izi** |
 | POST | `/invoices` | `Invoices.Create` | **Draft** oluşturur (numara YOK), 201 + `Location` |
-| PUT | `/invoices/{id}` | `Invoices.Create` | **Yalnızca Draft**; Finalized/Paid/Cancelled → **409**. İze `Updated` yazılır |
+| PUT | `/invoices/{id}` | `Invoices.Create` | **Yalnızca Draft**; Finalized/Paid/Cancelled → **409**. Kapsamı faturanın kaynağına göre değişir (bkz. "PUT'un kapsamı"). İze `Updated` yazılır |
 | POST | `/invoices/{id}/finalize` | `Invoices.Approve` | Numara atanır, `issuedAt` damgalanır → `Finalized` |
 | POST | `/invoices/{id}/cancel` | `Invoices.Cancel` | Draft → doğrudan iptal; kesinleşmiş → **Stornorechnung** |
 | POST | `/invoices/{id}/payments` | `Invoices.Create` | Ödeme kaydı (`PaymentRecorded`); toplam brüte ulaşınca `Paid` |
@@ -101,10 +101,13 @@ Draft ──finalize──► Finalized ──ödeme tamamlanınca──► Paid
       "quantity":2, "unitPrice":110.00,        // unitPrice = BRÜT (KDV dâhil)
       "serviceDate":"2026-07-20" } ] }         // opsiyonel; yoksa fatura günü
 
-// PUT /invoices/{id} — yalnızca Draft; satırlar TAMAMEN değiştirilir
+// PUT /invoices/{id} — yalnızca Draft. Kapsamı faturanın KAYNAĞINA bağlıdır:
+//   • elle kesilen fatura        → satırlar TAMAMEN değiştirilir
+//   • rezervasyondan üretilen    → yalnızca Extra satırları değiştirilir;
+//                                  RoomCharge/CityTax sunucunundur ve KORUNUR
 { "guestId":"guid|null",       // null/eksik → değişmez. Rezervasyona bağlı faturada değiştirilemez (409)
   "culture":"en|null",         // null/eksik → değişmez
-  "lineItems":[ /* en az 1 satır */ ] }
+  "lineItems":[ /* elle faturada ≥ 1 satır; rezervasyon faturasında [] serbest */ ] }
 
 // POST /invoices/{id}/cancel  (gövde OPSİYONEL)
 { "reason":"Misafir talebi: yanlış oda tipi faturalandı" }   // ≤ 500, denetim izine yazılır
@@ -143,6 +146,35 @@ Draft ──finalize──► Finalized ──ödeme tamamlanınca──► Paid
 > **Garanti:** rezervasyondan üretilen bir faturada oda ücreti **tam olarak bir kez** yer alır ve
 > toplamı `reservation.totalAmount`'a **kuruşu kuruşuna** eşittir.
 > `grossAmount == netAmount + vatAmount + cityTaxAmount` her zaman doğrudur.
+> Bu garanti taslağın **ömrü boyunca** korunur: `PUT /invoices/{id}` oda ücreti ve Kurtaxe
+> satırlarına dokunamaz (bkz. "PUT'un kapsamı").
+
+#### PUT'un kapsamı — sunucunun sahip olduğu satırlar
+
+`PUT /api/v1/invoices/{id}` faturanın **kaynağına** göre iki farklı semantik taşır:
+
+| Fatura kaynağı | `lineItems` neyi değiştirir | Korunanlar |
+|---|---|---|
+| **Elle** (`reservationId = null`) | **Tüm** satırları (tam değişim) | — |
+| **Rezervasyondan** (`reservationId` dolu) | Yalnızca faturanın kendi **`Extra`** satırlarını | `RoomCharge`, `CityTax` ve folio'dan taşınan tüm satırlar |
+
+- Rezervasyondan üretilen faturada gövdeye `RoomCharge` **veya** `CityTax` konursa → **400**
+  (`errors: { "LineItems": [...] }`). Bu satırlar sunucunun ürettiği kalemlerdir: oda ücreti
+  folio'dan gelir ve `reservation.totalAmount`'a eşittir, Kurtaxe otelin vergi profilinden
+  hesaplanır. İstemcinin göndermesine izin vermek ya ikinci bir konaklama satırı (çift
+  faturalama) ya da matrahı elle değiştirme yolu açardı.
+- Rezervasyondan üretilen faturada `"lineItems": []` **geçerlidir** ve "elle eklenen tüm
+  ekstraları kaldır" anlamına gelir; sunucunun satırları yerinde kalır. Elle kesilen faturada
+  boş dizi → **400** (satırsız belge olmaz).
+- Satır sırası rezervasyon faturasında belge düzenine göre yeniden numaralanır:
+  **`RoomCharge` → `Extra` → `CityTax`** (Kurtaxe her zaman en altta), yeni ekstralar mevcut
+  ekstraların ardına eklenir.
+
+> **Neden "koru", "reddet" değil:** PUT'u rezervasyon faturasında tümüyle reddetmek (409) garantiyi
+> korurdu ama **ekstra girmenin tek yolunu kapatırdı** — folio'ya satır ekleyen bir uç yoktur
+> (`/reservations/{id}/folio` yalnızca `GET`). Eksik satırları sunucunun yeniden üretmesi ise
+> folio muhasebesini bozar: konaklama satırı folio'da **tüketilmiş** bir kalemdir, yeniden üretmek
+> onu ikinci kez yaratmak olurdu.
 
 **Taslak iptali:** `POST /api/v1/invoices/{id}/cancel` bir taslakta folio kaynaklı satırları folio'ya
 geri bırakır (`invoiceId = null`) — konaklama satırı dâhil; masraf kaybolmaz ve rezervasyon yeniden
@@ -226,6 +258,14 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
   (`orijinal.cancelledByInvoiceId` ⇔ `storno.cancelsInvoiceId`) ve tek domain çağrısında birlikte
   kurulur; yanıt türetilmiş bir alt sorgudan değil doğrudan kolondan gelir.
 - Zaten iptal edilmiş fatura → **409**.
+- **İptalden sonra yeniden faturalama serbesttir:** orijinal + storno çifti muhasebeten sıfırladığı
+  için rezervasyonun üzerinde yürürlükte bir belge kalmaz; `POST /invoices` ile yeni bir taslak
+  kesilebilir (**201**). Yeni faturanın oda ücreti geri düşüş yolundan üretilir — orijinalin folio
+  satırı kesinleşmiş belgede kaldığı için (GoBD: satır koparılmaz) folio'ya geri dönmez.
+- **Raporlamaya etkisi:** iptal edilen belge ile Stornorechnung'u ciro sorgularında **ikisi de**
+  sayılır ve net **0** eder; aynı konaklama "faturalanmamış" sayılır ve tutarı
+  `unbilledRoomRevenueGross` altında görünür. İki taraf birbirini tamamlar, tutar kaybolmaz
+  (bkz. `docs/api-contracts-reports.md`).
 
 #### Ödeme ve `Paid`
 
@@ -266,8 +306,11 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
 - `reservationId` ve `lineItems` **birbirini dışlar**: ikisi birden → 400, hiçbiri → 400.
 - `reservationId` yoksa `guestId` zorunlu; misafir/rezervasyon bulunamazsa **404**
   (başka otelin kaydı da "bulunamadı" sayılır — varlık sızdırılmaz).
-- `culture` ∈ `de|en|tr` · `lineItems` 1–200 öğe · `description` zorunlu ≤ 500 ·
+- `culture` ∈ `de|en|tr` · `lineItems` en fazla 200 öğe · `description` zorunlu ≤ 500 ·
   `quantity` > 0 ve ≤ 9999 · `unitPrice` ≥ 0 ve ≤ 1.000.000 · `type` ∈ `RoomCharge|Extra|CityTax`
+- **`PUT` satır kısıtları:** rezervasyondan üretilen faturada `lineItems` yalnızca `Extra`
+  taşıyabilir (aksi hâlde 400) ve boş olabilir; elle kesilen faturada en az 1 satır zorunludur.
+  Her iki hata da `errors: { "LineItems": [...] }` altında döner.
 - `amount` > 0 ve ≤ 1.000.000 · `paidAt` gelecekte olamaz · `reference` ≤ 128 · `reason` ≤ 500
 - **Negatif miktar/fiyat istemciden kabul edilmez**; eksi tutarı yalnızca sunucu (storno) üretir.
 - **Yazma işlemleri aktif otel gerektirir:** `POST /invoices` çağrısında Head Office kullanıcısı
@@ -276,13 +319,19 @@ GET /invoices?page=1&pageSize=20&status=&guestId=&reservationId=&from=&to=&searc
 
 #### Rezervasyondan üretim kuralları
 
-- Oda ücreti: `gece × gecelik fiyat`; fiyat kaynağı sırayla `RatePlan.Price` → `RoomType.BasePrice`.
-  `Reservation.TotalAmount` **kullanılmaz** (kalem bazlı belge gerekli; toplam ekstra/indirim
-  içerebilir). Gece sayısı 0 ise (aynı gün giriş-çıkış) **1 gece** hesaplanır.
+- Oda ücreti folio'daki `RoomCharge` satırından gelir; satır yoksa `reservation.totalAmount`'tan
+  tek kalem olarak üretilir (geri düşüş — bkz. "oda ücretinin tek kaynağı" §3). Gece sayısı 0 ise
+  (aynı gün giriş-çıkış) **1 gece** hesaplanır.
 - Ekstralar: folio'nun **henüz faturalanmamış** satırları (`folioId` dolu, `invoiceId` boş)
   faturaya **taşınır** (`folioId` korunur) → aynı masraf iki kez faturalanamaz. Satır tutarları
   sunucuda **yeniden hesaplanır**; satırdaki oran > 0 ise korunur, değilse türden çözülür.
-- Aynı rezervasyon için **iptal edilmemiş** bir fatura varsa → **409**.
+- Aynı rezervasyon için **yürürlükte** bir fatura varsa → **409**. "Yürürlükte" = *iptal edilmemiş*
+  **ve** *kendisi bir Stornorechnung olmayan* fatura (taslaklar dâhil).
+  **Sonuç — iptal edilen konaklama yeniden faturalanabilir:** kesinleşmiş fatura iptal edilip
+  Stornorechnung kesildikten sonra rezervasyona **yeni bir fatura** kesilebilir (`201`). Storno
+  orijinalin alanlarını (`reservationId` dâhil) taşır ve kendisi numaralı/`Finalized`'dır; yalnızca
+  duruma bakan bir kural onu "açık fatura" sayar ve rezervasyonu kalıcı olarak faturalanamaz
+  bırakırdı.
 - Kurtaxe: `type = CityTax`, kişi sayısı otelin çocuk muafiyetine göre belirlenir
   (bkz. "Tutar hesabı" §3). Muafiyet açıkken açıklamaya muafiyet notu eklenir.
 - Satır açıklamaları şu an **dil-nötr ASCII** üretilir (`"Room charge ..."`, `"City tax (Kurtaxe) ..."`);
@@ -299,9 +348,9 @@ döndürülmez. Üretim portu `IInvoiceExporter` olarak tanımlıdır (`Pdf`, `Z
 
 | Durum | Kod |
 |---|---|
-| Doğrulama, aktif otel yok, gelecek `paidAt` | 400 |
+| Doğrulama, aktif otel yok, gelecek `paidAt`, rezervasyon faturasına `RoomCharge`/`CityTax` PUT'lama | 400 |
 | Token yok/geçersiz | 401 |
 | İzin yok (`Invoices.Approve` olmadan finalize vb.) | 403 |
 | Fatura/misafir/rezervasyon/otel bulunamadı (veya başka otelin) | 404 |
-| Kesinleşmiş faturayı düzenleme, taslak olmayan faturayı finalize, ikinci kez iptal, fazla ödeme, taslağa ödeme, aynı rezervasyona ikinci fatura, numara sekansı yarışı | 409 |
+| Kesinleşmiş faturayı düzenleme, taslak olmayan faturayı finalize, ikinci kez iptal, fazla ödeme, taslağa ödeme, aynı rezervasyona **yürürlükte** ikinci fatura, numara sekansı yarışı | 409 |
 | PDF üretimi | 501 |

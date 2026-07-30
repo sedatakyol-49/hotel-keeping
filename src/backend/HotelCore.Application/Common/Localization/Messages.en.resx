@@ -295,6 +295,9 @@
   <data name="Validation_InvoiceLinesNotAllowed" xml:space="preserve">
     <value>Line items cannot be sent manually for an invoice generated from a reservation; they are derived from the reservation and the folio.</value>
   </data>
+  <data name="Validation_InvoiceReservationLinesServerOwned" xml:space="preserve">
+    <value>For an invoice generated from a reservation, lineItems may contain Extra positions only; RoomCharge and CityTax are produced by the server and are preserved.</value>
+  </data>
   <data name="Validation_InvoiceNeedsReservationOrLines" xml:space="preserve">
     <value>An invoice cannot be created without line items: supply either reservationId or at least one lineItems entry.</value>
   </data>

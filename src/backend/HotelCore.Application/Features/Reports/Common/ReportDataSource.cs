@@ -1,6 +1,7 @@
 using HotelCore.Application.Common.Interfaces;
 using HotelCore.Application.Common.Services;
 using HotelCore.Application.Features.Hotels.Common;
+using HotelCore.Application.Features.Invoices.Common;
 using HotelCore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -87,10 +88,10 @@ internal sealed class ReportDataSource(
     /// <param name="hotelIds">Kapsamdaki otel kimlikleri.</param>
     /// <param name="period">Rapor dönemi.</param>
     /// <param name="onlyBilled">
-    /// <c>true</c> ise yalnızca <b>en az bir kez kesinleşmiş faturası olan</b> konaklamalar.
-    /// İki çağrının farkı "henüz faturalanmamış konaklama tutarı"nı verir
-    /// (<c>unbilledRoomRevenueGross</c>); bu, tek sorguda koşullu toplam yazmaktan hem daha
-    /// okunur hem de EF çevirisi açısından daha güvenlidir.
+    /// <c>true</c> ise yalnızca <b>faturalanmış</b> konaklamalar — tanım için bkz.
+    /// <see cref="InvoiceEffectiveness"/>. İki çağrının farkı "henüz faturalanmamış konaklama
+    /// tutarı"nı verir (<c>unbilledRoomRevenueGross</c>); bu, tek sorguda koşullu toplam
+    /// yazmaktan hem daha okunur hem de EF çevirisi açısından daha güvenlidir.
     /// </param>
     /// <param name="cancellationToken">İptal belirteci.</param>
     public async Task<IReadOnlyList<StayGroupRow>> GetStayGroupsAsync(
@@ -107,10 +108,26 @@ internal sealed class ReportDataSource(
 
         if (onlyBilled)
         {
-            // "Faturalanmis" = bir kez numara almis (IssuedAt dolu) faturasi var.
-            // Taslak ve taslakken iptal edilmis faturalar SAYILMAZ (bkz. RevenueRecognition).
+            // "Faturalanmis" = konaklamanin YURURLUKTEKI bir BELGESI var:
+            //   (1) numara almis  (IssuedAt != null)  -> taslak belge degildir, sayilmaz,
+            //   (2) iptal edilmemis                   -> iptal edilen belge tahsil edilmez,
+            //   (3) kendisi Stornorechnung degil      -> storno bir gelir belgesi degil, duzeltmedir.
+            // Tanim tek yerdedir: InvoiceEffectiveness.IsEffectiveDocument.
+            //
+            // (2) ve (3) BIRLIKTE kritiktir: kesinlesmis fatura iptal edilip storno kesildiginde
+            // ikisi toplamda TAM SIFIR eder (GetStayInvoiceAmountsAsync ikisini de sayar, bkz. o
+            // metodun belgesi). Yalnizca IssuedAt'e bakan eski kosul bu konaklamayi
+            // "faturalanmis" sayiyordu; sonucta tutar ne totalRevenue'ya (0 net) ne
+            // unbilledRoomRevenueGross'a (billed sayildigi icin 0) giriyor, RAPORDAN TUMUYLE
+            // KAYBOLUYORDU. Yeni tanimla konaklama tekrar "faturalanmamis" olur ve tutar
+            // unbilled tarafinda gorunur: raporun iki tarafi birbirini tamamlar.
+            //
+            // Alt sorgu lambda'nin DISINDA kurulur; boylece ortak tanim (extension) burada
+            // kullanilabilir ve EF bunu korele bir EXISTS'e cevirir.
+            var effectiveDocuments = database.Invoices.EffectiveDocuments();
+
             query = query.Where(reservation =>
-                reservation.Invoices.Any(invoice => invoice.IssuedAt != null));
+                effectiveDocuments.Any(invoice => invoice.ReservationId == reservation.Id));
         }
 
         return await query
@@ -138,6 +155,13 @@ internal sealed class ReportDataSource(
     /// Filtre <c>Invoice.IssuedAt != null</c>'dır: taslaklar ve taslakken iptal edilenler
     /// dışarıda kalır; kesinleştikten sonra iptal edilen fatura ile onun Stornorechnung'u
     /// <b>ikisi de</b> içeride kalır ve birbirini sıfırlar (bkz. <see cref="RevenueRecognition"/>).
+    /// </para>
+    /// <para>
+    /// <b>Bu metot ile <see cref="GetStayGroupsAsync"/>'in <c>onlyBilled</c> kolu birbirini
+    /// tamamlar:</b> iptal + storno çifti burada net <b>0</b> katkı yapar, orada da konaklama
+    /// "faturalanmamış" sayılır — yani tutar <c>unbilledRoomRevenueGross</c>'ta görünür.
+    /// İki taraf farklı "faturalanmış" tanımı kullanırsa konaklama tutarı hiçbir kovaya girmez ve
+    /// rapordan kaybolur; bu yüzden tanım <see cref="InvoiceEffectiveness"/>'te tektir.
     /// </para>
     /// </summary>
     public async Task<IReadOnlyList<StayMoneyRow>> GetStayInvoiceAmountsAsync(

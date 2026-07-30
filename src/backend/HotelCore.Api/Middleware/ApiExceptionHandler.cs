@@ -27,8 +27,10 @@ namespace HotelCore.Api.Middleware;
 /// <para>
 /// <b>i18n:</b> <c>title</c>/<c>detail</c> metinleri <see cref="Messages"/> üzerinden isteğin
 /// dilinde üretilir; <c>detail</c> zaten Application katmanında yerelleştirilmiş istisna
-/// mesajıdır. Böylece <c>title</c>, <c>detail</c> ve <c>errors</c> aynı dilde döner. Log
-/// mesajları bilinçli olarak çevrilmez (geliştiriciye yöneliktir).
+/// mesajıdır. Böylece <c>title</c>, <c>detail</c> ve <c>errors</c> aynı dilde döner. Yanıt bu
+/// dili <c>Content-Language</c> başlığıyla da <b>bildirir</b>
+/// (<see cref="ProblemDetailsResponseHeaders"/>). Log mesajları bilinçli olarak çevrilmez
+/// (geliştiriciye yöneliktir).
 /// </para>
 /// </summary>
 public sealed class ApiExceptionHandler(
@@ -48,6 +50,11 @@ public sealed class ApiExceptionHandler(
         // isteğin dili yeniden yürürlüğe konmadan başlıklar sunucu dilinde üretilirdi
         // (bkz. RequestCultureScope).
         using var culture = RequestCultureScope.Apply(httpContext);
+
+        // ExceptionHandlerMiddleware yanıtı sıfırladığı için localization middleware'in yazdığı
+        // Content-Language silinmiştir; sözleşme gereği (api-contracts.md) hata yanıtı da aktif
+        // dili bildirmelidir. charset de burada garanti altına alınır — bkz. sınıf belgesi.
+        ProblemDetailsResponseHeaders.Apply(httpContext);
 
         var (statusCode, title, detail) = Map(exception);
 

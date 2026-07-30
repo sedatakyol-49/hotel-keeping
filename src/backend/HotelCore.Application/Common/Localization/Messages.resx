@@ -316,6 +316,9 @@
   <data name="Validation_InvoiceLinesNotAllowed" xml:space="preserve">
     <value>Einer aus einer Reservierung erzeugten Rechnung können keine Positionen manuell übergeben werden; die Positionen werden aus Reservierung und Folio abgeleitet.</value>
   </data>
+  <data name="Validation_InvoiceReservationLinesServerOwned" xml:space="preserve">
+    <value>Bei einer aus einer Reservierung erzeugten Rechnung dürfen über lineItems nur Positionen vom Typ Extra übergeben werden; RoomCharge und CityTax werden vom Server erzeugt und bleiben erhalten.</value>
+  </data>
   <data name="Validation_InvoiceNeedsReservationOrLines" xml:space="preserve">
     <value>Eine Rechnung kann nicht ohne Positionen erstellt werden: Es muss entweder reservationId oder mindestens ein lineItems-Element angegeben werden.</value>
   </data>
