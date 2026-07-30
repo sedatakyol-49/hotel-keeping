@@ -1,0 +1,197 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="housekeeping.title"
+    subtitleKey="housekeeping.subtitle"
+    eyebrowKey="nav.section.operations"
+  >
+    <div slot="actions" class="flex items-center gap-2">
+      <hc-button variant="secondary" [busy]="store.loading()" (pressed)="refresh()">
+        {{ 'common.refresh' | translate }}
+      </hc-button>
+    </div>
+  </hc-page-header>
+
+  <!-- Durum degisikliklerini ekran okuyucuya bildirir -->
+  <p class="sr-only" role="status" aria-live="polite">{{ announcementText() }}</p>
+
+  <!-- Sayaclar ayni zamanda filtre dugmesidir -->
+  <div
+    class="grid grid-cols-2 gap-px border border-rule bg-rule sm:grid-cols-3 lg:grid-cols-5"
+    role="group"
+    [attr.aria-label]="'housekeeping.board.filterLabel' | translate"
+  >
+    <button
+      type="button"
+      class="flex touch-target flex-col items-start px-4 py-3 text-left"
+      [class.bg-paper-raised]="store.statusFilter() !== null"
+      [class.bg-paper-sunken]="store.statusFilter() === null"
+      [attr.aria-pressed]="store.statusFilter() === null"
+      (click)="store.setStatusFilter(null)"
+    >
+      <span class="eyebrow">{{ 'housekeeping.board.allRooms' | translate }}</span>
+      <span class="mt-1 numeric text-2xl text-ink">{{ store.summary().total }}</span>
+    </button>
+
+    @for (status of statuses; track status) {
+      <button
+        type="button"
+        class="flex touch-target flex-col items-start px-4 py-3 text-left"
+        [class.bg-paper-raised]="store.statusFilter() !== status"
+        [class.bg-paper-sunken]="store.statusFilter() === status"
+        [attr.aria-pressed]="store.statusFilter() === status"
+        (click)="store.setStatusFilter(store.statusFilter() === status ? null : status)"
+      >
+        <span class="eyebrow">{{ statusLabelKeys[status] | translate }}</span>
+        <span class="mt-1 numeric text-2xl text-ink">{{ countFor(status) }}</span>
+      </button>
+    }
+  </div>
+
+  @if (store.updateError(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-3" role="alert">
+      <p class="label-mono text-danger">{{ 'housekeeping.board.updateFailed' | translate }}</p>
+      <p class="mt-1 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-3">
+        <hc-button size="sm" variant="ghost" (pressed)="store.clearUpdateError()">
+          {{ 'common.close' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  }
+
+  @if (store.loading() && !store.hasRooms()) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'housekeeping.board.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="refresh()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      titleKey="housekeeping.empty.title"
+      descriptionKey="housekeeping.empty.description"
+    />
+  } @else if (store.visibleRoomCount() === 0) {
+    <hc-empty-state
+      titleKey="housekeeping.board.noMatches.title"
+      descriptionKey="housekeeping.board.noMatches.description"
+    >
+      <hc-button variant="secondary" (pressed)="store.setStatusFilter(null)">
+        {{ 'housekeeping.board.showAll' | translate }}
+      </hc-button>
+    </hc-empty-state>
+  } @else {
+    @for (floor of store.visibleFloors(); track floor.floor) {
+      <section
+        class="border border-rule bg-paper-raised"
+        [attr.aria-labelledby]="'floor-' + floor.floor"
+      >
+        <header class="flex items-baseline justify-between gap-3 border-b border-rule px-4 py-3">
+          <h2 [id]="'floor-' + floor.floor" class="label-mono text-ink">
+            {{ 'housekeeping.board.floor' | translate: { floor: floor.floor } }}
+          </h2>
+          <p class="eyebrow">
+            {{ 'housekeeping.board.roomCount' | translate: { count: floor.rooms.length } }}
+          </p>
+        </header>
+
+        <ul class="grid grid-cols-1 gap-px bg-rule sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          @for (room of floor.rooms; track room.id) {
+            <li
+              class="flex flex-col gap-3 px-4 py-4"
+              [class]="cellClass(room.housekeepingStatus)"
+              [class.opacity-60]="store.isPending(room.id)"
+              [attr.aria-busy]="store.isPending(room.id) ? 'true' : null"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="numeric text-2xl leading-none text-ink">{{ room.number }}</p>
+                  <p class="mt-1 eyebrow">{{ room.roomTypeCode }}</p>
+                </div>
+                <hc-housekeeping-status [status]="room.housekeepingStatus" />
+              </div>
+
+              @if (canUpdate()) {
+                <div>
+                  <label class="sr-only" [for]="'hk-status-' + room.id">
+                    {{ 'housekeeping.board.changeStatusAria' | translate: { number: room.number } }}
+                  </label>
+                  <select
+                    class="hc-input"
+                    [id]="'hk-status-' + room.id"
+                    [value]="room.housekeepingStatus"
+                    [disabled]="store.isPending(room.id)"
+                    (change)="onStatusChange(room, $event)"
+                  >
+                    @for (status of statuses; track status) {
+                      <option [value]="status" [selected]="status === room.housekeepingStatus">
+                        {{ statusLabelKeys[status] | translate }}
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+
+              @if (editingRoomId() === room.id) {
+                <div class="space-y-2">
+                  <label class="hc-label" [for]="'hk-note-' + room.id">
+                    {{ 'housekeeping.board.note' | translate }}
+                  </label>
+                  <textarea
+                    #noteInput
+                    class="hc-input"
+                    rows="2"
+                    [id]="'hk-note-' + room.id"
+                    [attr.maxlength]="noteMaxLength"
+                    [value]="room.note ?? ''"
+                    [placeholder]="'housekeeping.board.notePlaceholder' | translate"
+                  ></textarea>
+                  <div class="flex flex-wrap gap-2">
+                    <hc-button
+                      size="sm"
+                      [busy]="store.isPending(room.id)"
+                      (pressed)="saveNote(room, noteInput.value)"
+                    >
+                      {{ 'common.save' | translate }}
+                    </hc-button>
+                    <hc-button size="sm" variant="ghost" (pressed)="cancelNoteEdit()">
+                      {{ 'common.cancel' | translate }}
+                    </hc-button>
+                  </div>
+                </div>
+              } @else {
+                <div class="flex items-start justify-between gap-2">
+                  <p class="min-w-0 flex-1 text-sm text-ink-muted">
+                    {{ room.note || ('housekeeping.board.noNote' | translate) }}
+                  </p>
+                  @if (canUpdate()) {
+                    <button
+                      type="button"
+                      class="shrink-0 touch-target border border-rule-strong px-2 label-mono text-ink-muted hover:bg-paper-sunken"
+                      [attr.aria-label]="
+                        'housekeeping.board.editNoteAria' | translate: { number: room.number }
+                      "
+                      (click)="startNoteEdit(room.id)"
+                    >
+                      {{ 'housekeeping.board.editNote' | translate }}
+                    </button>
+                  }
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</div>

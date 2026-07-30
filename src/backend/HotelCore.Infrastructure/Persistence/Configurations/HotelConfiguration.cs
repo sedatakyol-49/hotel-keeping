@@ -38,7 +38,8 @@ public sealed class HotelConfiguration : IEntityTypeConfiguration<Hotel>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.HeadOfficeId);
-        builder.HasIndex(x => new { x.HeadOfficeId, x.Name }).IsUnique();
+        // Otel adı Head Office içinde benzersiz; kapatılan otelin adı yeniden kullanılabilir.
+        builder.HasIndex(x => new { x.HeadOfficeId, x.Name }).IsUniqueAmongLiveRows();
         builder.HasIndex(x => x.IsDeleted);
     }
 }

@@ -36,6 +36,23 @@ internal static class DatabaseAvailability
 
     public static bool IsAvailable => ExternalConnectionString is not null || IsDockerAvailable;
 
+    /// <summary>
+    /// Veritabanini ZORUNLU kilan ortam degiskeni. CI'da <c>true</c> verilir.
+    /// <para>
+    /// Neden gerekli: atlama (skip) mekanizmasi yerelde faydali ama CI'da <b>tehlikelidir</b> —
+    /// baglanti dizesi yapilandirmadan dusse tum integration testler sessizce "skipped" olur ve
+    /// is akisi yesil kalir. Bu degisken tanimliyken <c>PostgresAvailabilityTests</c> kaynagin
+    /// gercekten var oldugunu dogrular ve yoksa CI'yi kirar.
+    /// </para>
+    /// </summary>
+    public const string RequireDatabaseEnvironmentVariable = "HOTELCORE_REQUIRE_POSTGRES";
+
+    /// <summary>CI gibi ortamlarda veritabaninin bulunmasi zorunlu mu.</summary>
+    public static bool IsDatabaseRequired { get; } =
+        bool.TryParse(
+            Environment.GetEnvironmentVariable(RequireDatabaseEnvironmentVariable),
+            out var required) && required;
+
     private static bool DetectDocker()
     {
         if (Environment.GetEnvironmentVariable("DOCKER_HOST") is { Length: > 0 })

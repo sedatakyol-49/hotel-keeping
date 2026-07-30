@@ -145,7 +145,8 @@ namespace HotelCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("HotelId", "LastName");
 
                     b.HasIndex("HotelId", "StaffNumber")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("NOT \"IsDeleted\"");
 
                     b.ToTable("Employees");
                 });
@@ -388,7 +389,8 @@ namespace HotelCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("IsDeleted");
 
                     b.HasIndex("HeadOfficeId", "Name")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("NOT \"IsDeleted\"");
 
                     b.ToTable("Hotels");
                 });
@@ -510,7 +512,8 @@ namespace HotelCore.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("HotelId", "InvoiceNumber")
                         .IsUnique()
-                        .HasFilter("\"InvoiceNumber\" <> ''");
+                        .HasFilter("\"InvoiceNumber\" <> ''")
+                        .HasAnnotation("HotelCore:SoftDeleteUniqueIndexExemption", "GoBD: fatura numarasi silinmis satirlar dahil tum saklama suresi boyunca benzersiz kalmalidir.");
 
                     b.HasIndex("HotelId", "IssuedAt");
 
@@ -889,7 +892,8 @@ namespace HotelCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("HotelId", "CheckIn");
 
                     b.HasIndex("HotelId", "ReservationNumber")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("NOT \"IsDeleted\"");
 
                     b.HasIndex("HotelId", "Status");
 
@@ -997,7 +1001,8 @@ namespace HotelCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("RoomTypeId");
 
                     b.HasIndex("HotelId", "Number")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("NOT \"IsDeleted\"");
 
                     b.HasIndex("HotelId", "Floor", "HousekeepingStatus");
 
@@ -1064,7 +1069,8 @@ namespace HotelCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("HotelId");
 
                     b.HasIndex("HotelId", "Code")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("NOT \"IsDeleted\"");
 
                     b.ToTable("RoomTypes");
                 });
@@ -1268,7 +1274,8 @@ namespace HotelCore.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("NOT \"IsDeleted\"");
 
                     b.HasIndex("HeadOfficeId");
 

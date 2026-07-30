@@ -22,6 +22,7 @@ public sealed class RoomTypeConfiguration : IEntityTypeConfiguration<RoomType>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.HotelId);
-        builder.HasIndex(x => new { x.HotelId, x.Code }).IsUnique();
+        // Oda tipi kodu otel içinde benzersiz; silinen tipin kodu yeniden kullanılabilir.
+        builder.HasIndex(x => new { x.HotelId, x.Code }).IsUniqueAmongLiveRows();
     }
 }

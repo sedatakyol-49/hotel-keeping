@@ -24,8 +24,9 @@ public sealed class RoomConfiguration : IEntityTypeConfiguration<Room>
             .HasForeignKey(x => x.RoomTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Oda numarası otel içinde benzersizdir.
-        builder.HasIndex(x => new { x.HotelId, x.Number }).IsUnique();
+        // Oda numarası otel içinde benzersizdir; silinen odanın numarası tekrar kullanılabilir
+        // (kapatılan bir oda yeniden açılabilir) — bu yüzden index yalnızca canlı satırları kapsar.
+        builder.HasIndex(x => new { x.HotelId, x.Number }).IsUniqueAmongLiveRows();
         builder.HasIndex(x => x.RoomTypeId);
         // Kat hizmetleri panosu kat + durum kırılımında sorgulanır.
         builder.HasIndex(x => new { x.HotelId, x.Floor, x.HousekeepingStatus });

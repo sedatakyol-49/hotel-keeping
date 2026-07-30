@@ -4,3 +4,5 @@ export * from './language.model';
 export * from './paged-result.model';
 export * from './permission.model';
 export * from './problem-details.model';
+export * from './room-type.model';
+export * from './room.model';

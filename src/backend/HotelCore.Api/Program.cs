@@ -87,7 +87,11 @@ builder.Services.AddCors(options => options.AddPolicy(CorsPolicyName, policy =>
 var localizationOptions = LocalizationConfiguration.Create(builder.Configuration);
 
 // --- MVC / hata / OpenAPI ---------------------------------------------------
-builder.Services.AddControllers();
+// Enum'lar sözleşmede ADIYLA taşınır ("Dirty"), sayı olarak DEĞİL (api-contracts.md → Şekiller).
+// Dönüştürücü hem gövde okumasını ("status": "Inspected") hem OpenAPI şemasındaki enum
+// değerlerini üretir; hatalı değerde tip adı sızdırmayan bir mesaj döner.
+builder.Services.AddControllers().AddJsonOptions(options =>
+    options.JsonSerializerOptions.Converters.Add(new StringEnumConverterFactory()));
 
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
 {

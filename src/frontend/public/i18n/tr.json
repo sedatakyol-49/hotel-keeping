@@ -60,6 +60,7 @@
     },
     "dashboard": "Genel Bakış",
     "rooms": "Odalar",
+    "roomTypes": "Oda tipleri",
     "reservations": "Rezervasyonlar",
     "housekeeping": "Kat Hizmetleri",
     "invoices": "Faturalar",
@@ -131,26 +132,219 @@
   },
   "dashboard": {
     "title": "Genel Bakış",
-    "subtitle": "Aktif otelin günlük göstergeleri ve açık görevleri.",
-    "kpi": {
-      "occupancy": "Doluluk",
-      "arrivals": "Girişler",
-      "departures": "Çıkışlar",
-      "revenue": "Günlük ciro",
-      "roomsToClean": "Temizlenecek oda",
-      "openInvoices": "Açık faturalar"
+    "subtitle": "Aktif otelin tüm bölümleri tek bakışta."
+  },
+  "hub": {
+    "status": {
+      "planned": "Hazırlanıyor"
+    },
+    "summary": {
+      "loading": "Sayılar yükleniyor …",
+      "unavailable": "Sayılar alınamadı",
+      "rooms": "{{count}} oda",
+      "roomsDirty": "{{count}} oda · {{dirty}} kirli",
+      "roomTypes": "{{count}} oda tipi",
+      "housekeeping": "{{count}} açık iş · {{dirty}} kirli",
+      "housekeepingClear": "Açık iş yok"
+    },
+    "cards": {
+      "rooms": {
+        "description": "Oda envanteri; kat, tip ve temizlik durumu."
+      },
+      "roomTypes": {
+        "description": "Kategoriler, taban fiyatlar ve donanım."
+      },
+      "reservations": {
+        "description": "Doluluk ızgarası, girişler ve çıkışlar."
+      },
+      "housekeeping": {
+        "description": "Kat bazlı temizlik durumu — finansal veri yok."
+      },
+      "employees": {
+        "description": "Personel kartları, departman ve çalışma şekli."
+      },
+      "vacations": {
+        "description": "Talepler, onaylar ve kalan izin hakkı."
+      },
+      "timeTracking": {
+        "description": "Giriş, çıkış ve mola kayıtları."
+      },
+      "shifts": {
+        "description": "Departman ve personel bazlı haftalık plan."
+      },
+      "invoices": {
+        "description": "Taslak, kesinleştirme ve iptal."
+      },
+      "reports": {
+        "description": "Ciro, doluluk, ADR ve RevPAR."
+      },
+      "settings": {
+        "description": "Otel profili, vergi profili ve yetkiler."
+      }
     },
     "empty": {
-      "title": "Henüz gösterge yok",
-      "description": "Raporlama uç noktaları hazır olduğunda doluluk, ciro ve açık görevler burada görünecek."
+      "title": "Tanımlı bölüm yok",
+      "description": "Hesabınıza şu anda hiçbir bölüm atanmamış. Lütfen yönetimle görüşün."
     }
   },
   "rooms": {
     "title": "Odalar",
     "subtitle": "Aktif otelin odalarını, oda tiplerini ve donanımlarını yönetin.",
+    "count": "{{count}} oda",
+    "tableCaption": "Numara, kat, oda tipi ve temizlik durumuyla tüm odaların listesi",
+    "columns": {
+      "number": "Numara",
+      "floor": "Kat",
+      "roomType": "Oda tipi",
+      "status": "Temizlik durumu",
+      "note": "Not"
+    },
+    "filters": {
+      "legend": "Filtreler",
+      "search": "Oda numarası",
+      "searchPlaceholder": "örn. 201",
+      "floor": "Kat",
+      "allFloors": "Tüm katlar",
+      "roomType": "Oda tipi",
+      "allTypes": "Tüm oda tipleri",
+      "status": "Temizlik durumu",
+      "allStatuses": "Tüm durumlar",
+      "apply": "Filtreleri uygula",
+      "reset": "Filtreleri sıfırla"
+    },
+    "actions": {
+      "create": "Oda ekle",
+      "manageTypes": "Oda tipleri",
+      "editAria": "{{number}} numaralı odayı düzenle"
+    },
+    "pagination": {
+      "range": "{{total}} kayıttan {{from}}–{{to}}",
+      "page": "Sayfa {{page}} / {{pages}}"
+    },
+    "list": {
+      "loadFailed": "Oda listesi yüklenemedi."
+    },
     "empty": {
       "title": "Henüz oda kaydı yok",
       "description": "Tüm odalar numara, kat, tip ve temizlik durumu ile burada listelenecek."
+    },
+    "emptyFiltered": {
+      "title": "Bu filtrelerle oda bulunamadı",
+      "description": "Filtreleri değiştirin veya sıfırlayarak tüm odaları görün."
+    },
+    "delete": {
+      "confirmShort": "Oda silinsin mi?",
+      "conflict": "Gelecek tarihli rezervasyonlar olduğu için oda silinemez."
+    },
+    "form": {
+      "createTitle": "Oda ekle",
+      "editTitle": "Odayı düzenle",
+      "subtitle": "Numara, kat, oda tipi ve temizlik durumunu yönetin.",
+      "backToList": "Oda listesine dön",
+      "loadFailed": "Oda yüklenemedi.",
+      "number": "Oda numarası",
+      "numberHint": "1–{{maxLength}} karakter, otel içinde tekil olmalı.",
+      "floor": "Kat",
+      "floorHint": "{{min}} ile {{max}} arasında olabilir.",
+      "roomType": "Oda tipi",
+      "selectRoomType": "Seçiniz",
+      "noRoomTypes": "Henüz oda tipi tanımlı değil. Lütfen önce bir oda tipi oluşturun.",
+      "status": "Temizlik durumu",
+      "outOfOrderHint": "„Kullanım dışı“ durumu odayı otomatik olarak satıştan çıkarır.",
+      "note": "Not",
+      "notePlaceholder": "Kat hizmetleri için dahili not",
+      "saving": "Kaydediliyor …",
+      "conflict": "Bu oda numarası otelde zaten kullanılıyor.",
+      "validation": {
+        "numberRequired": "Lütfen bir oda numarası girin.",
+        "numberLength": "Oda numarası en fazla {{maxLength}} karakter olabilir.",
+        "numberConflict": "Bu oda numarası zaten kullanılıyor.",
+        "floorRequired": "Lütfen bir kat girin.",
+        "floorFormat": "Lütfen tam sayı girin.",
+        "floorRange": "Kat {{min}} ile {{max}} arasında olmalı.",
+        "roomTypeIdRequired": "Lütfen bir oda tipi seçin.",
+        "housekeepingStatusRequired": "Lütfen bir temizlik durumu seçin.",
+        "noteLength": "Not en fazla {{noteMaxLength}} karakter olabilir."
+      }
+    },
+    "housekeeping": {
+      "status": {
+        "clean": "Temiz",
+        "dirty": "Kirli",
+        "inspected": "Kontrol edildi",
+        "outOfOrder": "Kullanım dışı"
+      }
+    },
+    "types": {
+      "title": "Oda tipleri",
+      "subtitle": "Kategorileri taban fiyat, kapasite ve donanımla yönetin.",
+      "backToRooms": "Odalara dön",
+      "tableCaption": "Kod, ad, kapasite ve taban fiyatla oda tipleri listesi",
+      "loadFailed": "Oda tipleri yüklenemedi.",
+      "columns": {
+        "code": "Kod",
+        "name": "Ad",
+        "capacity": "Kapasite",
+        "sizeSqm": "Alan (m²)",
+        "basePrice": "Taban fiyat",
+        "roomCount": "Oda",
+        "amenities": "Donanım"
+      },
+      "actions": {
+        "create": "Oda tipi ekle",
+        "editAria": "{{code}} kodlu oda tipini düzenle"
+      },
+      "empty": {
+        "title": "Henüz oda tipi yok",
+        "description": "Her oda bir oda tipine bağlanır. Önce bir tip oluşturun."
+      },
+      "delete": {
+        "confirmShort": "Oda tipi silinsin mi?",
+        "blocked": "Dikkat: {{count}} oda bu tipi kullanıyor.",
+        "conflict": "Bu oda tipine bağlı odalar olduğu için silinemez."
+      },
+      "form": {
+        "createTitle": "Oda tipi ekle",
+        "editTitle": "Oda tipini düzenle",
+        "subtitle": "Dile göre ad, taban fiyat, kapasite ve donanım.",
+        "backToList": "Tip listesine dön",
+        "loadFailed": "Oda tipi yüklenemedi.",
+        "translations": "Dile göre ad",
+        "languageTabs": "Ad ve açıklama için dil seçin",
+        "primaryLanguage": "Birincil dil",
+        "fallbackHint": "Bu çeviri yoksa Almanca ad gösterilir.",
+        "name": "Ad",
+        "namePlaceholder": "örn. İki kişilik oda",
+        "description": "Açıklama",
+        "code": "Kod",
+        "codeHint": "1–{{maxLength}} karakter, otel içinde tekil olmalı.",
+        "basePrice": "Taban fiyat",
+        "basePriceHint": "Gecelik fiyat.",
+        "capacity": "Kapasite (kişi)",
+        "sizeSqm": "Alan (m²)",
+        "amenities": "Donanım",
+        "amenitiesPlaceholder": "wifi, minibar, balcony",
+        "amenitiesHint": "Birden fazla donanımı virgülle ayırın.",
+        "saving": "Kaydediliyor …",
+        "conflict": "Bu kod otelde zaten kullanılıyor."
+      },
+      "validation": {
+        "codeRequired": "Lütfen bir kod girin.",
+        "codeLength": "Kod en fazla {{maxLength}} karakter olabilir.",
+        "codeConflict": "Bu kod zaten kullanılıyor.",
+        "nameRequired": "Lütfen bir ad girin.",
+        "basePriceRequired": "Lütfen bir taban fiyat girin.",
+        "basePriceFormat": "Lütfen geçerli bir tutar girin.",
+        "basePriceRange": "Taban fiyat negatif olamaz.",
+        "capacityRequired": "Lütfen kapasiteyi girin.",
+        "capacityFormat": "Lütfen tam sayı girin.",
+        "capacityRange": "Kapasite {{capacityMin}} ile {{capacityMax}} arasında olmalı.",
+        "sizeSqmFormat": "Lütfen geçerli bir sayı girin.",
+        "sizeSqmRange": "Alan 0'dan büyük olmalı.",
+        "nameLength": "Ad en fazla {{nameMaxLength}} karakter olabilir.",
+        "descriptionLength": "Açıklama en fazla {{descriptionMaxLength}} karakter olabilir.",
+        "amenitiesLimit": "En fazla {{amenityMaxCount}} donanım, her biri en fazla {{amenityMaxLength}} karakter olabilir."
+      }
     }
   },
   "reservations": {
@@ -167,6 +361,29 @@
     "empty": {
       "title": "Açık temizlik görevi yok",
       "description": "Odalar çıkış işleminde otomatik olarak “kirli” durumuna geçer ve bu listede görünür."
+    },
+    "board": {
+      "filterLabel": "Temizlik durumuna göre filtrele",
+      "allRooms": "Tüm odalar",
+      "showAll": "Tüm odaları göster",
+      "floor": "{{floor}}. kat",
+      "roomCount": "{{count}} oda",
+      "note": "Not",
+      "noNote": "Not yok",
+      "notePlaceholder": "örn. minibar dolduruldu",
+      "editNote": "Not",
+      "editNoteAria": "{{number}} numaralı odanın notunu düzenle",
+      "changeStatusAria": "{{number}} numaralı odanın temizlik durumunu değiştir",
+      "loadFailed": "Kat panosu yüklenemedi.",
+      "updateFailed": "Durum kaydedilemedi ve önceki değerine geri alındı.",
+      "noMatches": {
+        "title": "Bu durumda oda yok",
+        "description": "Başka bir durum seçin veya tüm odaları görüntüleyin."
+      },
+      "announce": {
+        "updated": "{{number}} numaralı oda artık {{status}}.",
+        "failed": "{{number}} numaralı oda kaydedilemedi. Durum {{status}} olarak kaldı."
+      }
     }
   },
   "invoices": {

@@ -1,8 +1,11 @@
 using System.Reflection;
 using FluentValidation;
+using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Common.Messaging.Behaviors;
 using HotelCore.Application.Features.Auth.Common;
+using HotelCore.Application.Features.Rooms.Common;
+using HotelCore.Application.Features.RoomTypes.Common;
 using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +44,13 @@ public static class DependencyInjection
 
         // Auth slice'ının paylaşılan gövdesi (login + refresh + me).
         services.AddScoped<AuthSessionService>();
+
+        // Dinamik içerik çevirileri (architecture.md §4.6) — modüller arası paylaşılır.
+        services.AddScoped<TranslationService>();
+
+        // Oda yönetimi slice'larının paylaşılan okuma gövdeleri (liste/detay/pano yanıtları).
+        services.AddScoped<RoomTypeReader>();
+        services.AddScoped<RoomReader>();
 
         return services;
     }

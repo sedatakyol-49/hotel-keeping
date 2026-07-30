@@ -1,0 +1,376 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="rooms.title"
+    subtitleKey="rooms.subtitle"
+    eyebrowKey="nav.section.operations"
+  >
+    <!--
+      Not: yazma aksiyonlari statik bir kapsayici icinde durur; yapisal direktif
+      dogrudan projeksiyon slotuna uygulanamaz (`slot` niteligi ng-template'e gecmez).
+    -->
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        *hcHasPermission="managePermission"
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/rooms/types"
+        data-testid="rooms-manage-types"
+      >
+        {{ 'rooms.actions.manageTypes' | translate }}
+      </a>
+      <a
+        *hcHasPermission="managePermission"
+        class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+        routerLink="/rooms/new"
+        data-testid="rooms-create"
+      >
+        {{ 'rooms.actions.create' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  <!-- Filtreler: degerler URL sorgu parametrelerinden okunur -->
+  <form
+    class="border border-rule bg-paper-raised"
+    aria-labelledby="rooms-filter-heading"
+    novalidate
+    (ngSubmit)="
+      applyFromForm(searchInput.value, floorInput.value, typeSelect.value, statusSelect.value)
+    "
+  >
+    <h2 id="rooms-filter-heading" class="border-b border-rule px-4 py-3 label-mono text-ink">
+      {{ 'rooms.filters.legend' | translate }}
+    </h2>
+
+    <div class="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div>
+        <label class="hc-label" for="rooms-filter-search">
+          {{ 'rooms.filters.search' | translate }}
+        </label>
+        <input
+          #searchInput
+          id="rooms-filter-search"
+          class="hc-input mt-1"
+          type="search"
+          name="search"
+          autocomplete="off"
+          spellcheck="false"
+          [value]="query().search ?? ''"
+          [placeholder]="'rooms.filters.searchPlaceholder' | translate"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="rooms-filter-floor">
+          {{ 'rooms.filters.floor' | translate }}
+        </label>
+        <input
+          #floorInput
+          id="rooms-filter-floor"
+          class="hc-input mt-1"
+          type="number"
+          name="floor"
+          inputmode="numeric"
+          step="1"
+          [min]="floorLimits.floorMin"
+          [max]="floorLimits.floorMax"
+          [value]="query().floor ?? ''"
+          [placeholder]="'rooms.filters.allFloors' | translate"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="rooms-filter-type">
+          {{ 'rooms.filters.roomType' | translate }}
+        </label>
+        <select
+          #typeSelect
+          id="rooms-filter-type"
+          class="hc-input mt-1"
+          name="roomTypeId"
+          [value]="query().roomTypeId ?? ''"
+          (change)="
+            applyFromForm(searchInput.value, floorInput.value, typeSelect.value, statusSelect.value)
+          "
+        >
+          <option value="">{{ 'rooms.filters.allTypes' | translate }}</option>
+          @for (type of roomTypes.options(); track type.id) {
+            <option [value]="type.id" [selected]="type.id === query().roomTypeId">
+              {{ type.code }} · {{ type.name }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="hc-label" for="rooms-filter-status">
+          {{ 'rooms.filters.status' | translate }}
+        </label>
+        <select
+          #statusSelect
+          id="rooms-filter-status"
+          class="hc-input mt-1"
+          name="housekeepingStatus"
+          [value]="query().housekeepingStatus ?? ''"
+          (change)="
+            applyFromForm(searchInput.value, floorInput.value, typeSelect.value, statusSelect.value)
+          "
+        >
+          <option value="">{{ 'rooms.filters.allStatuses' | translate }}</option>
+          @for (status of statuses; track status) {
+            <option [value]="status" [selected]="status === query().housekeepingStatus">
+              {{ statusLabelKeys[status] | translate }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 border-t border-rule px-4 py-3">
+      <hc-button type="submit">{{ 'rooms.filters.apply' | translate }}</hc-button>
+      @if (store.hasFilters()) {
+        <hc-button variant="ghost" (pressed)="resetFilters()">
+          {{ 'rooms.filters.reset' | translate }}
+        </hc-button>
+      }
+      <p class="ml-auto eyebrow" aria-live="polite">
+        {{ 'rooms.count' | translate: { count: store.totalCount() } }}
+      </p>
+    </div>
+  </form>
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'rooms.list.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      @if (error.detail) {
+        <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+      }
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      [titleKey]="store.hasFilters() ? 'rooms.emptyFiltered.title' : 'rooms.empty.title'"
+      [descriptionKey]="
+        store.hasFilters() ? 'rooms.emptyFiltered.description' : 'rooms.empty.description'
+      "
+    >
+      @if (store.hasFilters()) {
+        <hc-button variant="secondary" (pressed)="resetFilters()">
+          {{ 'rooms.filters.reset' | translate }}
+        </hc-button>
+      }
+    </hc-empty-state>
+  } @else {
+    @if (deleteErrorKey(); as deleteError) {
+      <p class="border border-danger bg-danger-tint px-4 py-2 text-sm text-danger" role="alert">
+        {{ deleteError | translate }}
+      </p>
+    }
+
+    <!-- Masaustu: yogun tablo -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="rooms.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'rooms.columns.number' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'rooms.columns.floor' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'rooms.columns.roomType' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'rooms.columns.status' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'rooms.columns.note' | translate }}
+            </th>
+            <th
+              *hcHasPermission="managePermission"
+              scope="col"
+              class="px-4 py-2 text-right label-mono text-ink-muted"
+            >
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (room of store.items(); track room.id) {
+            <tr [class.opacity-60]="store.deletingId() === room.id">
+              <th scope="row" class="px-4 py-3 text-left numeric text-base font-normal text-ink">
+                {{ room.number }}
+              </th>
+              <td class="px-4 py-3 numeric text-ink-muted">{{ room.floor }}</td>
+              <td class="px-4 py-3 text-ink">
+                <span class="numeric text-xs text-ink-faint">{{ room.roomTypeCode }}</span>
+                <span class="ml-2">{{ room.roomTypeName }}</span>
+              </td>
+              <td class="px-4 py-3">
+                <hc-housekeeping-status [status]="room.housekeepingStatus" />
+              </td>
+              <td class="max-w-[18rem] truncate px-4 py-3 text-sm text-ink-muted">
+                {{ room.note || '—' }}
+              </td>
+              <td *hcHasPermission="managePermission" class="px-4 py-3 text-right">
+                @if (pendingDeleteId() === room.id) {
+                  <span class="inline-flex flex-wrap items-center justify-end gap-2">
+                    <span class="label-mono text-danger">
+                      {{ 'rooms.delete.confirmShort' | translate }}
+                    </span>
+                    <hc-button
+                      size="sm"
+                      variant="danger"
+                      [busy]="store.deletingId() === room.id"
+                      (pressed)="confirmDelete(room)"
+                    >
+                      {{ 'common.confirm' | translate }}
+                    </hc-button>
+                    <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                      {{ 'common.cancel' | translate }}
+                    </hc-button>
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center justify-end gap-2">
+                    <a
+                      class="inline-flex min-h-9 items-center border border-rule-strong px-3 py-1.5 label-mono text-ink hover:bg-paper-sunken"
+                      [routerLink]="['/rooms', room.id, 'edit']"
+                      [attr.aria-label]="
+                        'rooms.actions.editAria' | translate: { number: room.number }
+                      "
+                      data-testid="room-edit"
+                    >
+                      {{ 'common.edit' | translate }}
+                    </a>
+                    <hc-button
+                      size="sm"
+                      variant="ghost"
+                      data-testid="room-delete"
+                      (pressed)="requestDelete(room.id)"
+                    >
+                      {{ 'common.delete' | translate }}
+                    </hc-button>
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil: ayni store, kart yerlesimi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (room of store.items(); track room.id) {
+        <li class="px-4 py-4" [class.opacity-60]="store.deletingId() === room.id">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="numeric text-2xl leading-none text-ink">{{ room.number }}</p>
+              <p class="mt-1 eyebrow">
+                {{ 'rooms.columns.floor' | translate }} {{ room.floor }} · {{ room.roomTypeCode }}
+              </p>
+              <p class="mt-1 text-sm text-ink">{{ room.roomTypeName }}</p>
+            </div>
+            <hc-housekeeping-status [status]="room.housekeepingStatus" />
+          </div>
+
+          @if (room.note) {
+            <p class="mt-2 text-sm text-ink-muted">{{ room.note }}</p>
+          }
+
+          <div *hcHasPermission="managePermission" class="mt-3 flex flex-wrap items-center gap-2">
+            @if (pendingDeleteId() === room.id) {
+              <span class="w-full label-mono text-danger">
+                {{ 'rooms.delete.confirmShort' | translate }}
+              </span>
+              <hc-button
+                size="sm"
+                variant="danger"
+                [busy]="store.deletingId() === room.id"
+                (pressed)="confirmDelete(room)"
+              >
+                {{ 'common.confirm' | translate }}
+              </hc-button>
+              <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                {{ 'common.cancel' | translate }}
+              </hc-button>
+            } @else {
+              <a
+                class="inline-flex touch-target items-center border border-rule-strong px-3 py-2 label-mono text-ink"
+                [routerLink]="['/rooms', room.id, 'edit']"
+                [attr.aria-label]="'rooms.actions.editAria' | translate: { number: room.number }"
+              >
+                {{ 'common.edit' | translate }}
+              </a>
+              <hc-button size="sm" variant="ghost" (pressed)="requestDelete(room.id)">
+                {{ 'common.delete' | translate }}
+              </hc-button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+
+    <!-- Sayfalama -->
+    <div
+      class="flex flex-col gap-3 border border-rule bg-paper-raised px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="eyebrow">
+        {{
+          'rooms.pagination.range'
+            | translate
+              : { from: store.rangeStart(), to: store.rangeEnd(), total: store.totalCount() }
+        }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 label-mono text-ink-muted" for="rooms-page-size">
+          {{ 'common.rowsPerPage' | translate }}
+          <select
+            id="rooms-page-size"
+            class="hc-input w-auto"
+            [value]="query().pageSize"
+            (change)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === query().pageSize">{{ size }}</option>
+            }
+          </select>
+        </label>
+
+        <nav class="flex items-center gap-2" [attr.aria-label]="'common.page' | translate">
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasPreviousPage()"
+            (pressed)="goToPage(store.page() - 1)"
+          >
+            {{ 'common.previous' | translate }}
+          </hc-button>
+          <span class="numeric text-sm text-ink" aria-live="polite">
+            {{
+              'rooms.pagination.page' | translate: { page: store.page(), pages: store.totalPages() }
+            }}
+          </span>
+          <hc-button
+            size="sm"
+            variant="secondary"
+            [disabled]="!store.hasNextPage()"
+            (pressed)="goToPage(store.page() + 1)"
+          >
+            {{ 'common.next' | translate }}
+          </hc-button>
+        </nav>
+      </div>
+    </div>
+  }
+</div>

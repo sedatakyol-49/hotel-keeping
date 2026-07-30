@@ -60,6 +60,7 @@
     },
     "dashboard": "Dashboard",
     "rooms": "Rooms",
+    "roomTypes": "Room types",
     "reservations": "Reservations",
     "housekeeping": "Housekeeping",
     "invoices": "Invoices",
@@ -131,26 +132,219 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "subtitle": "Daily key figures and open tasks for the active hotel.",
-    "kpi": {
-      "occupancy": "Occupancy",
-      "arrivals": "Arrivals",
-      "departures": "Departures",
-      "revenue": "Daily revenue",
-      "roomsToClean": "Rooms to clean",
-      "openInvoices": "Open invoices"
+    "subtitle": "All areas of the active hotel at a glance."
+  },
+  "hub": {
+    "status": {
+      "planned": "In preparation"
+    },
+    "summary": {
+      "loading": "Loading figures …",
+      "unavailable": "Figures unavailable",
+      "rooms": "{{count}} rooms",
+      "roomsDirty": "{{count}} rooms · {{dirty}} dirty",
+      "roomTypes": "{{count}} room types",
+      "housekeeping": "{{count}} open tasks · {{dirty}} dirty",
+      "housekeepingClear": "No open tasks"
+    },
+    "cards": {
+      "rooms": {
+        "description": "Room inventory with floor, type and cleaning status."
+      },
+      "roomTypes": {
+        "description": "Categories, base prices and amenities."
+      },
+      "reservations": {
+        "description": "Occupancy grid, arrivals and departures."
+      },
+      "housekeeping": {
+        "description": "Cleaning status per floor — without financial data."
+      },
+      "employees": {
+        "description": "Master data, departments and employment types."
+      },
+      "vacations": {
+        "description": "Requests, approvals and remaining entitlements."
+      },
+      "timeTracking": {
+        "description": "Record clock-in, clock-out and breaks."
+      },
+      "shifts": {
+        "description": "Weekly planning per department and employee."
+      },
+      "invoices": {
+        "description": "Draft, finalisation and cancellation."
+      },
+      "reports": {
+        "description": "Revenue, occupancy, ADR and RevPAR."
+      },
+      "settings": {
+        "description": "Hotel profile, tax profile and permissions."
+      }
     },
     "empty": {
-      "title": "No key figures yet",
-      "description": "Occupancy, revenue and open tasks will appear here once the reporting endpoints are available."
+      "title": "No areas assigned",
+      "description": "Your account currently has access to no area. Please contact the administration."
     }
   },
   "rooms": {
     "title": "Rooms",
     "subtitle": "Manage rooms, room types and amenities of the active hotel.",
+    "count": "{{count}} rooms",
+    "tableCaption": "List of all rooms with number, floor, room type and housekeeping status",
+    "columns": {
+      "number": "Number",
+      "floor": "Floor",
+      "roomType": "Room type",
+      "status": "Housekeeping status",
+      "note": "Note"
+    },
+    "filters": {
+      "legend": "Filters",
+      "search": "Room number",
+      "searchPlaceholder": "e.g. 201",
+      "floor": "Floor",
+      "allFloors": "All floors",
+      "roomType": "Room type",
+      "allTypes": "All room types",
+      "status": "Housekeeping status",
+      "allStatuses": "All statuses",
+      "apply": "Apply filters",
+      "reset": "Reset filters"
+    },
+    "actions": {
+      "create": "Add room",
+      "manageTypes": "Room types",
+      "editAria": "Edit room {{number}}"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}"
+    },
+    "list": {
+      "loadFailed": "The room list could not be loaded."
+    },
     "empty": {
       "title": "No rooms recorded yet",
       "description": "All rooms with number, floor, type and housekeeping status will be listed here."
+    },
+    "emptyFiltered": {
+      "title": "No rooms match these filters",
+      "description": "Adjust the filters or reset them to see all rooms."
+    },
+    "delete": {
+      "confirmShort": "Delete this room?",
+      "conflict": "This room cannot be deleted because future reservations exist."
+    },
+    "form": {
+      "createTitle": "Add room",
+      "editTitle": "Edit room",
+      "subtitle": "Maintain number, floor, room type and housekeeping status.",
+      "backToList": "Back to room list",
+      "loadFailed": "The room could not be loaded.",
+      "number": "Room number",
+      "numberHint": "1 to {{maxLength}} characters, unique within the hotel.",
+      "floor": "Floor",
+      "floorHint": "Allowed from {{min}} to {{max}}.",
+      "roomType": "Room type",
+      "selectRoomType": "Please select",
+      "noRoomTypes": "No room type exists yet. Please create a room type first.",
+      "status": "Housekeeping status",
+      "outOfOrderHint": "The status “Out of order” automatically takes the room out of service.",
+      "note": "Note",
+      "notePlaceholder": "Internal note for housekeeping",
+      "saving": "Saving …",
+      "conflict": "This room number is already used in this hotel.",
+      "validation": {
+        "numberRequired": "Please enter a room number.",
+        "numberLength": "The room number must not exceed {{maxLength}} characters.",
+        "numberConflict": "This room number is already taken.",
+        "floorRequired": "Please enter a floor.",
+        "floorFormat": "Please enter a whole number.",
+        "floorRange": "The floor must be between {{min}} and {{max}}.",
+        "roomTypeIdRequired": "Please select a room type.",
+        "housekeepingStatusRequired": "Please select a housekeeping status.",
+        "noteLength": "The note must not exceed {{noteMaxLength}} characters."
+      }
+    },
+    "housekeeping": {
+      "status": {
+        "clean": "Clean",
+        "dirty": "Dirty",
+        "inspected": "Inspected",
+        "outOfOrder": "Out of order"
+      }
+    },
+    "types": {
+      "title": "Room types",
+      "subtitle": "Maintain categories with base price, capacity and amenities.",
+      "backToRooms": "Back to rooms",
+      "tableCaption": "List of room types with code, name, capacity and base price",
+      "loadFailed": "The room types could not be loaded.",
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "capacity": "Capacity",
+        "sizeSqm": "Area (m²)",
+        "basePrice": "Base price",
+        "roomCount": "Rooms",
+        "amenities": "Amenities"
+      },
+      "actions": {
+        "create": "Add room type",
+        "editAria": "Edit room type {{code}}"
+      },
+      "empty": {
+        "title": "No room types yet",
+        "description": "Every room belongs to a room type. Create a type first."
+      },
+      "delete": {
+        "confirmShort": "Delete this room type?",
+        "blocked": "Caution: {{count}} rooms use this type.",
+        "conflict": "This room type cannot be deleted because rooms are still assigned to it."
+      },
+      "form": {
+        "createTitle": "Add room type",
+        "editTitle": "Edit room type",
+        "subtitle": "Name per language, base price, capacity and amenities.",
+        "backToList": "Back to type list",
+        "loadFailed": "The room type could not be loaded.",
+        "translations": "Name per language",
+        "languageTabs": "Select language for name and description",
+        "primaryLanguage": "Primary language",
+        "fallbackHint": "If this translation is missing, the German name is shown.",
+        "name": "Name",
+        "namePlaceholder": "e.g. Double room",
+        "description": "Description",
+        "code": "Code",
+        "codeHint": "1 to {{maxLength}} characters, unique within the hotel.",
+        "basePrice": "Base price",
+        "basePriceHint": "Price per night.",
+        "capacity": "Capacity (guests)",
+        "sizeSqm": "Area (m²)",
+        "amenities": "Amenities",
+        "amenitiesPlaceholder": "wifi, minibar, balcony",
+        "amenitiesHint": "Separate multiple amenities with commas.",
+        "saving": "Saving …",
+        "conflict": "This code is already used in this hotel."
+      },
+      "validation": {
+        "codeRequired": "Please enter a code.",
+        "codeLength": "The code must not exceed {{maxLength}} characters.",
+        "codeConflict": "This code is already taken.",
+        "nameRequired": "Please enter a name.",
+        "basePriceRequired": "Please enter a base price.",
+        "basePriceFormat": "Please enter a valid amount.",
+        "basePriceRange": "The base price must not be negative.",
+        "capacityRequired": "Please enter the capacity.",
+        "capacityFormat": "Please enter a whole number.",
+        "capacityRange": "The capacity must be between {{capacityMin}} and {{capacityMax}}.",
+        "sizeSqmFormat": "Please enter a valid number.",
+        "sizeSqmRange": "The area must be greater than 0.",
+        "nameLength": "The name must not exceed {{nameMaxLength}} characters.",
+        "descriptionLength": "The description must not exceed {{descriptionMaxLength}} characters.",
+        "amenitiesLimit": "At most {{amenityMaxCount}} amenities, each up to {{amenityMaxLength}} characters."
+      }
     }
   },
   "reservations": {
@@ -167,6 +361,29 @@
     "empty": {
       "title": "No open cleaning tasks",
       "description": "Rooms switch to “dirty” automatically on check-out and then appear in this list."
+    },
+    "board": {
+      "filterLabel": "Filter by housekeeping status",
+      "allRooms": "All rooms",
+      "showAll": "Show all rooms",
+      "floor": "Floor {{floor}}",
+      "roomCount": "{{count}} rooms",
+      "note": "Note",
+      "noNote": "No note",
+      "notePlaceholder": "e.g. minibar refilled",
+      "editNote": "Note",
+      "editNoteAria": "Edit note for room {{number}}",
+      "changeStatusAria": "Change housekeeping status for room {{number}}",
+      "loadFailed": "The floor overview could not be loaded.",
+      "updateFailed": "The status was not saved and has been reverted to its previous value.",
+      "noMatches": {
+        "title": "No rooms with this status",
+        "description": "Choose a different status or show all rooms."
+      },
+      "announce": {
+        "updated": "Room {{number}} is now {{status}}.",
+        "failed": "Room {{number}} could not be saved. The status stays {{status}}."
+      }
     }
   },
   "invoices": {

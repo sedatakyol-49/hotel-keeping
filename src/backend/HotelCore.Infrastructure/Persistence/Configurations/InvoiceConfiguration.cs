@@ -43,9 +43,19 @@ public sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         // GoBD: fatura numarası otel bazında benzersiz ve boşluksuzdur.
         // Taslak faturalar numarasızdır; PostgreSQL'de birden çok boş string olamayacağı için
         // unique index yalnızca numarası atanmış (finalize edilmiş) satırlara uygulanır.
+        //
+        // Bu index KASITLI olarak soft-delete filtresi ALMAZ (diğer tüm ISoftDeletable unique
+        // index'lerinin aksine): fatura numarası, kayıt IsDeleted işaretlenmiş olsa bile 10 yıllık
+        // saklama süresi boyunca tek ve tekrarsız kalmalıdır (GoBD "Einmaligkeit der
+        // Belegnummer"). Filtre eklenirse silinmiş görünen bir faturanın numarası yeniden
+        // verilebilir hâle gelir ve aynı numaraya sahip iki belge denetim izini bozar. Zaten
+        // AppDbContext.EnforceInvoiceImmutability fatura silmeyi tamamen reddettiği için burada
+        // "silinen numaranın yeniden kullanılabilmesi" gibi bir işletme ihtiyacı da yoktur.
         builder.HasIndex(x => new { x.HotelId, x.InvoiceNumber })
             .IsUnique()
-            .HasFilter("\"InvoiceNumber\" <> ''");
+            .HasFilter("\"InvoiceNumber\" <> ''")
+            .ExemptFromSoftDeleteFilter(
+                "GoBD: fatura numarasi silinmis satirlar dahil tum saklama suresi boyunca benzersiz kalmalidir.");
 
         builder.HasIndex(x => new { x.HotelId, x.Status });
         builder.HasIndex(x => new { x.HotelId, x.IssuedAt });

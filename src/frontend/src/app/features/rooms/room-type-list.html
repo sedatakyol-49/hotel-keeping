@@ -1,0 +1,233 @@
+<div class="space-y-6">
+  <hc-page-header
+    titleKey="rooms.types.title"
+    subtitleKey="rooms.types.subtitle"
+    eyebrowKey="rooms.title"
+  >
+    <div slot="actions" class="flex flex-wrap items-center gap-2">
+      <a
+        class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+        routerLink="/rooms"
+      >
+        {{ 'rooms.types.backToRooms' | translate }}
+      </a>
+      <a
+        class="inline-flex touch-target items-center justify-center border border-navy bg-navy px-4 py-2 label-mono text-paper hover:border-ink hover:bg-ink"
+        routerLink="/rooms/types/new"
+        data-testid="room-type-create"
+      >
+        {{ 'rooms.types.actions.create' | translate }}
+      </a>
+    </div>
+  </hc-page-header>
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'rooms.types.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="retry()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else if (store.isEmpty()) {
+    <hc-empty-state
+      titleKey="rooms.types.empty.title"
+      descriptionKey="rooms.types.empty.description"
+    />
+  } @else {
+    @if (deleteErrorKey(); as deleteError) {
+      <p class="border border-danger bg-danger-tint px-4 py-2 text-sm text-danger" role="alert">
+        {{ deleteError | translate }}
+      </p>
+    }
+
+    <!-- Masaustu tablo -->
+    <div class="hidden lg:block">
+      <hc-table-shell captionKey="rooms.types.tableCaption">
+        <thead class="border-b border-rule">
+          <tr>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'rooms.types.columns.code' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'rooms.types.columns.name' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'rooms.types.columns.capacity' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'rooms.types.columns.sizeSqm' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'rooms.types.columns.basePrice' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'rooms.types.columns.roomCount' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 label-mono text-ink-muted">
+              {{ 'rooms.types.columns.amenities' | translate }}
+            </th>
+            <th scope="col" class="px-4 py-2 text-right label-mono text-ink-muted">
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-rule">
+          @for (type of store.options(); track type.id) {
+            <tr [class.opacity-60]="store.deletingId() === type.id">
+              <th scope="row" class="px-4 py-3 text-left numeric font-normal text-ink">
+                {{ type.code }}
+              </th>
+              <td class="px-4 py-3 text-ink">
+                {{ type.name }}
+                @if (type.description) {
+                  <span class="block text-xs text-ink-muted">{{ type.description }}</span>
+                }
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink">{{ type.capacity }}</td>
+              <td class="px-4 py-3 text-right numeric text-ink-muted">{{ type.sizeSqm ?? '—' }}</td>
+              <td class="px-4 py-3 text-right numeric text-ink">
+                {{ type.basePrice | hcMoney: type.currency }}
+              </td>
+              <td class="px-4 py-3 text-right numeric text-ink-muted">{{ type.roomCount }}</td>
+              <td class="px-4 py-3">
+                @if (type.amenities.length > 0) {
+                  <span class="flex flex-wrap gap-1">
+                    @for (amenity of type.amenities; track amenity) {
+                      <span
+                        class="border border-rule px-1.5 py-0.5 font-mono text-xs text-ink-muted"
+                      >
+                        {{ amenity }}
+                      </span>
+                    }
+                  </span>
+                } @else {
+                  <span class="text-ink-faint">—</span>
+                }
+              </td>
+              <td class="px-4 py-3 text-right">
+                @if (pendingDeleteId() === type.id) {
+                  <span class="inline-flex flex-wrap items-center justify-end gap-2">
+                    <span class="label-mono text-danger">
+                      {{
+                        type.roomCount > 0
+                          ? ('rooms.types.delete.blocked' | translate: { count: type.roomCount })
+                          : ('rooms.types.delete.confirmShort' | translate)
+                      }}
+                    </span>
+                    <hc-button
+                      size="sm"
+                      variant="danger"
+                      [busy]="store.deletingId() === type.id"
+                      (pressed)="confirmDelete(type)"
+                    >
+                      {{ 'common.confirm' | translate }}
+                    </hc-button>
+                    <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                      {{ 'common.cancel' | translate }}
+                    </hc-button>
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center justify-end gap-2">
+                    <a
+                      class="inline-flex min-h-9 items-center border border-rule-strong px-3 py-1.5 label-mono text-ink hover:bg-paper-sunken"
+                      [routerLink]="['/rooms/types', type.id, 'edit']"
+                      [attr.aria-label]="
+                        'rooms.types.actions.editAria' | translate: { code: type.code }
+                      "
+                    >
+                      {{ 'common.edit' | translate }}
+                    </a>
+                    <hc-button size="sm" variant="ghost" (pressed)="requestDelete(type.id)">
+                      {{ 'common.delete' | translate }}
+                    </hc-button>
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </hc-table-shell>
+    </div>
+
+    <!-- Mobil kart listesi -->
+    <ul class="divide-y divide-rule border border-rule bg-paper-raised lg:hidden">
+      @for (type of store.options(); track type.id) {
+        <li class="px-4 py-4" [class.opacity-60]="store.deletingId() === type.id">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="numeric text-lg leading-none text-ink">{{ type.code }}</p>
+              <p class="mt-1 text-sm text-ink">{{ type.name }}</p>
+            </div>
+            <p class="numeric text-sm text-ink">{{ type.basePrice | hcMoney: type.currency }}</p>
+          </div>
+
+          <dl class="mt-3 grid grid-cols-3 gap-3">
+            <div>
+              <dt class="eyebrow">{{ 'rooms.types.columns.capacity' | translate }}</dt>
+              <dd class="numeric text-ink">{{ type.capacity }}</dd>
+            </div>
+            <div>
+              <dt class="eyebrow">{{ 'rooms.types.columns.sizeSqm' | translate }}</dt>
+              <dd class="numeric text-ink">{{ type.sizeSqm ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt class="eyebrow">{{ 'rooms.types.columns.roomCount' | translate }}</dt>
+              <dd class="numeric text-ink">{{ type.roomCount }}</dd>
+            </div>
+          </dl>
+
+          @if (type.amenities.length > 0) {
+            <p class="mt-3 flex flex-wrap gap-1">
+              @for (amenity of type.amenities; track amenity) {
+                <span class="border border-rule px-1.5 py-0.5 font-mono text-xs text-ink-muted">
+                  {{ amenity }}
+                </span>
+              }
+            </p>
+          }
+
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            @if (pendingDeleteId() === type.id) {
+              <span class="w-full label-mono text-danger">
+                {{
+                  type.roomCount > 0
+                    ? ('rooms.types.delete.blocked' | translate: { count: type.roomCount })
+                    : ('rooms.types.delete.confirmShort' | translate)
+                }}
+              </span>
+              <hc-button
+                size="sm"
+                variant="danger"
+                [busy]="store.deletingId() === type.id"
+                (pressed)="confirmDelete(type)"
+              >
+                {{ 'common.confirm' | translate }}
+              </hc-button>
+              <hc-button size="sm" variant="ghost" (pressed)="cancelDelete()">
+                {{ 'common.cancel' | translate }}
+              </hc-button>
+            } @else {
+              <a
+                class="inline-flex touch-target items-center border border-rule-strong px-3 py-2 label-mono text-ink"
+                [routerLink]="['/rooms/types', type.id, 'edit']"
+                [attr.aria-label]="'rooms.types.actions.editAria' | translate: { code: type.code }"
+              >
+                {{ 'common.edit' | translate }}
+              </a>
+              <hc-button size="sm" variant="ghost" (pressed)="requestDelete(type.id)">
+                {{ 'common.delete' | translate }}
+              </hc-button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>

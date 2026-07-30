@@ -3,11 +3,14 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { AuthStore } from '../../core/state/auth.store';
-import { NAV_SECTIONS, type NavSection } from '../navigation';
+import { NAV_SECTIONS, filterNavSections, type NavSection } from '../navigation';
 
 /**
  * Ana gezinme listesi. Masaustunde sabit sutun, mobilde cekmece icerigi olarak
  * ayni bilesen kullanilir (tek kaynak, iki yerlesim).
+ *
+ * Modul listesi `layout/navigation.ts` dizisinden gelir — hub kart izgarasi da
+ * ayni diziyi okur, boylece yeni modul iki yerde tanimlanmaz.
  */
 @Component({
   selector: 'hc-sidebar',
@@ -58,9 +61,8 @@ export class Sidebar {
 
   /** Kullanicinin izinlerine gore filtrelenmis bolumler. */
   protected readonly sections = computed<readonly NavSection[]>(() =>
-    NAV_SECTIONS.map((section) => ({
-      ...section,
-      items: section.items.filter((item) => this.authStore.matchesPermissions(item.permissions)),
-    })).filter((section) => section.items.length > 0),
+    filterNavSections(NAV_SECTIONS, (item) =>
+      this.authStore.matchesPermissions(item.permissions),
+    ),
   );
 }

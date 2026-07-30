@@ -1,15 +1,17 @@
 <a class="hc-skip-link" href="#hc-main">{{ 'nav.skipToContent' | translate }}</a>
 
 <div class="min-h-dvh bg-paper lg:flex">
-  <!-- Masaustu kenar cubugu (>= 1024px) -->
-  <div class="hidden w-sidebar shrink-0 border-r border-rule lg:block">
-    <div class="sticky top-0 h-dvh">
-      <hc-sidebar />
+  <!-- Masaustu kenar cubugu (>= 1024px); hub ekraninda hic render edilmez. -->
+  @if (navigationVisible()) {
+    <div class="hidden w-sidebar shrink-0 border-r border-rule lg:block">
+      <div class="sticky top-0 h-dvh">
+        <hc-sidebar />
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Mobil cekmece -->
-  @if (drawerOpen()) {
+  @if (navigationVisible() && drawerOpen()) {
     <div class="fixed inset-0 z-40 lg:hidden">
       <button
         type="button"
@@ -27,7 +29,11 @@
   }
 
   <div class="flex min-w-0 flex-1 flex-col">
-    <hc-topbar [menuOpen]="drawerOpen()" (menuToggled)="toggleDrawer()" />
+    <hc-topbar
+      [menuOpen]="drawerOpen()"
+      [menuVisible]="navigationVisible()"
+      (menuToggled)="toggleDrawer()"
+    />
 
     @if (notifications.hasItems()) {
       <div class="border-b border-rule bg-paper-raised" role="status" aria-live="polite">

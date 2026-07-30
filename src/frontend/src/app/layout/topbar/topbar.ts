@@ -18,16 +18,18 @@ import { UserMenu } from '../user-menu/user-menu';
     <header
       class="sticky top-0 z-20 flex min-h-topbar items-center gap-3 border-b border-rule bg-paper px-3 sm:px-6"
     >
-      <button
-        type="button"
-        class="flex touch-target items-center justify-center border border-rule label-mono text-ink lg:hidden"
-        [attr.aria-expanded]="menuOpen()"
-        aria-controls="hc-mobile-drawer"
-        [attr.aria-label]="(menuOpen() ? 'nav.closeMenu' : 'nav.openMenu') | translate"
-        (click)="menuToggled.emit()"
-      >
-        <span aria-hidden="true">{{ menuOpen() ? '✕' : '≡' }}</span>
-      </button>
+      @if (menuVisible()) {
+        <button
+          type="button"
+          class="flex touch-target items-center justify-center border border-rule label-mono text-ink lg:hidden"
+          [attr.aria-expanded]="menuOpen()"
+          aria-controls="hc-mobile-drawer"
+          [attr.aria-label]="(menuOpen() ? 'nav.closeMenu' : 'nav.openMenu') | translate"
+          (click)="menuToggled.emit()"
+        >
+          <span aria-hidden="true">{{ menuOpen() ? '✕' : '≡' }}</span>
+        </button>
+      }
 
       <p class="font-serif text-xl leading-none text-ink lg:hidden">
         {{ 'common.appName' | translate }}
@@ -50,5 +52,7 @@ export class Topbar {
   protected readonly currentHotel = inject(CurrentHotelService);
 
   readonly menuOpen = input(false);
+  /** Hub ekraninda gezinme cekmecesi yoktur; menu dugmesi hic render edilmez. */
+  readonly menuVisible = input(true);
   readonly menuToggled = output<void>();
 }

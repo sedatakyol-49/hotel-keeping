@@ -1,0 +1,31 @@
+<Project>
+
+  <!--
+    Test projelerine ozel Central Package Management katmani.
+
+    NEDEN AYRI DOSYA: NuGet, projeden yukari dogru yurudugunde BULDUGU ILK
+    Directory.Packages.props dosyasini kullanir. Bu dosya kok dosyayi (src/backend)
+    Import ederek tum uretim paketi surumlerini aynen devralir ve yalnizca
+    YALNIZCA TESTLERDE kullanilan paketleri ekler. Boylece uretim projelerinin
+    paket grafigi test bagimliliklariyla kirlenmez.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Packages.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <ItemGroup Label="Test — hafif EF Core saglayicisi (handler testleri)">
+    <!--
+      Handler testleri gercek AppDbContext'i Npgsql yerine SQLite (:memory:) uzerinde kosar.
+      Surum, kok dosyada sabitlenen EF Core surumuyle (10.0.10) ayni tutulur; aksi halde
+      CentralPackageTransitivePinningEnabled ile catisir.
+    -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
+    <!--
+      Transitive pin: EF Core 10.0.10'un getirdigi SQLitePCLRaw 2.1.11 icin NU1903
+      (GHSA-2m69-gcr7-jv3q) uyarisi var; CI `-warnaserror` ile kostugu icin uyari hataya
+      donusur. Yamali surume (2.1.12) sabitlenir. Kok dosyadaki
+      CentralPackageTransitivePinningEnabled sayesinde bu PackageVersion transitive
+      bagimliliga da uygulanir.
+    -->
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
+  </ItemGroup>
+
+</Project>

@@ -66,14 +66,102 @@ culture      -> tercih edilen dil
 | PUT | `/hotels/{id}/settings` | `Settings.Manage` |
 | GET/PUT | `/head-office/settings` | `Settings.Manage` (marka adı, varsayılan politikalar) |
 
-### Rooms & Housekeeping
-| Method | Path | İzin |
-|---|---|---|
-| GET | `/room-types` | `Rooms.View` |
-| GET | `/rooms` | `Rooms.View` |
-| GET | `/rooms/board` | `Housekeeping.View` (kat bazlı pano) |
-| PATCH | `/rooms/{id}/housekeeping` | `Housekeeping.Update` |
-| GET | `/occupancy?from=&to=` | `Reservations.View` (doluluk grid'i) |
+### Rooms & Housekeeping — **uygulandı**
+
+| Method | Path | İzin | Not |
+|---|---|---|---|
+| GET | `/room-types` | `Rooms.View` | Düz dizi (oda tipi sayısı az, sayfalama yok) |
+| GET | `/room-types/{id}` | `Rooms.View` | |
+| POST | `/room-types` | `Rooms.Manage` | 201 + `Location` |
+| PUT | `/room-types/{id}` | `Rooms.Manage` | |
+| DELETE | `/room-types/{id}` | `Rooms.Manage` | Soft-delete. Bağlı oda varsa **409** |
+| GET | `/rooms` | `Rooms.View` | Sayfalı + filtreli |
+| GET | `/rooms/{id}` | `Rooms.View` | |
+| POST | `/rooms` | `Rooms.Manage` | 201 + `Location` |
+| PUT | `/rooms/{id}` | `Rooms.Manage` | |
+| DELETE | `/rooms/{id}` | `Rooms.Manage` | Soft-delete. Gelecek rezervasyon varsa **409** |
+| GET | `/rooms/board` | `Housekeeping.View` | Kat bazlı pano — **finansal alan İÇERMEZ** |
+| PATCH | `/rooms/{id}/housekeeping` | `Housekeeping.Update` | |
+
+> **RBAC kritik kuralı** (architecture.md §7): Housekeeping rolü fiyat/ciro görmez. Bu yüzden
+> `basePrice` **yalnızca** `Rooms.View` gerektiren uçlarda döner; `/rooms/board` yanıtında
+> hiçbir para alanı yoktur. Frontend'de gizlemek yeterli değildir — kural backend'de uygulanır.
+
+#### Çeviri davranışı (dinamik içerik)
+`RoomType.name` / `description` çok dillidir (`Translation` tablosu, §4.6). Yanıtlarda
+**`Accept-Language`'e göre çözümlenmiş** metin döner; o dilde çeviri yoksa entity'deki
+varsayılan değere düşer. Yazma uçlarında çeviriler opsiyoneldir:
+```jsonc
+"translations": { "de": { "name": "Doppelzimmer", "description": "..." },
+                  "en": { "name": "Double Room" },
+                  "tr": { "name": "İki Kişilik Oda" } }
+```
+`GET /room-types/{id}` yanıtında düzenleme ekranı için **tüm** çeviriler `translations`
+alanında birlikte döner; liste yanıtında dönmez.
+
+#### Şekiller
+```jsonc
+// RoomTypeResponse
+{ "id":"guid", "code":"DBL", "name":"Doppelzimmer", "description":"...",
+  "basePrice":120.00, "currency":"EUR", "capacity":2, "sizeSqm":24,
+  "amenities":["wifi","minibar","balcony"],     // DB'de virgüllü string, API'de DİZİ
+  "roomCount":12 }
+
+// RoomResponse
+{ "id":"guid", "number":"201", "floor":2,
+  "roomTypeId":"guid", "roomTypeCode":"DBL", "roomTypeName":"Doppelzimmer",
+  "housekeepingStatus":"Dirty",                  // enum ADI (string), sayı değil
+  "isOutOfOrder":false, "note":null }
+
+// GET /rooms → PagedResult<RoomResponse>
+// Filtreler: ?page=1&pageSize=20&roomTypeId=&floor=&housekeepingStatus=&search=
+//   search → oda numarasında contains (case-insensitive)
+//   siralama: floor, sonra number (numerik-dogal siralama)
+
+// GET /rooms/board → finansal alan YOK
+{ "floors": [ { "floor": 2,
+                "rooms": [ { "id":"guid", "number":"201", "roomTypeCode":"DBL",
+                             "housekeepingStatus":"Dirty", "isOutOfOrder":false,
+                             "note":null } ] } ],
+  "summary": { "clean":18, "dirty":5, "inspected":2, "outOfOrder":1, "total":26 } }
+
+// PATCH /rooms/{id}/housekeeping
+{ "status": "Inspected", "note": "Minibar dolduruldu" }   // note opsiyonel; null gonderilirse temizlenir
+// → 200 + RoomResponse
+```
+
+#### Yazma gövdeleri
+```jsonc
+// POST/PUT /room-types
+{ "code":"SUI", "name":"Suite", "description":"Grosse Suite",   // name = varsayilan dil metni (zorunlu)
+  "basePrice":320.50, "capacity":4, "sizeSqm":58,               // sizeSqm TAM SAYI (int?)
+  "amenities":["wifi","minibar"],                               // opsiyonel
+  "translations":{ "de":{...}, "en":{...}, "tr":{...} } }        // opsiyonel; bir alan null -> o ceviri silinir
+
+// POST/PUT /rooms
+{ "number":"201", "floor":2, "roomTypeId":"guid",
+  "housekeepingStatus":"Clean",   // opsiyonel, varsayilan Clean
+  "isOutOfOrder":false,           // opsiyonel; durumla tutarliligi sunucu korur
+  "note":null }                   // opsiyonel
+```
+
+> **Yazma işlemleri aktif otel gerektirir.** Head Office kullanıcısı `X-Hotel-Id` göndermezse
+> konsolide moddadır ve kaydın hangi otele yazılacağı belirsizdir → **400**
+> (`errors: { "X-Hotel-Id": ["Kayıt oluşturmak için aktif otel seçilmelidir..."] }`).
+> Okuma uçlarında konsolide mod geçerlidir.
+
+#### Doğrulama kuralları (400 + `errors`)
+- `code`: zorunlu, 1–10 karakter, otel içinde **unique** → çakışma **409**
+- `number`: zorunlu, 1–10 karakter, otel içinde **unique** → çakışma **409**
+- `basePrice` ≥ 0, `capacity` 1–20, `sizeSqm` > 0 veya null (tam sayı), `floor` −5…99
+- Uzunluk sınırları: `name` ≤ 150, `description` ≤ 1000, `note` ≤ 500
+- **Unique çakışmaları soft-delete edilmiş kayıtları saymaz** — silinen bir oda numarası /
+  oda tipi kodu yeniden kullanılabilir (unique index'ler `NOT IsDeleted` ile filtrelidir)
+- `housekeepingStatus`: `Clean | Dirty | Inspected | OutOfOrder`
+- `isOutOfOrder = true` ↔ `housekeepingStatus = OutOfOrder` **tutarlı tutulur**: durum
+  `OutOfOrder`'a çekilirse `isOutOfOrder` true olur; `OutOfOrder`'dan çıkılırsa false olur
+
+| GET | `/occupancy?from=&to=` | `Reservations.View` (doluluk grid'i — rezervasyon modülüyle gelecek) |
 
 ### Reservations
 | Method | Path | İzin |

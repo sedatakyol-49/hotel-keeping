@@ -10,6 +10,12 @@
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="coverlet.collector" />
+    <!--
+      Handler testleri gercek AppDbContext'i hafif bir saglayici uzerinde kosar (bkz.
+      tests/Directory.Packages.props ve RoomModuleTestHost). Npgsql yerine SQLite secildi:
+      iliskisel bir saglayici oldugu icin LINQ gercekten SQL'e cevrilir.
+    -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="xunit" />
@@ -22,6 +28,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\HotelCore.Application\HotelCore.Application.csproj" />
+    <!--
+      Infrastructure referansi BILINCLI: handler testleri gercek AppDbContext'i (global query
+      filter + soft-delete + audit davranisi dahil) kullanir. Bu, Application katmaninin
+      bagimlilik yonunu DEGISTIRMEZ; LayerDependencyTests hala Application assembly'sinin
+      referanslarini denetler ve orada Infrastructure/Npgsql yoktur.
+    -->
+    <ProjectReference Include="..\..\HotelCore.Infrastructure\HotelCore.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

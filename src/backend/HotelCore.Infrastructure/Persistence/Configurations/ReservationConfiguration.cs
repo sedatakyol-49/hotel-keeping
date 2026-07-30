@@ -37,7 +37,10 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
             .HasForeignKey(x => x.RatePlanId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(x => new { x.HotelId, x.ReservationNumber }).IsUnique();
+        // Rezervasyon numarası otel içinde benzersiz. Rezervasyon GoBD belgesi DEĞİLDİR (fatura
+        // öyledir), bu yüzden silinmiş kayıtlar benzersizlik kapsamı dışında bırakılır; iptal
+        // edilen rezervasyon silinmez, Status = Cancelled ile durur ve numarasını korur.
+        builder.HasIndex(x => new { x.HotelId, x.ReservationNumber }).IsUniqueAmongLiveRows();
         // Müsaitlik/çakışma sorgusunun sıcak yolu: aynı odada tarih aralığı kesişimi.
         builder.HasIndex(x => new { x.HotelId, x.RoomId, x.CheckIn, x.CheckOut });
         // Doluluk grid'i ve günlük operasyon listeleri (arrivals/departures).

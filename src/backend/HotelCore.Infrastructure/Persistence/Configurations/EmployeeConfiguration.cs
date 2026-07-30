@@ -37,7 +37,9 @@ public sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.HasIndex(x => x.HotelId);
         builder.HasIndex(x => new { x.HotelId, x.DepartmentId });
         builder.HasIndex(x => new { x.HotelId, x.LastName });
-        builder.HasIndex(x => new { x.HotelId, x.StaffNumber }).IsUnique();
+        // Personel numarası otel içinde benzersiz; işten çıkan personelin kaydı silindiğinde
+        // numara yeniden verilebilir (numara blokları tükenmesin).
+        builder.HasIndex(x => new { x.HotelId, x.StaffNumber }).IsUniqueAmongLiveRows();
         builder.HasIndex(x => x.UserId);
     }
 }

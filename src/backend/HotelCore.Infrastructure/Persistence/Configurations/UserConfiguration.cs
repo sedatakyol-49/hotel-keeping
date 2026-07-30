@@ -21,8 +21,9 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasForeignKey(x => x.HeadOfficeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // E-posta sistem genelinde benzersizdir (login anahtarı).
-        builder.HasIndex(x => x.Email).IsUnique();
+        // E-posta sistem genelinde benzersizdir (login anahtarı). Silinen kullanıcının e-postası
+        // tekrar kullanılabilir olmalıdır (personel geri döndüğünde yeni hesap açılabilsin).
+        builder.HasIndex(x => x.Email).IsUniqueAmongLiveRows();
         builder.HasIndex(x => x.HeadOfficeId);
     }
 }

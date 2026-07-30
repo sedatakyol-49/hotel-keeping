@@ -1,10 +1,13 @@
 using System.Linq.Expressions;
+using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
 using HotelCore.Domain.Common;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace HotelCore.Infrastructure.Persistence;
 
@@ -13,24 +16,31 @@ namespace HotelCore.Infrastructure.Persistence;
 /// (1) tenant + soft-delete global query filter, (2) denetim alanlarının doldurulması,
 /// (3) GoBD değiştirilemezlik guard'ı.
 /// <para>
-/// <see cref="ICurrentUser"/> ve <see cref="IDateTimeProvider"/> OPSİYONELDİR: migration ve
+/// <see cref="ICurrentUser"/>, <see cref="IDateTimeProvider"/> ve logger OPSİYONELDİR: migration ve
 /// design-time senaryolarında kimlik yoktur. Kimlik yokken tenant filtresi hiçbir satırı
 /// göstermez (HotelId = null, CanAccessAllHotels = false) — yani "güvenli varsayılan" kapalıdır.
+/// </para>
+/// <para>
+/// (4) Benzersizlik ihlali (SQLSTATE 23505) → <see cref="ConflictException"/> çevirisi; böylece
+/// ön kontrolü atlatan yarış durumları 500 değil 409 döner.
 /// </para>
 /// </summary>
 public class AppDbContext : DbContext, IAppDbContext
 {
     private readonly ICurrentUser? _currentUser;
     private readonly IDateTimeProvider? _dateTimeProvider;
+    private readonly ILogger<AppDbContext>? _logger;
 
     public AppDbContext(
         DbContextOptions<AppDbContext> options,
         ICurrentUser? currentUser = null,
-        IDateTimeProvider? dateTimeProvider = null)
+        IDateTimeProvider? dateTimeProvider = null,
+        ILogger<AppDbContext>? logger = null)
         : base(options)
     {
         _currentUser = currentUser;
         _dateTimeProvider = dateTimeProvider;
+        _logger = logger;
     }
 
     /// <summary>Global query filter tarafından okunur — kimlik yoksa null.</summary>
@@ -100,19 +110,82 @@ public class AppDbContext : DbContext, IAppDbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         ApplyGlobalQueryFilters(modelBuilder);
 
+        // Soft-delete filtresi unutulmuş unique index varsa burada patlar (regresyon guard'ı):
+        // filtresiz index, silinmiş satırı görmeyen ön kontrolle birleşince 409 yerine 500 üretir.
+        SoftDeleteIndexValidator.Validate(modelBuilder);
+
         base.OnModelCreating(modelBuilder);
     }
 
     public override int SaveChanges()
     {
         PrepareChanges();
-        return base.SaveChanges();
+
+        try
+        {
+            return base.SaveChanges();
+        }
+        catch (DbUpdateException exception) when (FindUniqueViolation(exception) is { } violation)
+        {
+            throw ToConflictException(violation, exception);
+        }
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         PrepareChanges();
-        return base.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            return await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (DbUpdateException exception) when (FindUniqueViolation(exception) is { } violation)
+        {
+            throw ToConflictException(violation, exception);
+        }
+    }
+
+    /// <summary>
+    /// İstemciye gösterilen genel çakışma mesajı. Hangi kısıtın ihlal edildiği (tablo/index adı)
+    /// <b>sızdırılmaz</b>; kullanıcı dostu mesajı handler'ların ön kontrolü verir. Buraya yalnızca
+    /// ön kontrolü atlatan yarış durumları düşer.
+    /// </summary>
+    private const string UniqueViolationMessage =
+        "Kayit mevcut bir kayitla cakisiyor; girilen degerler benzersiz olmalidir. Lutfen tekrar deneyin.";
+
+    /// <summary>
+    /// PostgreSQL benzersizlik ihlalini (SQLSTATE 23505) arar. Sarmalama derinliği sağlayıcıya göre
+    /// değişebildiği için tüm inner exception zinciri taranır.
+    /// <para>
+    /// <b>Katman notu:</b> Npgsql tipine bağımlılık bilinçli olarak <b>Infrastructure'da</b> tutulur;
+    /// Application katmanı veritabanı sağlayıcısını tanımaz (LayerDependencyTests bunu doğrular).
+    /// </para>
+    /// </summary>
+    private static PostgresException? FindUniqueViolation(Exception exception)
+    {
+        for (var current = exception.InnerException; current is not null; current = current.InnerException)
+        {
+            if (current is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } postgres)
+            {
+                return postgres;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Savunma katmanı: ön kontrol ile INSERT arasındaki yarış durumunda (iki eşzamanlı istek)
+    /// kullanıcı 500 değil <b>409</b> alır. Teşhis için kısıt/tablo adı log'lanır.
+    /// </summary>
+    private ConflictException ToConflictException(PostgresException violation, DbUpdateException exception)
+    {
+        _logger?.UniqueConstraintViolation(
+            violation.ConstraintName ?? "(bilinmiyor)",
+            violation.TableName ?? "(bilinmiyor)",
+            exception);
+
+        return new ConflictException(UniqueViolationMessage, exception);
     }
 
     /// <summary>

@@ -60,6 +60,7 @@
     },
     "dashboard": "Übersicht",
     "rooms": "Zimmer",
+    "roomTypes": "Zimmertypen",
     "reservations": "Reservierungen",
     "housekeeping": "Housekeeping",
     "invoices": "Rechnungen",
@@ -131,26 +132,219 @@
   },
   "dashboard": {
     "title": "Übersicht",
-    "subtitle": "Tageskennzahlen und offene Aufgaben des aktiven Hotels.",
-    "kpi": {
-      "occupancy": "Belegung",
-      "arrivals": "Anreisen",
-      "departures": "Abreisen",
-      "revenue": "Tagesumsatz",
-      "roomsToClean": "Zu reinigende Zimmer",
-      "openInvoices": "Offene Rechnungen"
+    "subtitle": "Alle Bereiche des aktiven Hotels auf einen Blick."
+  },
+  "hub": {
+    "status": {
+      "planned": "In Vorbereitung"
+    },
+    "summary": {
+      "loading": "Zahlen werden geladen …",
+      "unavailable": "Zahlen nicht verfügbar",
+      "rooms": "{{count}} Zimmer",
+      "roomsDirty": "{{count}} Zimmer · {{dirty}} unrein",
+      "roomTypes": "{{count}} Zimmertypen",
+      "housekeeping": "{{count}} offene Aufgaben · {{dirty}} unrein",
+      "housekeepingClear": "Keine offenen Aufgaben"
+    },
+    "cards": {
+      "rooms": {
+        "description": "Zimmerbestand mit Etage, Typ und Reinigungsstatus."
+      },
+      "roomTypes": {
+        "description": "Kategorien, Grundpreise und Ausstattung."
+      },
+      "reservations": {
+        "description": "Belegungsraster, Anreisen und Abreisen."
+      },
+      "housekeeping": {
+        "description": "Reinigungsstatus je Etage — ohne Finanzdaten."
+      },
+      "employees": {
+        "description": "Stammdaten, Abteilungen und Beschäftigungsarten."
+      },
+      "vacations": {
+        "description": "Anträge, Genehmigungen und Restansprüche."
+      },
+      "timeTracking": {
+        "description": "Kommen, Gehen und Pausen erfassen."
+      },
+      "shifts": {
+        "description": "Wochenplanung je Abteilung und Mitarbeiter."
+      },
+      "invoices": {
+        "description": "Entwurf, Festschreibung und Storno."
+      },
+      "reports": {
+        "description": "Umsatz, Belegung, ADR und RevPAR."
+      },
+      "settings": {
+        "description": "Hotelprofil, Steuerprofil und Berechtigungen."
+      }
     },
     "empty": {
-      "title": "Noch keine Kennzahlen",
-      "description": "Sobald die Auswertungs-Endpunkte verfügbar sind, erscheinen hier Belegung, Umsatz und offene Aufgaben."
+      "title": "Keine Bereiche freigegeben",
+      "description": "Ihrem Konto ist derzeit kein Bereich zugeordnet. Bitte wenden Sie sich an die Verwaltung."
     }
   },
   "rooms": {
     "title": "Zimmer",
     "subtitle": "Zimmer, Zimmertypen und Ausstattung des aktiven Hotels verwalten.",
+    "count": "{{count}} Zimmer",
+    "tableCaption": "Liste aller Zimmer mit Nummer, Etage, Zimmertyp und Reinigungsstatus",
+    "columns": {
+      "number": "Nummer",
+      "floor": "Etage",
+      "roomType": "Zimmertyp",
+      "status": "Reinigungsstatus",
+      "note": "Notiz"
+    },
+    "filters": {
+      "legend": "Filter",
+      "search": "Zimmernummer",
+      "searchPlaceholder": "z. B. 201",
+      "floor": "Etage",
+      "allFloors": "Alle Etagen",
+      "roomType": "Zimmertyp",
+      "allTypes": "Alle Zimmertypen",
+      "status": "Reinigungsstatus",
+      "allStatuses": "Alle Status",
+      "apply": "Filter anwenden",
+      "reset": "Filter zurücksetzen"
+    },
+    "actions": {
+      "create": "Zimmer anlegen",
+      "manageTypes": "Zimmertypen",
+      "editAria": "Zimmer {{number}} bearbeiten"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} von {{total}}",
+      "page": "Seite {{page}} von {{pages}}"
+    },
+    "list": {
+      "loadFailed": "Die Zimmerliste konnte nicht geladen werden."
+    },
     "empty": {
       "title": "Noch keine Zimmer erfasst",
       "description": "Hier erscheinen alle Zimmer mit Nummer, Etage, Typ und Reinigungsstatus."
+    },
+    "emptyFiltered": {
+      "title": "Keine Zimmer für diese Auswahl",
+      "description": "Bitte passen Sie die Filter an oder setzen Sie sie zurück."
+    },
+    "delete": {
+      "confirmShort": "Zimmer wirklich löschen?",
+      "conflict": "Das Zimmer kann nicht gelöscht werden, weil künftige Reservierungen bestehen."
+    },
+    "form": {
+      "createTitle": "Zimmer anlegen",
+      "editTitle": "Zimmer bearbeiten",
+      "subtitle": "Nummer, Etage, Zimmertyp und Reinigungsstatus pflegen.",
+      "backToList": "Zur Zimmerliste",
+      "loadFailed": "Das Zimmer konnte nicht geladen werden.",
+      "number": "Zimmernummer",
+      "numberHint": "1 bis {{maxLength}} Zeichen, im Hotel eindeutig.",
+      "floor": "Etage",
+      "floorHint": "Zulässig von {{min}} bis {{max}}.",
+      "roomType": "Zimmertyp",
+      "selectRoomType": "Bitte wählen",
+      "noRoomTypes": "Es ist noch kein Zimmertyp angelegt. Bitte legen Sie zuerst einen Zimmertyp an.",
+      "status": "Reinigungsstatus",
+      "outOfOrderHint": "Der Status „Außer Betrieb“ nimmt das Zimmer automatisch aus dem Verkauf.",
+      "note": "Notiz",
+      "notePlaceholder": "Interner Hinweis für das Housekeeping",
+      "saving": "Wird gespeichert …",
+      "conflict": "Diese Zimmernummer ist im Hotel bereits vergeben.",
+      "validation": {
+        "numberRequired": "Bitte geben Sie eine Zimmernummer ein.",
+        "numberLength": "Die Zimmernummer darf höchstens {{maxLength}} Zeichen lang sein.",
+        "numberConflict": "Diese Zimmernummer ist bereits vergeben.",
+        "floorRequired": "Bitte geben Sie eine Etage ein.",
+        "floorFormat": "Bitte geben Sie eine ganze Zahl ein.",
+        "floorRange": "Die Etage muss zwischen {{min}} und {{max}} liegen.",
+        "roomTypeIdRequired": "Bitte wählen Sie einen Zimmertyp.",
+        "housekeepingStatusRequired": "Bitte wählen Sie einen Reinigungsstatus.",
+        "noteLength": "Die Notiz darf höchstens {{noteMaxLength}} Zeichen lang sein."
+      }
+    },
+    "housekeeping": {
+      "status": {
+        "clean": "Rein",
+        "dirty": "Unrein",
+        "inspected": "Kontrolliert",
+        "outOfOrder": "Außer Betrieb"
+      }
+    },
+    "types": {
+      "title": "Zimmertypen",
+      "subtitle": "Kategorien mit Grundpreis, Belegung und Ausstattung pflegen.",
+      "backToRooms": "Zu den Zimmern",
+      "tableCaption": "Liste der Zimmertypen mit Code, Bezeichnung, Belegung und Grundpreis",
+      "loadFailed": "Die Zimmertypen konnten nicht geladen werden.",
+      "columns": {
+        "code": "Code",
+        "name": "Bezeichnung",
+        "capacity": "Belegung",
+        "sizeSqm": "Fläche (m²)",
+        "basePrice": "Grundpreis",
+        "roomCount": "Zimmer",
+        "amenities": "Ausstattung"
+      },
+      "actions": {
+        "create": "Zimmertyp anlegen",
+        "editAria": "Zimmertyp {{code}} bearbeiten"
+      },
+      "empty": {
+        "title": "Noch keine Zimmertypen",
+        "description": "Zimmer werden immer einem Zimmertyp zugeordnet. Legen Sie zuerst einen Typ an."
+      },
+      "delete": {
+        "confirmShort": "Zimmertyp wirklich löschen?",
+        "blocked": "Achtung: {{count}} Zimmer verwenden diesen Typ.",
+        "conflict": "Der Zimmertyp kann nicht gelöscht werden, weil ihm noch Zimmer zugeordnet sind."
+      },
+      "form": {
+        "createTitle": "Zimmertyp anlegen",
+        "editTitle": "Zimmertyp bearbeiten",
+        "subtitle": "Bezeichnung je Sprache, Grundpreis, Belegung und Ausstattung.",
+        "backToList": "Zur Typenliste",
+        "loadFailed": "Der Zimmertyp konnte nicht geladen werden.",
+        "translations": "Bezeichnung je Sprache",
+        "languageTabs": "Sprache für Bezeichnung und Beschreibung wählen",
+        "primaryLanguage": "Primärsprache",
+        "fallbackHint": "Fehlt diese Übersetzung, wird die deutsche Bezeichnung angezeigt.",
+        "name": "Bezeichnung",
+        "namePlaceholder": "z. B. Doppelzimmer",
+        "description": "Beschreibung",
+        "code": "Code",
+        "codeHint": "1 bis {{maxLength}} Zeichen, im Hotel eindeutig.",
+        "basePrice": "Grundpreis",
+        "basePriceHint": "Preis je Nacht.",
+        "capacity": "Belegung (Personen)",
+        "sizeSqm": "Fläche (m²)",
+        "amenities": "Ausstattung",
+        "amenitiesPlaceholder": "wifi, minibar, balcony",
+        "amenitiesHint": "Mehrere Merkmale mit Komma trennen.",
+        "saving": "Wird gespeichert …",
+        "conflict": "Dieser Code ist im Hotel bereits vergeben."
+      },
+      "validation": {
+        "codeRequired": "Bitte geben Sie einen Code ein.",
+        "codeLength": "Der Code darf höchstens {{maxLength}} Zeichen lang sein.",
+        "codeConflict": "Dieser Code ist bereits vergeben.",
+        "nameRequired": "Bitte geben Sie eine Bezeichnung ein.",
+        "basePriceRequired": "Bitte geben Sie einen Grundpreis ein.",
+        "basePriceFormat": "Bitte geben Sie einen gültigen Betrag ein.",
+        "basePriceRange": "Der Grundpreis darf nicht negativ sein.",
+        "capacityRequired": "Bitte geben Sie die Belegung ein.",
+        "capacityFormat": "Bitte geben Sie eine ganze Zahl ein.",
+        "capacityRange": "Die Belegung muss zwischen {{capacityMin}} und {{capacityMax}} liegen.",
+        "sizeSqmFormat": "Bitte geben Sie eine gültige Zahl ein.",
+        "sizeSqmRange": "Die Fläche muss größer als 0 sein.",
+        "nameLength": "Die Bezeichnung darf höchstens {{nameMaxLength}} Zeichen lang sein.",
+        "descriptionLength": "Die Beschreibung darf höchstens {{descriptionMaxLength}} Zeichen lang sein.",
+        "amenitiesLimit": "Höchstens {{amenityMaxCount}} Merkmale, je Merkmal höchstens {{amenityMaxLength}} Zeichen."
+      }
     }
   },
   "reservations": {
@@ -167,6 +361,29 @@
     "empty": {
       "title": "Keine offenen Reinigungsaufgaben",
       "description": "Zimmer wechseln beim Check-out automatisch auf „Unrein“ und erscheinen dann in dieser Liste."
+    },
+    "board": {
+      "filterLabel": "Nach Reinigungsstatus filtern",
+      "allRooms": "Alle Zimmer",
+      "showAll": "Alle Zimmer anzeigen",
+      "floor": "Etage {{floor}}",
+      "roomCount": "{{count}} Zimmer",
+      "note": "Notiz",
+      "noNote": "Keine Notiz",
+      "notePlaceholder": "z. B. Minibar aufgefüllt",
+      "editNote": "Notiz",
+      "editNoteAria": "Notiz für Zimmer {{number}} bearbeiten",
+      "changeStatusAria": "Reinigungsstatus für Zimmer {{number}} ändern",
+      "loadFailed": "Die Etagenübersicht konnte nicht geladen werden.",
+      "updateFailed": "Der Status wurde nicht gespeichert und auf den vorherigen Wert zurückgesetzt.",
+      "noMatches": {
+        "title": "Keine Zimmer mit diesem Status",
+        "description": "Wählen Sie einen anderen Status oder zeigen Sie alle Zimmer an."
+      },
+      "announce": {
+        "updated": "Zimmer {{number}} ist jetzt {{status}}.",
+        "failed": "Zimmer {{number}} konnte nicht gespeichert werden. Der Status bleibt {{status}}."
+      }
     }
   },
   "invoices": {

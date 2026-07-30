@@ -1,0 +1,186 @@
+<div class="space-y-6">
+  <hc-page-header
+    [titleKey]="isEdit() ? 'rooms.form.editTitle' : 'rooms.form.createTitle'"
+    subtitleKey="rooms.form.subtitle"
+    eyebrowKey="rooms.title"
+  >
+    <a
+      slot="actions"
+      class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+      routerLink="/rooms"
+    >
+      {{ 'rooms.form.backToList' | translate }}
+    </a>
+  </hc-page-header>
+
+  @if (loading()) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (loadError(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'rooms.form.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="reload()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else {
+    <form
+      class="border border-rule bg-paper-raised"
+      [formGroup]="form"
+      novalidate
+      (ngSubmit)="submit()"
+    >
+      <div class="space-y-5 px-4 py-5 sm:px-6">
+        @if (formErrorKey(); as errorKey) {
+          <p class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger" role="alert">
+            {{ errorKey | translate }}
+          </p>
+        }
+        @if (formErrors().length > 0) {
+          <ul
+            class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
+            role="alert"
+          >
+            @for (message of formErrors(); track message) {
+              <li>{{ message }}</li>
+            }
+          </ul>
+        }
+        @if (roomTypes.options().length === 0 && !roomTypes.loading()) {
+          <p class="border border-brass bg-brass-tint px-3 py-2 text-sm text-brass">
+            {{ 'rooms.form.noRoomTypes' | translate }}
+          </p>
+        }
+
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div>
+            <label class="hc-label" for="room-number">{{ 'rooms.form.number' | translate }}</label>
+            <input
+              id="room-number"
+              class="hc-input mt-1"
+              type="text"
+              formControlName="number"
+              autocomplete="off"
+              spellcheck="false"
+              inputmode="numeric"
+              required
+              [maxlength]="limits.numberMaxLength"
+              [attr.aria-invalid]="errorKeyFor('number') ? 'true' : null"
+              [attr.aria-describedby]="'room-number-hint'"
+            />
+            <p id="room-number-hint" class="mt-1 text-xs text-ink-faint">
+              {{ 'rooms.form.numberHint' | translate: validationParams }}
+            </p>
+            @if (errorKeyFor('number'); as errorKey) {
+              <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+            }
+            @for (message of serverMessagesFor('number'); track message) {
+              <p class="mt-1 text-xs text-danger">{{ message }}</p>
+            }
+          </div>
+
+          <div>
+            <label class="hc-label" for="room-floor">{{ 'rooms.form.floor' | translate }}</label>
+            <input
+              id="room-floor"
+              class="hc-input mt-1"
+              type="number"
+              formControlName="floor"
+              inputmode="numeric"
+              step="1"
+              required
+              [min]="limits.floorMin"
+              [max]="limits.floorMax"
+              [attr.aria-invalid]="errorKeyFor('floor') ? 'true' : null"
+              [attr.aria-describedby]="'room-floor-hint'"
+            />
+            <p id="room-floor-hint" class="mt-1 text-xs text-ink-faint">
+              {{ 'rooms.form.floorHint' | translate: validationParams }}
+            </p>
+            @if (errorKeyFor('floor'); as errorKey) {
+              <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+            }
+            @for (message of serverMessagesFor('floor'); track message) {
+              <p class="mt-1 text-xs text-danger">{{ message }}</p>
+            }
+          </div>
+
+          <div>
+            <label class="hc-label" for="room-type">{{ 'rooms.form.roomType' | translate }}</label>
+            <select
+              id="room-type"
+              class="hc-input mt-1"
+              formControlName="roomTypeId"
+              required
+              [attr.aria-invalid]="errorKeyFor('roomTypeId') ? 'true' : null"
+            >
+              <option value="">{{ 'rooms.form.selectRoomType' | translate }}</option>
+              @for (type of roomTypes.options(); track type.id) {
+                <option [value]="type.id">{{ type.code }} · {{ type.name }}</option>
+              }
+            </select>
+            @if (errorKeyFor('roomTypeId'); as errorKey) {
+              <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+            }
+            @for (message of serverMessagesFor('roomTypeId'); track message) {
+              <p class="mt-1 text-xs text-danger">{{ message }}</p>
+            }
+          </div>
+
+          <div>
+            <label class="hc-label" for="room-status">{{ 'rooms.form.status' | translate }}</label>
+            <select
+              id="room-status"
+              class="hc-input mt-1"
+              formControlName="housekeepingStatus"
+              required
+              [attr.aria-describedby]="'room-status-hint'"
+            >
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ statusLabelKeys[status] | translate }}</option>
+              }
+            </select>
+            <p id="room-status-hint" class="mt-1 text-xs text-ink-faint">
+              {{ 'rooms.form.outOfOrderHint' | translate }}
+            </p>
+            @for (message of serverMessagesFor('housekeepingStatus'); track message) {
+              <p class="mt-1 text-xs text-danger">{{ message }}</p>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label class="hc-label" for="room-note">{{ 'rooms.form.note' | translate }}</label>
+          <textarea
+            id="room-note"
+            class="hc-input mt-1"
+            rows="3"
+            formControlName="note"
+            [maxlength]="limits.noteMaxLength"
+            [attr.aria-invalid]="errorKeyFor('note') ? 'true' : null"
+            [placeholder]="'rooms.form.notePlaceholder' | translate"
+          ></textarea>
+          @if (errorKeyFor('note'); as errorKey) {
+            <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+          }
+          @for (message of serverMessagesFor('note'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3 sm:px-6">
+        <hc-button type="submit" [busy]="saving()" [disabled]="roomTypes.options().length === 0">
+          {{ (saving() ? 'rooms.form.saving' : 'common.save') | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="cancel()">
+          {{ 'common.cancel' | translate }}
+        </hc-button>
+      </div>
+    </form>
+  }
+</div>

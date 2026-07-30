@@ -44,6 +44,39 @@ public static class SwaggerConfiguration
         });
 
         options.OperationFilter<HotelHeaderOperationFilter>();
+        options.OperationFilter<CamelCaseQueryParameterFilter>();
+    }
+
+    /// <summary>
+    /// Sorgu parametrelerini sözleşmedeki gibi camelCase adlarla dokümante eder
+    /// (<c>?page=1&amp;pageSize=20</c>). ApiExplorer adları C# property adlarından (PascalCase)
+    /// türetir; model binding büyük/küçük harf duyarsız olduğu için iki biçim de bağlanır,
+    /// ancak üretilen frontend client'ın sözleşmeyle aynı sorgu dizesini kurması gerekir.
+    /// Yalnızca query parametreleri değişir: route şablonundaki adlar ve header'lar korunur.
+    /// </summary>
+    private sealed class CamelCaseQueryParameterFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            ArgumentNullException.ThrowIfNull(operation);
+
+            if (operation.Parameters is null)
+            {
+                return;
+            }
+
+            // Microsoft.OpenApi 2.x'te koleksiyon IOpenApiParameter tutar ve arayüzdeki Name
+            // salt-okunurdur; ad yalnızca somut OpenApiParameter üzerinden değiştirilebilir.
+            foreach (var parameter in operation.Parameters)
+            {
+                if (parameter is OpenApiParameter { In: ParameterLocation.Query } queryParameter
+                    && !string.IsNullOrEmpty(queryParameter.Name))
+                {
+                    queryParameter.Name =
+                        char.ToLowerInvariant(queryParameter.Name[0]) + queryParameter.Name[1..];
+                }
+            }
+        }
     }
 
     /// <summary>

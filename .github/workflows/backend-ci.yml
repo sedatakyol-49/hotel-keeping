@@ -82,7 +82,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('src/backend/Directory.Packages.props', 'src/backend/**/*.csproj', 'src/backend/dotnet-tools.json') }}
+          # tests/Directory.Packages.props: test projelerine ozel CPM katmani (kok dosyayi
+          # Import eder, yalnizca test paketlerini ekler) — hash'e dahil edilmeli.
+          key: ${{ runner.os }}-nuget-${{ hashFiles('src/backend/Directory.Packages.props', 'src/backend/tests/Directory.Packages.props', 'src/backend/**/*.csproj', 'src/backend/dotnet-tools.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
@@ -144,9 +146,14 @@ jobs:
       # Integration testler: ConnectionStrings__Default tanimliysa test fixture'i service
       # container'i kullanir (Testcontainers'a dusmez). Yerelde bu degisken yoksa
       # Testcontainers ile Docker'da PostgreSQL ayaga kalkar; Docker da yoksa testler SKIP edilir.
-      - name: Integration tests — API
+      #
+      # HOTELCORE_REQUIRE_POSTGRES=true: CI'da atlamaya IZIN YOK. Baglanti dizesi yapilandirmadan
+      # duserse PostgresAvailabilityTests kirilir; aksi halde tum integration kapsami sessizce
+      # "skipped" olur ve is akisi yanlislikla yesil kalirdi.
+      - name: Integration tests — API (RBAC, tenant izolasyonu, oda modulu)
         env:
           ConnectionStrings__Default: ${{ env.CI_CONNECTION_STRING }}
+          HOTELCORE_REQUIRE_POSTGRES: 'true'
         run: |
           dotnet test tests/HotelCore.Api.IntegrationTests/HotelCore.Api.IntegrationTests.csproj \
             --configuration $BUILD_CONFIGURATION --no-build \

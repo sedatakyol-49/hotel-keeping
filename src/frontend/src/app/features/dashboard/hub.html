@@ -1,0 +1,107 @@
+<div class="space-y-8">
+  <hc-page-header
+    titleKey="dashboard.title"
+    subtitleKey="dashboard.subtitle"
+    eyebrowKey="nav.section.overview"
+  >
+    <p slot="actions" class="label-mono text-ink-muted">
+      {{ currentHotel.hotel()?.name ?? ('hotel.allHotels' | translate) }}
+    </p>
+    <hc-button
+      slot="actions"
+      variant="secondary"
+      size="sm"
+      [busy]="hub.loading()"
+      data-testid="hub-refresh"
+      (pressed)="refresh()"
+    >
+      {{ 'common.refresh' | translate }}
+    </hc-button>
+  </hc-page-header>
+
+  @for (group of groups(); track group.headingId) {
+    <section
+      class="space-y-3"
+      data-testid="hub-section"
+      [attr.data-section]="group.labelKey"
+      [attr.aria-labelledby]="group.headingId"
+    >
+      <h2 [id]="group.headingId" class="eyebrow border-b border-rule pb-2">
+        {{ group.labelKey | translate }}
+      </h2>
+
+      <ul
+        class="grid grid-cols-1 gap-px border border-rule bg-rule sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+      >
+        @for (card of group.cards; track card.path) {
+          <li
+            class="hc-hub-card relative flex min-h-40 flex-col px-4 py-4"
+            [class.bg-paper-raised]="!card.planned"
+            [class.bg-paper]="card.planned"
+            data-testid="hub-card"
+            [attr.data-path]="card.path"
+            [attr.data-planned]="card.planned"
+          >
+            <p class="eyebrow">{{ group.labelKey | translate }}</p>
+
+            <h3
+              class="mt-1 font-serif text-2xl leading-tight"
+              [class.text-ink]="!card.planned"
+              [class.text-ink-muted]="card.planned"
+            >
+              <a
+                class="hc-hub-card__link"
+                data-testid="hub-card-link"
+                [routerLink]="card.path"
+                [attr.aria-describedby]="card.describedBy"
+              >
+                {{ card.labelKey | translate }}
+              </a>
+            </h3>
+
+            <p
+              [id]="card.descriptionId"
+              class="mt-2 text-sm"
+              [class.text-ink-muted]="!card.planned"
+              [class.text-ink-faint]="card.planned"
+            >
+              {{ card.descriptionKey | translate }}
+            </p>
+
+            <!-- Ince cetvel + canli ozet satiri; kartlarin alt hizasi ortaktir. -->
+            <div class="mt-auto flex items-baseline justify-between gap-3 border-t border-rule pt-2">
+              <div [id]="card.metaId" class="min-w-0" data-testid="hub-summary">
+                @if (card.planned) {
+                  <p class="label-mono text-brass">{{ 'hub.status.planned' | translate }}</p>
+                } @else if (summaryOf(card); as summary) {
+                  @switch (summary.state) {
+                    @case ('loading') {
+                      <p class="flex items-center gap-2">
+                        <span class="hc-hub-skeleton" aria-hidden="true"></span>
+                        <span class="sr-only">{{ 'hub.summary.loading' | translate }}</span>
+                      </p>
+                    }
+                    @case ('error') {
+                      <p class="label-mono text-danger">
+                        <span aria-hidden="true">!&nbsp;</span>
+                        {{ 'hub.summary.unavailable' | translate }}
+                      </p>
+                    }
+                    @default {
+                      <p class="numeric text-sm text-ink">
+                        {{ summary.textKey | translate: summary.params }}
+                      </p>
+                    }
+                  }
+                }
+              </div>
+              <span class="label-mono text-ink-faint" aria-hidden="true">→</span>
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+  } @empty {
+    <hc-empty-state titleKey="hub.empty.title" descriptionKey="hub.empty.description" />
+  }
+</div>

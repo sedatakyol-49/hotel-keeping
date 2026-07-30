@@ -1,0 +1,319 @@
+<div class="space-y-6">
+  <hc-page-header
+    [titleKey]="isEdit() ? 'rooms.types.form.editTitle' : 'rooms.types.form.createTitle'"
+    subtitleKey="rooms.types.form.subtitle"
+    eyebrowKey="rooms.types.title"
+  >
+    <a
+      slot="actions"
+      class="inline-flex touch-target items-center justify-center border border-rule-strong px-4 py-2 label-mono text-ink hover:bg-paper-sunken"
+      routerLink="/rooms/types"
+    >
+      {{ 'rooms.types.form.backToList' | translate }}
+    </a>
+  </hc-page-header>
+
+  @if (loading()) {
+    <div class="border border-rule bg-paper-raised px-4 py-8">
+      <hc-spinner labelKey="common.loading" [showLabel]="true" />
+    </div>
+  } @else if (loadError(); as error) {
+    <div class="border border-danger bg-danger-tint px-4 py-6" role="alert">
+      <p class="label-mono text-danger">{{ 'rooms.types.form.loadFailed' | translate }}</p>
+      <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+      <div class="mt-4">
+        <hc-button variant="secondary" (pressed)="reload()">
+          {{ 'common.retry' | translate }}
+        </hc-button>
+      </div>
+    </div>
+  } @else {
+    <form
+      class="border border-rule bg-paper-raised"
+      [formGroup]="form"
+      novalidate
+      (ngSubmit)="submit()"
+    >
+      <div class="space-y-6 px-4 py-5 sm:px-6">
+        @if (formErrorKey(); as errorKey) {
+          <p class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger" role="alert">
+            {{ errorKey | translate }}
+          </p>
+        }
+        @if (formErrors().length > 0) {
+          <ul
+            class="border border-danger bg-danger-tint px-3 py-2 text-sm text-danger"
+            role="alert"
+          >
+            @for (message of formErrors(); track message) {
+              <li>{{ message }}</li>
+            }
+          </ul>
+        }
+
+        <!-- Cok dilli ad/aciklama: DE birincil dil ve varsayilan degerdir -->
+        <fieldset class="border border-rule">
+          <legend class="mx-3 px-1 label-mono text-ink-muted">
+            {{ 'rooms.types.form.translations' | translate }}
+          </legend>
+
+          <div
+            class="flex flex-wrap gap-px border-b border-rule bg-rule"
+            role="group"
+            [attr.aria-label]="'rooms.types.form.languageTabs' | translate"
+          >
+            @for (language of languages; track language) {
+              <button
+                type="button"
+                class="inline-flex touch-target min-w-24 items-center justify-center gap-2 px-4 py-2 label-mono"
+                [class.bg-paper-raised]="activeLanguage() === language"
+                [class.text-ink]="activeLanguage() === language"
+                [class.bg-paper-sunken]="activeLanguage() !== language"
+                [class.text-ink-muted]="activeLanguage() !== language"
+                [attr.aria-pressed]="activeLanguage() === language"
+                (click)="activeLanguage.set(language)"
+              >
+                {{ 'language.' + language | translate }}
+                <span class="numeric text-ink-faint" aria-hidden="true">
+                  {{ hasTranslation(language) ? '•' : '–' }}
+                </span>
+                @if (language === defaultLanguage) {
+                  <span class="sr-only">{{ 'rooms.types.form.primaryLanguage' | translate }}</span>
+                }
+              </button>
+            }
+          </div>
+
+          <div class="space-y-5 px-4 py-4" formGroupName="translations">
+            @for (language of languages; track language) {
+              @if (activeLanguage() === language) {
+                <div class="space-y-5" [formGroupName]="language">
+                  <div>
+                    <label class="hc-label" [for]="'room-type-name-' + language">
+                      {{ 'rooms.types.form.name' | translate }}
+                      @if (language === defaultLanguage) {
+                        <span class="text-danger" aria-hidden="true">*</span>
+                      }
+                    </label>
+                    <input
+                      [id]="'room-type-name-' + language"
+                      class="hc-input mt-1"
+                      type="text"
+                      formControlName="name"
+                      autocomplete="off"
+                      [maxlength]="limits.nameMaxLength"
+                      [attr.aria-invalid]="
+                        errorKeyFor('translations.' + language + '.name', 'name') ? 'true' : null
+                      "
+                      [placeholder]="'rooms.types.form.namePlaceholder' | translate"
+                    />
+                    @if (errorKeyFor('translations.' + language + '.name', 'name'); as errorKey) {
+                      <p class="mt-1 text-xs text-danger">
+                        {{ errorKey | translate: validationParams }}
+                      </p>
+                    }
+                    @for (
+                      message of serverMessagesFor('translations.' + language + '.name');
+                      track message
+                    ) {
+                      <p class="mt-1 text-xs text-danger">{{ message }}</p>
+                    }
+                  </div>
+
+                  <div>
+                    <label class="hc-label" [for]="'room-type-description-' + language">
+                      {{ 'rooms.types.form.description' | translate }}
+                    </label>
+                    <textarea
+                      [id]="'room-type-description-' + language"
+                      class="hc-input mt-1"
+                      rows="3"
+                      formControlName="description"
+                      [maxlength]="limits.descriptionMaxLength"
+                      [attr.aria-invalid]="
+                        errorKeyFor('translations.' + language + '.description', 'description')
+                          ? 'true'
+                          : null
+                      "
+                    ></textarea>
+                    @if (
+                      errorKeyFor('translations.' + language + '.description', 'description');
+                      as errorKey
+                    ) {
+                      <p class="mt-1 text-xs text-danger">
+                        {{ errorKey | translate: validationParams }}
+                      </p>
+                    }
+                    @for (
+                      message of serverMessagesFor('translations.' + language + '.description');
+                      track message
+                    ) {
+                      <p class="mt-1 text-xs text-danger">{{ message }}</p>
+                    }
+                  </div>
+
+                  @if (language !== defaultLanguage) {
+                    <p class="text-xs text-ink-faint">
+                      {{ 'rooms.types.form.fallbackHint' | translate }}
+                    </p>
+                  }
+                </div>
+              }
+            }
+          </div>
+        </fieldset>
+
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div>
+            <label class="hc-label" for="room-type-code">
+              {{ 'rooms.types.form.code' | translate }}
+            </label>
+            <input
+              id="room-type-code"
+              class="hc-input mt-1"
+              type="text"
+              formControlName="code"
+              autocomplete="off"
+              spellcheck="false"
+              required
+              [maxlength]="limits.codeMaxLength"
+              [attr.aria-invalid]="errorKeyFor('code', 'code') ? 'true' : null"
+              [attr.aria-describedby]="'room-type-code-hint'"
+            />
+            <p id="room-type-code-hint" class="mt-1 text-xs text-ink-faint">
+              {{ 'rooms.types.form.codeHint' | translate: validationParams }}
+            </p>
+            @if (errorKeyFor('code', 'code'); as errorKey) {
+              <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+            }
+            @for (message of serverMessagesFor('code'); track message) {
+              <p class="mt-1 text-xs text-danger">{{ message }}</p>
+            }
+          </div>
+
+          <div>
+            <label class="hc-label" for="room-type-base-price">
+              {{ 'rooms.types.form.basePrice' | translate }}
+            </label>
+            <input
+              id="room-type-base-price"
+              class="hc-input mt-1"
+              type="text"
+              formControlName="basePrice"
+              autocomplete="off"
+              inputmode="decimal"
+              required
+              [attr.aria-invalid]="errorKeyFor('basePrice', 'basePrice') ? 'true' : null"
+              [attr.aria-describedby]="'room-type-base-price-hint'"
+            />
+            <p id="room-type-base-price-hint" class="mt-1 text-xs text-ink-faint">
+              {{ 'rooms.types.form.basePriceHint' | translate }}
+              @if (pricePreview() !== null) {
+                <span class="numeric text-ink-muted">
+                  · {{ pricePreview() | hcMoney: currency() }}
+                </span>
+              }
+            </p>
+            @if (errorKeyFor('basePrice', 'basePrice'); as errorKey) {
+              <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+            }
+            @for (message of serverMessagesFor('basePrice'); track message) {
+              <p class="mt-1 text-xs text-danger">{{ message }}</p>
+            }
+          </div>
+
+          <div>
+            <label class="hc-label" for="room-type-capacity">
+              {{ 'rooms.types.form.capacity' | translate }}
+            </label>
+            <input
+              id="room-type-capacity"
+              class="hc-input mt-1"
+              type="number"
+              formControlName="capacity"
+              inputmode="numeric"
+              step="1"
+              required
+              [min]="limits.capacityMin"
+              [max]="limits.capacityMax"
+              [attr.aria-invalid]="errorKeyFor('capacity', 'capacity') ? 'true' : null"
+            />
+            @if (errorKeyFor('capacity', 'capacity'); as errorKey) {
+              <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+            }
+            @for (message of serverMessagesFor('capacity'); track message) {
+              <p class="mt-1 text-xs text-danger">{{ message }}</p>
+            }
+          </div>
+
+          <div>
+            <label class="hc-label" for="room-type-size">
+              {{ 'rooms.types.form.sizeSqm' | translate }}
+              <span class="text-ink-faint">({{ 'common.optional' | translate }})</span>
+            </label>
+            <input
+              id="room-type-size"
+              class="hc-input mt-1"
+              type="number"
+              formControlName="sizeSqm"
+              autocomplete="off"
+              inputmode="numeric"
+              step="1"
+              [min]="limits.sizeSqmMin"
+              [attr.aria-invalid]="errorKeyFor('sizeSqm', 'sizeSqm') ? 'true' : null"
+            />
+            @if (errorKeyFor('sizeSqm', 'sizeSqm'); as errorKey) {
+              <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+            }
+            @for (message of serverMessagesFor('sizeSqm'); track message) {
+              <p class="mt-1 text-xs text-danger">{{ message }}</p>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label class="hc-label" for="room-type-amenities">
+            {{ 'rooms.types.form.amenities' | translate }}
+          </label>
+          <input
+            id="room-type-amenities"
+            class="hc-input mt-1"
+            type="text"
+            formControlName="amenities"
+            autocomplete="off"
+            [attr.aria-invalid]="errorKeyFor('amenities', 'amenities') ? 'true' : null"
+            [attr.aria-describedby]="'room-type-amenities-hint'"
+            [placeholder]="'rooms.types.form.amenitiesPlaceholder' | translate"
+          />
+          <p id="room-type-amenities-hint" class="mt-1 text-xs text-ink-faint">
+            {{ 'rooms.types.form.amenitiesHint' | translate }}
+          </p>
+          @if (errorKeyFor('amenities', 'amenities'); as errorKey) {
+            <p class="mt-1 text-xs text-danger">{{ errorKey | translate: validationParams }}</p>
+          }
+          @if (amenityPreview().length > 0) {
+            <p class="mt-2 flex flex-wrap gap-1">
+              @for (amenity of amenityPreview(); track amenity) {
+                <span class="border border-rule px-1.5 py-0.5 font-mono text-xs text-ink-muted">
+                  {{ amenity }}
+                </span>
+              }
+            </p>
+          }
+          @for (message of serverMessagesFor('amenities'); track message) {
+            <p class="mt-1 text-xs text-danger">{{ message }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 border-t border-rule px-4 py-3 sm:px-6">
+        <hc-button type="submit" [busy]="saving()">
+          {{ (saving() ? 'rooms.types.form.saving' : 'common.save') | translate }}
+        </hc-button>
+        <hc-button variant="secondary" (pressed)="cancel()">
+          {{ 'common.cancel' | translate }}
+        </hc-button>
+      </div>
+    </form>
+  }
+</div>

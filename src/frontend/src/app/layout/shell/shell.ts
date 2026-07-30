@@ -5,6 +5,7 @@ import { filter } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { NotificationStore } from '../../core/state/notification.store';
+import { shouldHideSidebar } from '../chrome';
 import { LanguagePicker } from '../language-picker/language-picker';
 import { Sidebar } from '../sidebar/sidebar';
 import { Topbar } from '../topbar/topbar';
@@ -12,6 +13,11 @@ import { Topbar } from '../topbar/topbar';
 /**
  * Uygulama kabugu: masaustunde sabit kenar cubugu, mobilde cekmece.
  * Kirilim noktalari 375 / 768 / 1440px icin dogrulanmistir.
+ *
+ * Hub rotasi (`/dashboard`) `HIDE_SIDEBAR` bayragini tasidigi icin orada kenar
+ * cubugu ve mobil menu dugmesi hic render edilmez; bir module girildiginde
+ * kabuk normal duzenine doner. Topbar (marka, otel/dil secici, kullanici
+ * menusu) her iki durumda da yerinde kalir.
  */
 @Component({
   selector: 'hc-shell',
@@ -27,15 +33,22 @@ export class Shell {
   protected readonly notifications = inject(NotificationStore);
 
   protected readonly drawerOpen = signal(false);
+  /** Kenar cubugu ve mobil menu dugmesi gorunur mu (rota `data` bayragindan). */
+  protected readonly navigationVisible = signal(true);
 
   constructor() {
-    // Rota degisiminde mobil cekmece kapanir.
+    this.syncNavigationVisibility();
+
+    // Rota degisiminde mobil cekmece kapanir ve kabuk duzeni yeniden karara baglanir.
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
         takeUntilDestroyed(),
       )
-      .subscribe(() => this.closeDrawer());
+      .subscribe(() => {
+        this.closeDrawer();
+        this.syncNavigationVisibility();
+      });
   }
 
   protected toggleDrawer(): void {
@@ -44,5 +57,13 @@ export class Shell {
 
   protected closeDrawer(): void {
     this.drawerOpen.set(false);
+  }
+
+  private syncNavigationVisibility(): void {
+    const hidden = shouldHideSidebar(this.router.routerState.snapshot.root);
+    this.navigationVisible.set(!hidden);
+    if (hidden) {
+      this.drawerOpen.set(false);
+    }
   }
 }
