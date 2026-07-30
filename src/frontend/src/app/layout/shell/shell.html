@@ -65,8 +65,20 @@
       </div>
     }
 
-    <!-- Kaydirma kabi: ana icerik + altbilgi birlikte kayar. -->
-    <div class="flex min-w-0 flex-1 flex-col overflow-y-auto">
+    <!--
+      Kaydirma kabi: ana icerik + altbilgi birlikte kayar.
+
+      `relative` ZORUNLUDUR — sus degil, hata duzeltmesidir. Tailwind'in `sr-only`
+      yardimcisi `position: absolute` kullanir. Bu kapta konumlandirma baglami
+      olmazsa, sayfa derinlerindeki `sr-only` elemanlarin (tablo `<caption>`'lari,
+      izgara hucre aciklamalari) kapsayici blogu **initial containing block**
+      olur; boylece kabugun `overflow-hidden` kirpmasindan kacar, **belge**
+      yuksekligini buyutur ve pencere kaydirilabilir hale gelir. O anda `position`
+      ile sabitlenen ust cubuk ekrandan cikar. `relative` ile bu elemanlar tekrar
+      bu kabin icinde kalir ve belge hic kaymaz.
+      Regresyon testi: `shell.spec.ts` -> "Shell — kaydirma kabi konumlandirma baglami".
+    -->
+    <div class="relative flex min-w-0 flex-1 flex-col overflow-y-auto">
       <main id="hc-main" class="flex-1 px-3 py-6 sm:px-6 sm:py-8" tabindex="-1">
         <router-outlet />
       </main>

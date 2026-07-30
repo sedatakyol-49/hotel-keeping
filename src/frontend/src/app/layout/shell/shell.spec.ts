@@ -23,6 +23,35 @@ function snapshot(data: Data, child: ActivatedRouteSnapshot | null = null): Acti
 })
 class TestPage {}
 
+/**
+ * Gercek ekranlardaki (`reports`, `shifts`, `occupancy-plan`, ...) `sr-only`
+ * kullanimini temsil eden sayfa: tablo `<caption>`'i ve hucre ici aciklama.
+ */
+@Component({
+  selector: 'hc-test-a11y-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <table>
+      <caption class="sr-only">
+        table caption
+      </caption>
+      <tbody>
+        <tr>
+          <td><span class="sr-only">cell description</span>42</td>
+        </tr>
+      </tbody>
+    </table>
+  `,
+})
+class TestA11yPage {}
+
+/** Konumlandirma baglami (containing block) kuran Tailwind `position` siniflari. */
+const POSITIONING_CLASSES = ['relative', 'absolute', 'fixed', 'sticky'] as const;
+
+function establishesPositioningContext(element: Element): boolean {
+  return POSITIONING_CLASSES.some((className) => element.classList.contains(className));
+}
+
 describe('shouldHideSidebar', () => {
   it('bayrak en derin cocuk rotada olsa bile bulur', () => {
     const tree = snapshot({}, snapshot({}, snapshot({ [HIDE_SIDEBAR]: true })));
@@ -94,5 +123,89 @@ describe('Shell — kabuk duzeni', () => {
     harness.detectChanges();
 
     expect((harness.fixture.nativeElement as HTMLElement).querySelector('hc-sidebar')).toBeNull();
+  });
+});
+
+/**
+ * Regresyon: belge (window) kaydirmasi olusmamalidir.
+ *
+ * Hata tablosu: kabuk cercevesi `h-dvh overflow-hidden`, ana icerik ise ayri bir
+ * `overflow-y-auto` kabinda kayar. Tailwind'in `sr-only` yardimcisi
+ * `position: absolute` kullandigi icin, kaydirma kabinda konumlandirma baglami
+ * yoksa bu elemanlarin kapsayici blogu **initial containing block** olur:
+ * kirpilmazlar, **belge** yuksekligini buyuturler ve pencere kaydirilabilir hale
+ * gelir — bu da `position` ile sabitlenen ust cubugu ekrandan cikarir
+ * (olculdu: /reports 1440x900 -> documentElement.scrollHeight 2756 / clientHeight 900,
+ * window.scrollTo(0, 5000) sonrasi scrollY 1856, hc-topbar top -1856).
+ *
+ * SINIR: birim testler jsdom uzerinde calisir; jsdom yerlesim (layout) hesaplamaz
+ * ve Tailwind CSS'i yuklemez, bu yuzden `scrollHeight` burada olculemez. Bu
+ * nedenle test, hatayi mumkun kilan **yapisal** kosulu dogrular: kirpma cercevesi
+ * ile `sr-only` icerik arasinda mutlaka bir konumlandirma baglami bulunmalidir.
+ * Duzeltmeden sonra ayni olcum: scrollHeight == clientHeight, scrollY 0, topbar top 0.
+ */
+describe('Shell — kaydirma kabi konumlandirma baglami', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTranslateService({ lang: 'de', fallbackLang: 'de' }),
+        provideRouter([
+          {
+            path: '',
+            component: Shell,
+            children: [{ path: 'reports', component: TestA11yPage }],
+          },
+        ]),
+      ],
+    });
+  });
+
+  it('kabuk cercevesi tasmayi kirpar ve ic kap dikeyde kayar', async () => {
+    const harness = await RouterTestingHarness.create('/reports');
+    const element = harness.fixture.nativeElement as HTMLElement;
+
+    const frame = element.querySelector('.overflow-hidden');
+    expect(frame).not.toBeNull();
+    expect(frame?.classList.contains('h-dvh')).toBe(true);
+
+    const scroller = element.querySelector('#hc-main')?.parentElement;
+    expect(scroller).toBeTruthy();
+    expect(scroller?.classList.contains('overflow-y-auto')).toBe(true);
+  });
+
+  it('kaydirma kabi konumlandirma baglami kurar (`relative`)', async () => {
+    const harness = await RouterTestingHarness.create('/reports');
+    const element = harness.fixture.nativeElement as HTMLElement;
+    const scroller = element.querySelector('#hc-main')?.parentElement;
+
+    expect(scroller && establishesPositioningContext(scroller)).toBe(true);
+  });
+
+  it('her `sr-only` eleman ile kirpma cercevesi arasinda konumlandirma baglami vardir', async () => {
+    const harness = await RouterTestingHarness.create('/reports');
+    const element = harness.fixture.nativeElement as HTMLElement;
+    const frame = element.querySelector('.overflow-hidden');
+    const srOnly = Array.from(element.querySelectorAll('.sr-only'));
+
+    expect(frame).not.toBeNull();
+    // Sayfa gercekten `sr-only` iceriyor olmali; aksi halde test bos gecerdi.
+    expect(srOnly.length).toBeGreaterThan(0);
+
+    for (const node of srOnly) {
+      let ancestor: HTMLElement | null = node.parentElement;
+      let anchored = false;
+      while (ancestor !== null && ancestor !== frame) {
+        if (establishesPositioningContext(ancestor)) {
+          anchored = true;
+          break;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      expect(anchored, `sr-only eleman kirpma cercevesine bagli degil: ${node.outerHTML}`).toBe(
+        true,
+      );
+    }
   });
 });
