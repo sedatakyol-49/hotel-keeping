@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using AwesomeAssertions;
 using HotelCore.Api.IntegrationTests.Infrastructure;
+using HotelCore.Application.Common.Models;
 using HotelCore.Application.Features.Availability.Common;
 using HotelCore.Application.Features.Reservations.Common;
 using HotelCore.Domain.Common;
@@ -233,6 +234,78 @@ public sealed class ReservationsHttpContractTests(PostgresFixture fixture)
 
         grid.Rooms.Single(candidate => candidate.RoomId == scenario.OutOfOrderRoomAId)
             .IsOutOfOrder.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// <b>Sayfalama regresyonu:</b> liste, takvim sirasini kurmak icin
+    /// <c>Reservation.Room.Number</c> uzerinden siralar. <c>Room</c> zorunlu bir navigasyon
+    /// oldugu icin EF Core siralamada <c>INNER JOIN</c> uretir ve odanin soft-delete filtresi
+    /// JOIN'e tasinir — yani odasi silinmis rezervasyon <b>satirlarda gorunmez</b>. Sayim ise
+    /// siralama icermedigi icin ayni JOIN'i uretmez ve o rezervasyonu <b>sayardi</b>:
+    /// <c>items.Count &lt; totalCount</c>, arayuzde "1-9 / 10" ve tutarsiz sayfa sayisi.
+    /// <para>
+    /// Test hem tek sayfada (<c>items.Count == totalCount</c>) hem de <c>pageSize=1</c> ile
+    /// sayfalayarak dogrular: <c>totalCount</c>'tan turetilen sayfa sayisi kadar sayfa gercekten
+    /// dolu gelmeli, sonrasi bos olmalidir. Aksi hâlde "Sayfa 1 / 1" derken bos sayfa cikardi.
+    /// </para>
+    /// </summary>
+    [RequiresPostgresFact]
+    public async Task Total_count_matches_returned_items_when_a_room_is_soft_deleted()
+    {
+        await using var scenario = await BookingScenario.StartAsync(fixture);
+        using var client = scenario.CreateClient(
+            [Permissions.ReservationsView, Permissions.RoomsManage]);
+
+        // Odasi silinecek rezervasyon GECMISTE olmalidir: DeleteRoomHandler yalnizca gelecek
+        // tarihli rezervasyonu olan odayi reddeder.
+        await scenario.CreateReservationAsync(
+            scenario.Today.AddDays(-10),
+            scenario.Today.AddDays(-8));
+
+        // Gorunur kalacak iki rezervasyon (baska bir odada, ust uste binmeyen tarihlerde).
+        var start = scenario.Today.AddDays(10);
+        await scenario.CreateReservationAsync(start, start.AddDays(2), roomId: scenario.SecondRoomAId);
+        await scenario.CreateReservationAsync(
+            start.AddDays(2),
+            start.AddDays(4),
+            roomId: scenario.SecondRoomAId);
+
+        using var deleted = await client.DeleteAsync(
+            new Uri($"api/v1/rooms/{scenario.RoomAId}", UriKind.Relative));
+        deleted.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await scenario.FindRoomAsync(scenario.RoomAId))!.IsDeleted
+            .Should().BeTrue("oda soft-delete edilir, satir silinmez");
+
+        var page = await client.GetFromJsonAsync<PagedResult<ReservationResponse>>(ReservationsUri);
+
+        page!.TotalCount.Should().Be(
+            page.Items.Count,
+            "sayim ile liste ayni kumeyi gormek zorundadir");
+        page.TotalCount.Should().Be(2, "odasi silinen rezervasyon her iki tarafta da dusulur");
+        page.Items.Should().NotContain(item => item.RoomId == scenario.RoomAId);
+
+        // pageSize=1: totalCount'tan turetilen sayfa sayisi gercek sayfalarla ortusmeli.
+        const int pageSize = 1;
+        var totalPages = ((page.TotalCount - 1) / pageSize) + 1;
+        totalPages.Should().Be(2);
+
+        for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++)
+        {
+            var slice = await client.GetFromJsonAsync<PagedResult<ReservationResponse>>(
+                new Uri(
+                    $"api/v1/reservations?page={pageNumber}&pageSize={pageSize}",
+                    UriKind.Relative));
+
+            slice!.TotalCount.Should().Be(page.TotalCount, "toplam sayfa degisince degismez");
+            slice.Items.Should().ContainSingle($"sayfa {pageNumber} dolu olmalidir");
+        }
+
+        var beyondLastPage = await client.GetFromJsonAsync<PagedResult<ReservationResponse>>(
+            new Uri(
+                $"api/v1/reservations?page={totalPages + 1}&pageSize={pageSize}",
+                UriKind.Relative));
+
+        beyondLastPage!.Items.Should().BeEmpty("son sayfadan sonrasi bostur");
     }
 
     private static Uri Occupancy(DateOnly from, DateOnly to) =>

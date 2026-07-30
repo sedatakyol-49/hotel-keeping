@@ -166,6 +166,99 @@ public sealed class InvoiceCancellationTests(PostgresFixture fixture)
         releasedLines.Should().BeGreaterThan(0);
     }
 
+    /// <summary>
+    /// <b>En pahali regresyon: kalici gelir kaybi.</b> Kesinlesmis fatura iptal edildiginde
+    /// GoBD geregi bir Stornorechnung uretilir; iptal faturasi orijinalin <c>ReservationId</c>'sini
+    /// tasir ve kendisi de <c>Finalized</c>'dir. "Rezervasyonun iptal edilmemis faturasi var mi?"
+    /// diye soran eski kosul bu yuzden storno'yu <i>acik fatura</i> saniyordu: rezervasyon
+    /// <b>kalici olarak</b> faturalanamaz hâle geliyor, ustelik hatanin kendi metni "duzeltmek
+    /// icin storno olusturun" diyordu.
+    /// <para>
+    /// Yeni fatura, konaklama satiri orijinal belgede kilitli kaldigi icin (kesinlesmis faturanin
+    /// satiri koparilamaz) <c>InvoiceLineComposer</c>'in geri dusus yolundan uretilir; bu yolun
+    /// fiyat kaynagi <c>Reservation.TotalAmount</c>'tir. Bu yuzden yeni faturanin tutari
+    /// orijinalinkine <b>kurusu kurusuna</b> esit olmalidir — aksi hâlde iptal-yeniden kesme
+    /// dongusu her turda para uydurur ya da kaybederdi.
+    /// </para>
+    /// </summary>
+    [RequiresPostgresFact]
+    public async Task Cancelling_a_finalized_invoice_allows_the_reservation_to_be_invoiced_again()
+    {
+        await using var scenario = await BookingScenario.StartAsync(fixture);
+        var reservation = await scenario.CreateReservationAsync(
+            scenario.Today.AddDays(10),
+            scenario.Today.AddDays(12));
+
+        var draft = await scenario.CreateReservationInvoiceAsync(reservation.Id);
+        var original = await scenario.FinalizeInvoiceAsync(draft.Id);
+        original.InvoiceNumber.Should().Be(scenario.InvoiceNumber(1));
+
+        var afterCancel = await scenario.Host.Dispatcher.Send(new CancelInvoiceRequest
+        {
+            Id = original.Id,
+            Reason = "Yanlis misafire kesildi."
+        });
+
+        afterCancel.Status.Should().Be(nameof(InvoiceStatus.Cancelled));
+        afterCancel.CancelledByInvoiceId.Should().NotBeNull("kesinlesmis belge yalnizca storno ile iptal edilir");
+
+        // ASIL IDDIA: storno kesildikten sonra rezervasyon yeniden faturalanabilir.
+        var reissued = await scenario.CreateReservationInvoiceAsync(reservation.Id);
+
+        reissued.Id.Should().NotBe(original.Id);
+        reissued.ReservationId.Should().Be(reservation.Id);
+        reissued.Status.Should().Be(nameof(InvoiceStatus.Draft));
+        reissued.GrossAmount.Should().Be(
+            original.GrossAmount,
+            "yeniden kesilen fatura ayni konaklamayi ayni tutarla belgelemelidir");
+
+        var roomCharges = reissued.LineItems
+            .Where(line => line.Type == nameof(InvoiceLineType.RoomCharge))
+            .ToList();
+
+        roomCharges.Should().ContainSingle("oda ucreti yeni faturada da tam olarak bir kez yer alir");
+        roomCharges[0].LineGross.Should().Be(reservation.TotalAmount);
+        reissued.CityTaxAmount.Should().Be(original.CityTaxAmount, "Kurtaxe yeniden uretilir");
+
+        // Storno zinciri bozulmadi: orijinal hâlâ iptal, yeni fatura bagimsiz bir taslak.
+        (await scenario.FindInvoiceAsync(original.Id))!.Status.Should().Be(InvoiceStatus.Cancelled);
+        (await scenario.FindInvoiceAsync(reissued.Id))!.CancelsInvoiceId.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Storno istisnasinin <b>fazla genis kacmadigini</b> dogrular. Yururlukteki fatura tanimi
+    /// (<c>InvoiceEffectiveness.IsEffective</c>) taslaklari <b>icerir</b>: taslak henuz belge
+    /// olmasa da rezervasyon uzerinde acik bir faturadir ve ikincisi kesilmemelidir. Kesinlesmis
+    /// ama iptal EDILMEMIS fatura da elbette engeller. Bu test olmadan 409 guard'i sessizce
+    /// gevseyip mukerrer belge uretebilirdi.
+    /// </summary>
+    [RequiresPostgresFact]
+    public async Task An_open_draft_still_blocks_a_second_invoice()
+    {
+        await using var scenario = await BookingScenario.StartAsync(fixture);
+        var reservation = await scenario.CreateReservationAsync(
+            scenario.Today.AddDays(10),
+            scenario.Today.AddDays(12));
+
+        var draft = await scenario.CreateReservationInvoiceAsync(reservation.Id);
+        draft.InvoiceNumber.Should().BeNull("taslak numara almaz; yine de acik bir faturadir");
+
+        var whileDraft = async () => await scenario.CreateReservationInvoiceAsync(reservation.Id);
+        await whileDraft.Should().ThrowAsync<ConflictException>();
+
+        await scenario.FinalizeInvoiceAsync(draft.Id);
+
+        var whileFinalized = async () => await scenario.CreateReservationInvoiceAsync(reservation.Id);
+        await whileFinalized.Should().ThrowAsync<ConflictException>();
+
+        // Rezervasyonun tek bir faturasi olusmus olmali: guard hicbir turda delinmedi.
+        var invoiceCount = await scenario.Host.Database.Invoices
+            .Where(invoice => invoice.ReservationId == reservation.Id)
+            .CountAsync();
+
+        invoiceCount.Should().Be(1);
+    }
+
     [RequiresPostgresFact]
     public async Task A_reservation_can_be_invoiced_again_after_the_first_invoice_is_cancelled()
     {
