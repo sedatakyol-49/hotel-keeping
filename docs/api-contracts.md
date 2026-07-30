@@ -398,11 +398,32 @@ mevcut süreyi söyler) · gelecek tarihli clock-in reddedilir.
 **İş kuralları:** `(employeeId, date)` benzersiz — aynı güne ikinci vardiya **409** · çalışan aktif
 otelde olmalı, değilse **404** · ISO hafta (`YYYY-Www`) Pazartesi–Pazar aralığına çevrilir.
 
-### Reports — henüz uygulanmadı
-| Method | Path | İzin |
-|---|---|---|
-| GET | `/reports/revenue?from=&to=` | `Reports.View` (ciro, kanal dağılımı, ADR/RevPAR) |
-| GET | `/reports/occupancy?from=&to=` | `Reports.View` |
+### Raporlama — **uygulandı**
+
+Bu modülün sözleşmesi kendi dosyasındadır: **[api-contracts-reports.md](api-contracts-reports.md)**
+(`GET /reports/occupancy`, `GET /reports/revenue`, her ikisi `Reports.View`).
+
+Bilinmesi gereken tanımlar — **bu modülde asıl zorluk kod değil, tanımların tutarlılığıdır**:
+- **Satılan oda-gece** rezervasyon modülünün çakışma kuralından (`AvailabilityQuery`) türetilir, bu
+  yüzden doluluk raporu ile oda takvimi **asla çelişmez**. `Cancelled`/`NoShow` satılmış sayılmaz.
+- **Servis dışı odalar müsait kapasiteden düşülür** (tadilattaki oda satılabilir envanter değildir),
+  ama `physicalRoomNights`, `outOfOrderRoomNights` ve `availableRoomNights` **üçü de ayrı ayrı**
+  döner — tüketici kendi tanımını kurabilir.
+- **ADR** = oda geliri / satılan oda-gece; ekstralar ve Kurtaxe **girmez**.
+  **RevPAR** = oda geliri / müsait oda-gece. Net ve brüt sürümleri **ayrı alanlardır**.
+- **Ciro kesinleşmiş faturalardan** okunur (`issuedAt != null`), yani muhasebeyle uzlaşır.
+  Taslaklar sayılmaz. Kesinleşip iptal edilen fatura **ve** onun Stornorechnung'u **birlikte**
+  sayılır; ikisi tam sıfır eder — yalnızca storno sayılsaydı rapor hayali negatif ciro gösterirdi.
+- **Kurtaxe gelir değildir** (`cityTaxCollected` ayrı alan, `totalRevenue`'ya ve ADR'ye girmez).
+- Faturalanmamış konaklamalar `unbilledRoomRevenueGross` alanında ayrı durur, hiçbir toplama girmez.
+- Konsolide modda rapor çalışır; `scope` alanı hangi kapsamda hesaplandığını söyler ve `byHotel`
+  kırılımı **her zaman** döner (karışık para biriminde `currency: null` + `hasMixedCurrencies`).
+- Aralık üst sınırı **366 gün** (aşınca 400).
+
+> **Bilinen sınır:** `Room.IsOutOfOrder` tarih aralığı taşımayan **anlık** bir bayraktır; geçmiş
+> dönem raporları bugünkü servis dışı odalara göre hesaplanır. Tarihsel doğruluk için tarih aralıklı
+> bir `RoomBlock` kaydı gerekir (şema değişikliği, bu fazda yapılmadı). Aynı sebeple doluluk oranı
+> **%100'ü aşabilir** ve bilinçli olarak kırpılmaz.
 
 ## Frontend Client Üretimi
 Backend `dotnet run` ile ayaktayken:
