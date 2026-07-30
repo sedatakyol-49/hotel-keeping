@@ -79,7 +79,7 @@ jobs:
       # NuGet paket cache'i. setup-dotnet'in dahili cache'i packages.lock.json ister;
       # projede lock dosyasi olmadigi icin cache anahtari CPM + csproj hash'lerinden uretilir.
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.nuget/packages
           # tests/Directory.Packages.props: test projelerine ozel CPM katmani (kok dosyayi
