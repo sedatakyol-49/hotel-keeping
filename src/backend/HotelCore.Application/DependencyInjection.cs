@@ -1,13 +1,19 @@
 using System.Reflection;
 using FluentValidation;
+using HotelCore.Application.Common.Interfaces;
 using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Common.Messaging.Behaviors;
+using HotelCore.Application.Common.Services;
 using HotelCore.Application.Features.Auth.Common;
+using HotelCore.Application.Features.Availability.Common;
 using HotelCore.Application.Features.Departments.Common;
 using HotelCore.Application.Features.Employees.Common;
+using HotelCore.Application.Features.Guests.Common;
 using HotelCore.Application.Features.HeadOffices.Common;
 using HotelCore.Application.Features.Hotels.Common;
+using HotelCore.Application.Features.RatePlans.Common;
+using HotelCore.Application.Features.Reservations.Common;
 using HotelCore.Application.Features.Rooms.Common;
 using HotelCore.Application.Features.RoomTypes.Common;
 using Mapster;
@@ -63,6 +69,17 @@ public static class DependencyInjection
         // Personel slice'ları: okuma gövdeleri ve paylaşılan benzersizlik kontrolleri.
         services.AddScoped<DepartmentReader>();
         services.AddScoped<EmployeeReader>();
+
+        // Rezervasyon modülü: müsaitlik motoru (iş kuralı olduğu için Application'da uygulanır),
+        // okuma gövdeleri ve rezervasyonun paylaşılan yazma yardımcıları.
+        services.AddScoped<IAvailabilityService, AvailabilityService>();
+        services.AddScoped<AvailabilityReader>();
+        services.AddScoped<GuestReader>();
+        services.AddScoped<RatePlanReader>();
+        services.AddScoped<ReservationReader>();
+        services.AddScoped<ReservationPricingService>();
+        services.AddScoped<ReservationNumberGenerator>();
+        services.AddScoped<ReservationFolioService>();
 
         return services;
     }
