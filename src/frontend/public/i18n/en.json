@@ -1133,9 +1133,140 @@
   "reports": {
     "title": "Reports",
     "subtitle": "Revenue, occupancy, ADR and RevPAR over time.",
-    "empty": {
-      "title": "No reports yet",
-      "description": "Reports can be retrieved per hotel or consolidated across all properties."
+    "range": {
+      "navLabel": "Select reporting period",
+      "from": "From",
+      "to": "To (inclusive)",
+      "quickLabel": "Quick ranges",
+      "quick": {
+        "last7": "Last 7 days",
+        "last30": "Last 30 days",
+        "thisMonth": "This month",
+        "lastMonth": "Previous month"
+      },
+      "dayCount": "Days in range: {{count}}",
+      "inclusiveHint": "The period is closed: the \"to\" day is included and a single day is valid. \"This month\" deliberately ends today — days that have not happened yet would inflate the denominator of occupancy and RevPAR.",
+      "clamped": "The range was shortened to {{max}} days; the server does not allow more. Please split longer periods.",
+      "tooLong": "The range is too long. At most 366 days are allowed."
+    },
+    "scope": {
+      "label": "Reporting scope",
+      "mode": {
+        "hotel": "Single property",
+        "consolidated": "Consolidated"
+      },
+      "hotels": "Hotels: {{count}}",
+      "hotelHint": "All figures refer to the active property.",
+      "consolidatedHint": "No active property selected: the figures are summed across every accessible property. The per-hotel breakdown is in the tables below.",
+      "mixedCurrencies": "The properties use different currencies. The overall amounts are a plain addition of different currencies and are therefore shown without a currency symbol — rely on the per-hotel breakdown."
+    },
+    "kpi": {
+      "occupancyRate": "Occupancy",
+      "occupancyRateHint": "Sold / available room nights",
+      "soldRoomNights": "Sold room nights",
+      "soldRoomNightsHint": "Cancellations and no-shows are not counted",
+      "availableRoomNights": "Available room nights",
+      "availableRoomNightsHint": "Denominator of occupancy and RevPAR",
+      "adrNet": "ADR (net)",
+      "adrNetHint": "Net room revenue / sold room nights",
+      "adrGross": "ADR (gross)",
+      "revParNet": "RevPAR (net)",
+      "revParNetHint": "Net room revenue / available room nights",
+      "revParGross": "RevPAR (gross)",
+      "totalRevenueNet": "Revenue (net)",
+      "totalRevenueNetHint": "Rooms + extras, city tax excluded"
+    },
+    "occupancy": {
+      "title": "Occupancy",
+      "subtitle": "Room nights, capacity and occupancy per day.",
+      "loadFailed": "The occupancy report could not be loaded.",
+      "overCapacity": "Occupancy is above 100%. \"Out of order\" is an undated snapshot flag: a room blocked today may well have been sold in the past. The figure is deliberately not capped.",
+      "empty": {
+        "title": "No capacity in this period",
+        "description": "Neither rooms nor sold nights exist for this period. The report is valid — it is simply empty."
+      }
+    },
+    "capacity": {
+      "physical": "Physical room nights",
+      "physicalHint": "{{rooms}} rooms × days, out-of-order rooms included",
+      "outOfOrder": "Out of order",
+      "outOfOrderHint": "{{rooms}} rooms — not sellable inventory",
+      "available": "Available room nights",
+      "availableHint": "Physical − out of order; occupancy is calculated on this denominator."
+    },
+    "daily": {
+      "caption": "Occupancy per day: sold and available room nights",
+      "columns": {
+        "date": "Day",
+        "sold": "Sold",
+        "available": "Available",
+        "rate": "Occupancy",
+        "bar": "Trend"
+      },
+      "barDecorative": "The bar only repeats the percentage of the same row.",
+      "roundingNote": "Rounding: daily figures are rounded to two decimals, so their sum may differ from the totals by a few cents. The totals are authoritative."
+    },
+    "hotels": {
+      "occupancyCaption": "Occupancy per hotel",
+      "revenueCaption": "Revenue per hotel",
+      "columns": {
+        "hotel": "Hotel"
+      }
+    },
+    "revenue": {
+      "title": "Revenue",
+      "subtitle": "Taken from finalized invoices (accrual basis). Drafts are not counted; a cancelled invoice and its cancellation invoice are both counted and net to zero.",
+      "loadFailed": "The revenue report could not be loaded.",
+      "caption": "Revenue by kind — net, VAT and gross",
+      "columns": {
+        "kind": "Kind"
+      },
+      "roomRevenue": "Room revenue",
+      "extraRevenue": "Extras",
+      "totalRevenue": "Total revenue",
+      "totalRevenueHint": "Rooms + extras. City tax is NOT included, and neither is unallocatable invoice revenue — both are listed separately below.",
+      "rateHint": "ADR and RevPAR refer to room revenue only; extras and city tax are excluded. Net and gross are separate fields and are never mixed.",
+      "empty": {
+        "title": "No revenue in this period",
+        "description": "There is no finalized invoice in the selected period."
+      }
+    },
+    "money": {
+      "net": "Net",
+      "vat": "VAT",
+      "gross": "Gross"
+    },
+    "excluded": {
+      "title": "Not included in total revenue",
+      "accountingTotal": "Accounting total (total revenue + unallocatable revenue, net):"
+    },
+    "cityTax": {
+      "label": "City tax (collected)",
+      "short": "City tax",
+      "hint": "Not revenue: a pass-through item collected on behalf of the municipality. Excluded from total revenue and from ADR."
+    },
+    "unbilled": {
+      "label": "Not yet invoiced (gross)",
+      "hint": "Stays without a finalized invoice. Purely an operational comparison figure — it feeds into no total."
+    },
+    "other": {
+      "label": "Unallocatable revenue (net)",
+      "hint": "Manual invoices and invoices tied to cancelled or no-show reservations. They cannot be assigned to a room night, so they are excluded from total revenue and from ADR.",
+      "breakdown": "of which rooms / extras:"
+    },
+    "channels": {
+      "caption": "Revenue by booking channel",
+      "columns": {
+        "channel": "Channel",
+        "reservations": "Reservations",
+        "roomNights": "Room nights",
+        "roomRevenueNet": "Room revenue (net)",
+        "share": "Share"
+      },
+      "zeroNote": "A channel showing 0.00 is normal: a finalized invoice and its cancellation invoice are both counted and cancel out exactly. The row is deliberately not hidden."
+    },
+    "revenueDaily": {
+      "caption": "Revenue per day: net room revenue, ADR and city tax"
     }
   },
   "country": {

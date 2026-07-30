@@ -138,9 +138,9 @@ describe('HubPage — modul kart izgarasi', () => {
     expect(text).not.toContain('nav.invoices');
   });
 
-  it('hazir olmayan modulleri isaretler, calisan modulu isaretlemez', async () => {
-    // Rezervasyon ve faturalama uclari yayina alindiktan sonra `planned`
-    // isaretini yalnizca Raporlar tasir.
+  it('raporlama ucu yayina alindiktan sonra hicbir modulu `planned` isaretlemez', async () => {
+    // Son modul (Raporlar) de canli oldugu icin kart izgarasinda artik
+    // "hazirlaniyor" isareti tasiyan modul kalmadi.
     const fixture = render([PERMISSIONS.RoomsView, PERMISSIONS.ReportsView]);
     http.expectOne((request) => request.url === `${baseUrl}/rooms`).flush(ROOM_PAGE);
     await fixture.whenStable();
@@ -151,10 +151,14 @@ describe('HubPage — modul kart izgarasi', () => {
     const reports = element.querySelector<HTMLElement>('[data-path="/reports"]');
 
     expect(rooms?.dataset['planned']).toBe('false');
-    expect(reports?.dataset['planned']).toBe('true');
-    // Hazir olmayan modul de tiklanabilir kalir (iskelet sayfaya gider).
+    expect(reports?.dataset['planned']).toBe('false');
     expect(reports?.querySelector('a')?.getAttribute('href')).toBe('/reports');
-    expect(reports?.textContent).toContain('hub.status.planned');
+    expect(reports?.textContent).not.toContain('hub.status.planned');
+    expect(
+      [...element.querySelectorAll<HTMLElement>('[data-planned]')].map(
+        (card) => card.dataset['planned'],
+      ),
+    ).not.toContain('true');
   });
 
   it('yayina alinan rezervasyon ve fatura modullerini `planned` isaretlemez', async () => {

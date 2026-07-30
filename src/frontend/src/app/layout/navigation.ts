@@ -187,7 +187,9 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         path: '/reports',
         labelKey: 'nav.reports',
         permissions: [PERMISSIONS.ReportsView],
-        hub: { descriptionKey: 'hub.cards.reports.description', planned: true },
+        // Backend uclari hazir (GET /reports/occupancy, GET /reports/revenue —
+        // kapali aralik, en fazla 366 gun, konsolide mod destekli).
+        hub: { descriptionKey: 'hub.cards.reports.description' },
       },
     ],
   },

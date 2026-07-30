@@ -1,0 +1,969 @@
+<div class="space-y-8">
+  <hc-page-header
+    titleKey="reports.title"
+    subtitleKey="reports.subtitle"
+    eyebrowKey="nav.section.finance"
+  />
+
+  <!--
+    Donem secimi. Donem KAPALI araliktir: `to` dahildir ve tek gunluk rapor
+    gecerlidir. Pencere URL'de tutulur (?from=&to=) ve her degisiklikte yazilir —
+    paylasilan bir rapor baglantisi ayni donemi gostermelidir.
+  -->
+  <nav
+    class="border border-rule bg-paper-raised px-4 py-4"
+    [attr.aria-label]="'reports.range.navLabel' | translate"
+  >
+    <div class="grid gap-4 lg:grid-cols-[12rem_12rem_1fr] lg:items-end">
+      <div>
+        <label class="hc-label" for="reports-from">{{ 'reports.range.from' | translate }}</label>
+        <input
+          id="reports-from"
+          class="hc-input mt-1"
+          type="date"
+          data-testid="reports-range-from"
+          [value]="range().from"
+          (change)="changeFrom($any($event.target).value)"
+        />
+      </div>
+
+      <div>
+        <label class="hc-label" for="reports-to">{{ 'reports.range.to' | translate }}</label>
+        <input
+          id="reports-to"
+          class="hc-input mt-1"
+          type="date"
+          data-testid="reports-range-to"
+          [value]="range().to"
+          (change)="changeTo($any($event.target).value)"
+        />
+      </div>
+
+      <!-- Hazir donemler: `md` boyut (>= 44px dokunmatik hedef). -->
+      <div
+        class="flex flex-wrap items-center gap-2"
+        role="group"
+        [attr.aria-label]="'reports.range.quickLabel' | translate"
+      >
+        @for (kind of quickRanges; track kind) {
+          <hc-button
+            [variant]="isQuickActive(kind) ? 'primary' : 'ghost'"
+            [attr.data-testid]="'reports-quick-' + kind"
+            (pressed)="applyQuickRange(kind)"
+          >
+            {{ quickRangeLabelKeys[kind] | translate }}
+          </hc-button>
+        }
+      </div>
+    </div>
+
+    <p class="mt-3 border-t border-rule pt-3 eyebrow" data-testid="reports-day-count">
+      {{ range().from | hcDate: 'medium' }} – {{ range().to | hcDate: 'medium' }} ·
+      {{ 'reports.range.dayCount' | translate: { count: dayCount() } }}
+    </p>
+    <p class="mt-1 text-xs text-ink-muted">{{ 'reports.range.inclusiveHint' | translate }}</p>
+  </nav>
+
+  <!-- Sunucu tavani (366 gun) asildi: aralik istemcide kirpildi, istek hic gonderilmedi -->
+  @if (range().clamped) {
+    <p
+      class="border-l-2 border-brass bg-brass-tint px-3 py-2 text-sm text-ink"
+      role="status"
+      data-testid="reports-clamped"
+    >
+      {{ 'reports.range.clamped' | translate: { max: maxDays } }}
+    </p>
+  }
+
+  <!--
+    Kapsam: sayilarin hangi kapsamda hesaplandigi. Konsolide modda birden fazla
+    otel toplanmistir; para birimleri karisiksa ust toplamlar farkli birimlerin
+    aritmetik toplamidir ve sembolsuz gosterilir.
+  -->
+  @if (store.scope(); as scope) {
+    <div class="border border-rule bg-paper-raised px-4 py-3" data-testid="reports-scope">
+      <p class="eyebrow">{{ 'reports.scope.label' | translate }}</p>
+      <p class="mt-1 text-sm text-ink">
+        <span data-testid="reports-scope-mode">{{
+          scopeModeLabelKeys[scope.mode] | translate
+        }}</span>
+        ·
+        {{ 'reports.scope.hotels' | translate: { count: scope.hotelCount } }}
+        @if (scope.currency) {
+          · <span class="numeric">{{ scope.currency }}</span>
+        }
+      </p>
+      <p class="mt-1 max-w-prose text-xs text-ink-muted">
+        @if (store.isConsolidated()) {
+          {{ 'reports.scope.consolidatedHint' | translate }}
+        } @else {
+          {{ 'reports.scope.hotelHint' | translate }}
+        }
+      </p>
+
+      @if (store.hasMixedCurrencies()) {
+        <p
+          class="mt-3 border-l-2 border-brass bg-brass-tint px-3 py-2 text-sm text-ink"
+          role="status"
+          data-testid="reports-mixed-currency"
+        >
+          {{ 'reports.scope.mixedCurrencies' | translate }}
+        </p>
+      }
+    </div>
+  }
+
+  <!--
+    KPI seridi. Doluluk hucreleri doluluk ucundan, para hucreleri ciro ucundan
+    beslenir; bir uc hata verdiginde yalnizca kendi hucreleri "—" olur, digerleri
+    calismaya devam eder. Para metrikleri NET olarak etiketlenir (brut surumler
+    ciro bolumunde ayri alanlardadir).
+  -->
+  <dl
+    class="grid grid-cols-2 gap-px border border-rule bg-rule lg:grid-cols-3"
+    data-testid="reports-kpis"
+  >
+    <div class="bg-paper-raised px-4 py-3">
+      <dt class="eyebrow">{{ 'reports.kpi.occupancyRate' | translate }}</dt>
+      <dd class="mt-1 numeric text-xl text-navy" data-testid="reports-kpi-occupancy">
+        @if (store.occupancy(); as report) {
+          {{ report.occupancyRate | hcNum }} %
+        } @else {
+          —
+        }
+      </dd>
+      <p class="mt-1 eyebrow">{{ 'reports.kpi.occupancyRateHint' | translate }}</p>
+    </div>
+
+    <div class="bg-paper-raised px-4 py-3">
+      <dt class="eyebrow">{{ 'reports.kpi.soldRoomNights' | translate }}</dt>
+      <dd class="mt-1 numeric text-xl text-ink" data-testid="reports-kpi-sold">
+        @if (store.occupancy(); as report) {
+          {{ report.soldRoomNights | hcNum: 0 }}
+        } @else {
+          —
+        }
+      </dd>
+      <p class="mt-1 eyebrow">{{ 'reports.kpi.soldRoomNightsHint' | translate }}</p>
+    </div>
+
+    <div class="bg-paper-raised px-4 py-3">
+      <dt class="eyebrow">{{ 'reports.kpi.availableRoomNights' | translate }}</dt>
+      <dd class="mt-1 numeric text-xl text-ink" data-testid="reports-kpi-available">
+        @if (store.occupancy(); as report) {
+          {{ report.availableRoomNights | hcNum: 0 }}
+        } @else {
+          —
+        }
+      </dd>
+      <p class="mt-1 eyebrow">{{ 'reports.kpi.availableRoomNightsHint' | translate }}</p>
+    </div>
+
+    <div class="bg-paper-raised px-4 py-3">
+      <dt class="eyebrow">{{ 'reports.kpi.adrNet' | translate }}</dt>
+      <dd class="mt-1 numeric text-xl text-ink" data-testid="reports-kpi-adr-net">
+        @if (store.revenue(); as report) {
+          {{ report.adrNet | hcMoney: store.currency() }}
+        } @else {
+          —
+        }
+      </dd>
+      <p class="mt-1 eyebrow">{{ 'reports.kpi.adrNetHint' | translate }}</p>
+    </div>
+
+    <div class="bg-paper-raised px-4 py-3">
+      <dt class="eyebrow">{{ 'reports.kpi.revParNet' | translate }}</dt>
+      <dd class="mt-1 numeric text-xl text-ink" data-testid="reports-kpi-revpar-net">
+        @if (store.revenue(); as report) {
+          {{ report.revParNet | hcMoney: store.currency() }}
+        } @else {
+          —
+        }
+      </dd>
+      <p class="mt-1 eyebrow">{{ 'reports.kpi.revParNetHint' | translate }}</p>
+    </div>
+
+    <div class="bg-paper-raised px-4 py-3">
+      <dt class="eyebrow">{{ 'reports.kpi.totalRevenueNet' | translate }}</dt>
+      <dd class="mt-1 numeric text-xl text-copper" data-testid="reports-kpi-total-revenue">
+        @if (store.revenue(); as report) {
+          {{ report.totalRevenue.net | hcMoney: store.currency() }}
+        } @else {
+          —
+        }
+      </dd>
+      <p class="mt-1 eyebrow">{{ 'reports.kpi.totalRevenueNetHint' | translate }}</p>
+    </div>
+  </dl>
+
+  <!-- ==================== DOLULUK ==================== -->
+  <section
+    class="space-y-4"
+    aria-labelledby="reports-occupancy-heading"
+    data-testid="reports-occupancy-section"
+  >
+    <div class="border-b border-rule pb-2">
+      <h2 id="reports-occupancy-heading" class="font-serif text-2xl text-ink">
+        {{ 'reports.occupancy.title' | translate }}
+      </h2>
+      <p class="mt-1 max-w-prose text-sm text-ink-muted">
+        {{ 'reports.occupancy.subtitle' | translate }}
+      </p>
+    </div>
+
+    @if (store.occupancyLoading() && store.occupancy() === null) {
+      <div class="border border-rule bg-paper-raised px-4 py-8">
+        <hc-spinner labelKey="common.loading" [showLabel]="true" />
+      </div>
+    } @else if (store.occupancyError(); as error) {
+      <!-- Yalnizca bu bolum duser; ciro bolumu render edilmeye devam eder. -->
+      <div
+        class="border border-danger bg-danger-tint px-4 py-6"
+        role="alert"
+        data-testid="reports-occupancy-error"
+      >
+        <p class="label-mono text-danger">{{ 'reports.occupancy.loadFailed' | translate }}</p>
+        <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+        @if (error.detail) {
+          <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+        }
+        <div class="mt-4">
+          <hc-button
+            variant="secondary"
+            data-testid="reports-occupancy-retry"
+            (pressed)="retryOccupancy()"
+          >
+            {{ 'common.retry' | translate }}
+          </hc-button>
+        </div>
+      </div>
+    } @else if (store.occupancy(); as report) {
+      <!--
+        Kapasite uclusu. Doluluk MUSAIT oda-geceye gore hesaplanir: servis disi
+        odalar satilabilir envanter degildir ve paydadan dusulur. Ucu de
+        gosterilir ki tuketici kendi tanimini kurabilsin.
+      -->
+      <dl
+        class="grid grid-cols-1 gap-px border border-rule bg-rule sm:grid-cols-3"
+        data-testid="reports-capacity"
+      >
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'reports.capacity.physical' | translate }}</dt>
+          <dd class="mt-1 numeric text-lg text-ink" data-testid="reports-capacity-physical">
+            {{ report.physicalRoomNights | hcNum: 0 }}
+          </dd>
+          <p class="mt-1 text-xs text-ink-muted">
+            {{ 'reports.capacity.physicalHint' | translate: { rooms: report.roomCount } }}
+          </p>
+        </div>
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'reports.capacity.outOfOrder' | translate }}</dt>
+          <dd class="mt-1 numeric text-lg text-brass" data-testid="reports-capacity-out-of-order">
+            − {{ report.outOfOrderRoomNights | hcNum: 0 }}
+          </dd>
+          <p class="mt-1 text-xs text-ink-muted">
+            {{
+              'reports.capacity.outOfOrderHint' | translate: { rooms: report.outOfOrderRoomCount }
+            }}
+          </p>
+        </div>
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'reports.capacity.available' | translate }}</dt>
+          <dd class="mt-1 numeric text-lg text-navy" data-testid="reports-capacity-available">
+            {{ report.availableRoomNights | hcNum: 0 }}
+          </dd>
+          <p class="mt-1 text-xs text-ink-muted">
+            {{ 'reports.capacity.availableHint' | translate }}
+          </p>
+        </div>
+      </dl>
+
+      <!--
+        Doluluk %100'u ASABILIR ve kirpilmaz: `Room.IsOutOfOrder` tarihsiz bir
+        anlik durum bayragidir, bugun servis disina alinan bir oda gecmiste dolu
+        olmus olabilir. Gercek gizlenmez, aciklanir.
+      -->
+      @if (store.occupancyOverCapacity()) {
+        <p
+          class="border-l-2 border-copper bg-copper-tint px-3 py-2 text-sm text-ink"
+          role="status"
+          data-testid="reports-over-capacity"
+        >
+          {{ 'reports.occupancy.overCapacity' | translate }}
+        </p>
+      }
+
+      @if (store.occupancyEmpty()) {
+        <hc-empty-state
+          titleKey="reports.occupancy.empty.title"
+          descriptionKey="reports.occupancy.empty.description"
+        />
+      } @else {
+        <!--
+          Gunluk seri. Grafik kutuphanesi YOKTUR: veri once bir TABLO'dur (ekran
+          okuyucu satirlari okur), oransal dolgu yalnizca ayni satirin gorsel
+          tekrarıdır ve `aria-hidden` ile duyurudan cikarilir.
+        -->
+        <div class="border border-rule bg-paper-raised">
+          <div class="max-h-[30rem] overflow-y-auto overscroll-contain">
+            <table
+              class="w-full border-collapse text-left text-sm"
+              data-testid="reports-daily-table"
+            >
+              <caption class="sr-only">
+                {{
+                  'reports.daily.caption' | translate
+                }}
+              </caption>
+              <thead>
+                <tr>
+                  <th
+                    scope="col"
+                    class="hc-sticky-head border-b border-rule px-3 py-2 label-mono text-ink-muted"
+                  >
+                    {{ 'reports.daily.columns.date' | translate }}
+                  </th>
+                  <th
+                    scope="col"
+                    class="hc-sticky-head border-b border-rule px-3 py-2 text-right label-mono text-ink-muted"
+                  >
+                    {{ 'reports.daily.columns.sold' | translate }}
+                  </th>
+                  <th
+                    scope="col"
+                    class="hc-sticky-head border-b border-rule px-3 py-2 text-right label-mono text-ink-muted"
+                  >
+                    {{ 'reports.daily.columns.available' | translate }}
+                  </th>
+                  <th
+                    scope="col"
+                    class="hc-sticky-head border-b border-rule px-3 py-2 text-right label-mono text-ink-muted"
+                  >
+                    {{ 'reports.daily.columns.rate' | translate }}
+                  </th>
+                  <th
+                    scope="col"
+                    class="hc-sticky-head hidden border-b border-rule px-3 py-2 label-mono text-ink-muted sm:table-cell"
+                  >
+                    <span aria-hidden="true">{{ 'reports.daily.columns.bar' | translate }}</span>
+                    <span class="sr-only">{{ 'reports.daily.barDecorative' | translate }}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-rule">
+                @for (day of store.dailyRows(); track day.date) {
+                  <tr data-testid="reports-daily-row" [attr.data-date]="day.date">
+                    <th scope="row" class="px-3 py-2 text-left font-normal text-ink">
+                      <span class="numeric">{{ day.date | hcDate: 'medium' }}</span>
+                    </th>
+                    <td class="px-3 py-2 text-right numeric text-ink">
+                      {{ day.soldRoomNights | hcNum: 0 }}
+                    </td>
+                    <td class="px-3 py-2 text-right numeric text-ink-muted">
+                      {{ day.availableRoomNights | hcNum: 0 }}
+                    </td>
+                    <td
+                      class="px-3 py-2 text-right numeric"
+                      [class.text-copper]="day.overCapacity"
+                      [class.text-ink]="!day.overCapacity"
+                    >
+                      {{ day.occupancyRate | hcNum }} %
+                    </td>
+                    <td class="hidden px-3 py-2 sm:table-cell">
+                      <span class="block h-2 w-full bg-paper-sunken" aria-hidden="true">
+                        <span
+                          class="block h-2"
+                          [class]="day.overCapacity ? 'bg-copper' : 'bg-navy'"
+                          [style.width.%]="day.barWidth"
+                        ></span>
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="max-w-prose text-xs text-ink-muted" data-testid="reports-rounding-note">
+          {{ 'reports.daily.roundingNote' | translate }}
+        </p>
+      }
+
+      <!-- Otel kirilimi: tek otelde tek satir, yine de gosterilir. -->
+      <div class="hidden border border-rule bg-paper-raised lg:block">
+        <div class="overflow-x-auto overscroll-x-contain">
+          <table
+            class="w-full border-collapse text-left text-sm"
+            data-testid="reports-occupancy-hotels"
+          >
+            <caption class="sr-only">
+              {{
+                'reports.hotels.occupancyCaption' | translate
+              }}
+            </caption>
+            <thead>
+              <tr class="border-b border-rule">
+                <th scope="col" class="px-3 py-2 label-mono text-ink-muted">
+                  {{ 'reports.hotels.columns.hotel' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.capacity.physical' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.capacity.outOfOrder' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.capacity.available' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.kpi.soldRoomNights' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.kpi.occupancyRate' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rule">
+              @for (hotel of report.byHotel; track hotel.hotelId) {
+                <tr data-testid="reports-occupancy-hotel-row">
+                  <th scope="row" class="px-3 py-2 text-left font-normal text-ink">
+                    {{ hotel.hotelName }}
+                  </th>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ hotel.physicalRoomNights | hcNum: 0 }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ hotel.outOfOrderRoomNights | hcNum: 0 }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ hotel.availableRoomNights | hcNum: 0 }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ hotel.soldRoomNights | hcNum: 0 }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric text-navy">
+                    {{ hotel.occupancyRate | hcNum }} %
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Mobil: ayni store, otel basina kart -->
+      <ul class="space-y-3 lg:hidden">
+        @for (hotel of report.byHotel; track hotel.hotelId) {
+          <li class="border border-rule bg-paper-raised">
+            <p class="border-b border-rule px-4 py-2 text-ink">{{ hotel.hotelName }}</p>
+            <dl class="grid grid-cols-2 gap-3 px-4 py-3 text-sm">
+              <div>
+                <dt class="eyebrow">{{ 'reports.kpi.occupancyRate' | translate }}</dt>
+                <dd class="numeric text-navy">{{ hotel.occupancyRate | hcNum }} %</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'reports.kpi.soldRoomNights' | translate }}</dt>
+                <dd class="numeric">{{ hotel.soldRoomNights | hcNum: 0 }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'reports.capacity.available' | translate }}</dt>
+                <dd class="numeric">{{ hotel.availableRoomNights | hcNum: 0 }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'reports.capacity.outOfOrder' | translate }}</dt>
+                <dd class="numeric text-brass">{{ hotel.outOfOrderRoomNights | hcNum: 0 }}</dd>
+              </div>
+            </dl>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <!-- ==================== CIRO ==================== -->
+  <section
+    class="space-y-4"
+    aria-labelledby="reports-revenue-heading"
+    data-testid="reports-revenue-section"
+  >
+    <div class="border-b border-rule pb-2">
+      <h2 id="reports-revenue-heading" class="font-serif text-2xl text-ink">
+        {{ 'reports.revenue.title' | translate }}
+      </h2>
+      <p class="mt-1 max-w-prose text-sm text-ink-muted">
+        {{ 'reports.revenue.subtitle' | translate }}
+      </p>
+    </div>
+
+    @if (store.revenueLoading() && store.revenue() === null) {
+      <div class="border border-rule bg-paper-raised px-4 py-8">
+        <hc-spinner labelKey="common.loading" [showLabel]="true" />
+      </div>
+    } @else if (store.revenueError(); as error) {
+      <!-- Yalnizca bu bolum duser; doluluk bolumu yukarida render edilmis kalir. -->
+      <div
+        class="border border-danger bg-danger-tint px-4 py-6"
+        role="alert"
+        data-testid="reports-revenue-error"
+      >
+        <p class="label-mono text-danger">{{ 'reports.revenue.loadFailed' | translate }}</p>
+        <p class="mt-2 text-sm text-ink">{{ error.messageKey | translate }}</p>
+        @if (error.detail) {
+          <p class="mt-1 font-mono text-xs text-ink-muted">{{ error.detail }}</p>
+        }
+        <div class="mt-4">
+          <hc-button
+            variant="secondary"
+            data-testid="reports-revenue-retry"
+            (pressed)="retryRevenue()"
+          >
+            {{ 'common.retry' | translate }}
+          </hc-button>
+        </div>
+      </div>
+    } @else if (store.revenue(); as report) {
+      @if (store.revenueEmpty()) {
+        <hc-empty-state
+          titleKey="reports.revenue.empty.title"
+          descriptionKey="reports.revenue.empty.description"
+        />
+      }
+
+      <!--
+        Ciro tablosu. `totalRevenue` = oda + ekstra; Kurtaxe HARICTIR ve asagida
+        ayri bir blokta durur. Net/KDV/brut ayri sutunlardir; tek bir sayi iki
+        anlamda kullanilmaz.
+      -->
+      <div class="border border-rule bg-paper-raised">
+        <div class="overflow-x-auto overscroll-x-contain">
+          <table
+            class="w-full border-collapse text-left text-sm"
+            data-testid="reports-revenue-table"
+          >
+            <caption class="sr-only">
+              {{
+                'reports.revenue.caption' | translate
+              }}
+            </caption>
+            <thead>
+              <tr class="border-b border-rule">
+                <th scope="col" class="px-3 py-2 label-mono text-ink-muted">
+                  {{ 'reports.revenue.columns.kind' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.money.net' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.money.vat' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.money.gross' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rule">
+              <tr data-testid="reports-room-revenue">
+                <th scope="row" class="px-3 py-2 text-left font-normal text-ink">
+                  {{ 'reports.revenue.roomRevenue' | translate }}
+                </th>
+                <td class="px-3 py-2 text-right numeric">
+                  {{ report.roomRevenue.net | hcMoney: store.currency() }}
+                </td>
+                <td class="px-3 py-2 text-right numeric text-ink-muted">
+                  {{ report.roomRevenue.vat | hcMoney: store.currency() }}
+                </td>
+                <td class="px-3 py-2 text-right numeric">
+                  {{ report.roomRevenue.gross | hcMoney: store.currency() }}
+                </td>
+              </tr>
+              <tr data-testid="reports-extra-revenue">
+                <th scope="row" class="px-3 py-2 text-left font-normal text-ink">
+                  {{ 'reports.revenue.extraRevenue' | translate }}
+                </th>
+                <td class="px-3 py-2 text-right numeric">
+                  {{ report.extraRevenue.net | hcMoney: store.currency() }}
+                </td>
+                <td class="px-3 py-2 text-right numeric text-ink-muted">
+                  {{ report.extraRevenue.vat | hcMoney: store.currency() }}
+                </td>
+                <td class="px-3 py-2 text-right numeric">
+                  {{ report.extraRevenue.gross | hcMoney: store.currency() }}
+                </td>
+              </tr>
+              <tr class="border-t border-rule-strong bg-paper" data-testid="reports-total-revenue">
+                <th scope="row" class="px-3 py-2 text-left font-normal text-ink">
+                  {{ 'reports.revenue.totalRevenue' | translate }}
+                </th>
+                <td class="px-3 py-2 text-right numeric text-copper">
+                  {{ report.totalRevenue.net | hcMoney: store.currency() }}
+                </td>
+                <td class="px-3 py-2 text-right numeric text-ink-muted">
+                  {{ report.totalRevenue.vat | hcMoney: store.currency() }}
+                </td>
+                <td class="px-3 py-2 text-right numeric">
+                  {{ report.totalRevenue.gross | hcMoney: store.currency() }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="border-t border-rule px-3 py-2 text-xs text-ink-muted">
+          {{ 'reports.revenue.totalRevenueHint' | translate }}
+        </p>
+      </div>
+
+      <!-- ADR ve RevPAR: net ve brut AYRI alanlardir, etiket hangisi oldugunu soyler. -->
+      <dl
+        class="grid grid-cols-2 gap-px border border-rule bg-rule lg:grid-cols-4"
+        data-testid="reports-rate-metrics"
+      >
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'reports.kpi.adrNet' | translate }}</dt>
+          <dd class="mt-1 numeric text-lg text-ink" data-testid="reports-adr-net">
+            {{ report.adrNet | hcMoney: store.currency() }}
+          </dd>
+        </div>
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'reports.kpi.adrGross' | translate }}</dt>
+          <dd class="mt-1 numeric text-lg text-ink-muted" data-testid="reports-adr-gross">
+            {{ report.adrGross | hcMoney: store.currency() }}
+          </dd>
+        </div>
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'reports.kpi.revParNet' | translate }}</dt>
+          <dd class="mt-1 numeric text-lg text-ink" data-testid="reports-revpar-net">
+            {{ report.revParNet | hcMoney: store.currency() }}
+          </dd>
+        </div>
+        <div class="bg-paper-raised px-4 py-3">
+          <dt class="eyebrow">{{ 'reports.kpi.revParGross' | translate }}</dt>
+          <dd class="mt-1 numeric text-lg text-ink-muted" data-testid="reports-revpar-gross">
+            {{ report.revParGross | hcMoney: store.currency() }}
+          </dd>
+        </div>
+      </dl>
+      <p class="max-w-prose text-xs text-ink-muted">{{ 'reports.revenue.rateHint' | translate }}</p>
+
+      <!--
+        TOPLAMA GIRMEYEN kalemler. Ucu de bilincli olarak ciro disindadir ve
+        etiketleri bunu soyler:
+        - Kurtaxe belediye adina tahsil edilir (durchlaufender Posten),
+        - faturalanmamis konaklamalar bir belgeye dayanmaz,
+        - dagitilamayan fatura geliri bir oda-gecesine yazilamaz.
+      -->
+      <div class="border border-rule-strong bg-paper">
+        <h3 class="border-b border-rule px-4 py-2 label-mono text-ink">
+          {{ 'reports.excluded.title' | translate }}
+        </h3>
+        <dl class="grid grid-cols-1 gap-px bg-rule sm:grid-cols-3">
+          <div class="bg-paper px-4 py-3">
+            <dt class="eyebrow">{{ 'reports.cityTax.label' | translate }}</dt>
+            <dd class="mt-1 numeric text-lg text-brass" data-testid="reports-city-tax">
+              {{ report.cityTaxCollected | hcMoney: store.currency() }}
+            </dd>
+            <p class="mt-1 text-xs text-ink-muted">{{ 'reports.cityTax.hint' | translate }}</p>
+          </div>
+          <div class="bg-paper px-4 py-3">
+            <dt class="eyebrow">{{ 'reports.unbilled.label' | translate }}</dt>
+            <dd class="mt-1 numeric text-lg text-brass" data-testid="reports-unbilled">
+              {{ report.unbilledRoomRevenueGross | hcMoney: store.currency() }}
+            </dd>
+            <p class="mt-1 text-xs text-ink-muted">{{ 'reports.unbilled.hint' | translate }}</p>
+          </div>
+          <div class="bg-paper px-4 py-3">
+            <dt class="eyebrow">{{ 'reports.other.label' | translate }}</dt>
+            <dd class="mt-1 numeric text-lg text-brass" data-testid="reports-other-revenue">
+              {{ report.otherInvoicedRevenue.total.net | hcMoney: store.currency() }}
+            </dd>
+            <p class="mt-1 text-xs text-ink-muted">{{ 'reports.other.hint' | translate }}</p>
+            <p class="mt-1 numeric text-xs text-ink-faint" data-testid="reports-other-breakdown">
+              {{ 'reports.other.breakdown' | translate }}
+              {{ report.otherInvoicedRevenue.room.net | hcMoney: store.currency() }} /
+              {{ report.otherInvoicedRevenue.extra.net | hcMoney: store.currency() }}
+            </p>
+          </div>
+        </dl>
+        <!--
+          Sozlesmenin acikca izin verdigi TEK turetilmis toplam. Kurtaxe ve
+          faturalanmamis konaklamalar burada da yoktur.
+        -->
+        <p
+          class="border-t border-rule px-4 py-3 text-sm text-ink"
+          data-testid="reports-accounting-total"
+        >
+          {{ 'reports.excluded.accountingTotal' | translate }}
+          <span class="numeric text-ink">
+            {{ store.accountingTotalNet() | hcMoney: store.currency() }}
+          </span>
+        </p>
+      </div>
+
+      <!--
+        Kanal dagilimi. Storno'lu bir kanalin 0,00 gelirle gorunmesi NORMALDIR
+        (kesinlesen fatura ve iptal aynasi birlikte sayilir ve tam sifir eder);
+        satir gizlenmez.
+      -->
+      <div class="hidden border border-rule bg-paper-raised lg:block">
+        <div class="overflow-x-auto overscroll-x-contain">
+          <table
+            class="w-full border-collapse text-left text-sm"
+            data-testid="reports-channel-table"
+          >
+            <caption class="sr-only">
+              {{
+                'reports.channels.caption' | translate
+              }}
+            </caption>
+            <thead>
+              <tr class="border-b border-rule">
+                <th scope="col" class="px-3 py-2 label-mono text-ink-muted">
+                  {{ 'reports.channels.columns.channel' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.channels.columns.reservations' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.channels.columns.roomNights' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.channels.columns.roomRevenueNet' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.kpi.adrNet' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.channels.columns.share' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rule">
+              @for (channel of report.byChannel; track channel.channel) {
+                <tr data-testid="reports-channel-row" [attr.data-channel]="channel.channel">
+                  <th scope="row" class="px-3 py-2 text-left font-normal text-ink">
+                    @if (channelLabelKey(channel.channel); as key) {
+                      {{ key | translate }}
+                    } @else {
+                      <span class="numeric">{{ channel.channel }}</span>
+                    }
+                  </th>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ channel.reservationCount | hcNum: 0 }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ channel.soldRoomNights | hcNum: 0 }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ channel.roomRevenue.net | hcMoney: store.currency() }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric text-ink-muted">
+                    {{ channel.adrNet | hcMoney: store.currency() }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric text-navy">
+                    {{ channel.roomRevenueShare | hcNum }} %
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Mobil: kanal basina kart (ayni store, ayni sayilar) -->
+      <ul class="space-y-3 lg:hidden">
+        @for (channel of report.byChannel; track channel.channel) {
+          <li class="border border-rule bg-paper-raised" data-testid="reports-channel-card">
+            <p class="border-b border-rule px-4 py-2 text-ink">
+              @if (channelLabelKey(channel.channel); as key) {
+                {{ key | translate }}
+              } @else {
+                <span class="numeric">{{ channel.channel }}</span>
+              }
+            </p>
+            <dl class="grid grid-cols-2 gap-3 px-4 py-3 text-sm">
+              <div>
+                <dt class="eyebrow">{{ 'reports.channels.columns.roomRevenueNet' | translate }}</dt>
+                <dd class="numeric">{{ channel.roomRevenue.net | hcMoney: store.currency() }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'reports.channels.columns.share' | translate }}</dt>
+                <dd class="numeric text-navy">{{ channel.roomRevenueShare | hcNum }} %</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'reports.channels.columns.roomNights' | translate }}</dt>
+                <dd class="numeric">{{ channel.soldRoomNights | hcNum: 0 }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'reports.kpi.adrNet' | translate }}</dt>
+                <dd class="numeric">{{ channel.adrNet | hcMoney: store.currency() }}</dd>
+              </div>
+            </dl>
+          </li>
+        }
+      </ul>
+
+      <p class="max-w-prose text-xs text-ink-muted" data-testid="reports-channel-note">
+        {{ 'reports.channels.zeroNote' | translate }}
+      </p>
+
+      <!-- Ciro tarafinin otel kirilimi: karisik para biriminde ESAS ALINIR. -->
+      <div class="hidden border border-rule bg-paper-raised lg:block">
+        <div class="overflow-x-auto overscroll-x-contain">
+          <table
+            class="w-full border-collapse text-left text-sm"
+            data-testid="reports-revenue-hotels"
+          >
+            <caption class="sr-only">
+              {{
+                'reports.hotels.revenueCaption' | translate
+              }}
+            </caption>
+            <thead>
+              <tr class="border-b border-rule">
+                <th scope="col" class="px-3 py-2 label-mono text-ink-muted">
+                  {{ 'reports.hotels.columns.hotel' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.revenue.totalRevenue' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.cityTax.short' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.kpi.adrNet' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.kpi.revParNet' | translate }}
+                </th>
+                <th scope="col" class="px-3 py-2 text-right label-mono text-ink-muted">
+                  {{ 'reports.kpi.occupancyRate' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rule">
+              @for (hotel of report.byHotel; track hotel.hotelId) {
+                <tr data-testid="reports-revenue-hotel-row">
+                  <th scope="row" class="px-3 py-2 text-left font-normal text-ink">
+                    {{ hotel.hotelName }}
+                    <span class="ml-1 numeric text-xs text-ink-faint">{{ hotel.currency }}</span>
+                  </th>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ hotel.totalRevenue.net | hcMoney: hotel.currency }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric text-brass">
+                    {{ hotel.cityTaxCollected | hcMoney: hotel.currency }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ hotel.adrNet | hcMoney: hotel.currency }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ hotel.revParNet | hcMoney: hotel.currency }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric text-navy">
+                    {{ hotel.occupancyRate | hcNum }} %
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <ul class="space-y-3 lg:hidden">
+        @for (hotel of report.byHotel; track hotel.hotelId) {
+          <li class="border border-rule bg-paper-raised" data-testid="reports-revenue-hotel-card">
+            <p class="border-b border-rule px-4 py-2 text-ink">
+              {{ hotel.hotelName }}
+              <span class="ml-1 numeric text-xs text-ink-faint">{{ hotel.currency }}</span>
+            </p>
+            <dl class="grid grid-cols-2 gap-3 px-4 py-3 text-sm">
+              <div>
+                <dt class="eyebrow">{{ 'reports.revenue.totalRevenue' | translate }}</dt>
+                <dd class="numeric">{{ hotel.totalRevenue.net | hcMoney: hotel.currency }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'reports.kpi.adrNet' | translate }}</dt>
+                <dd class="numeric">{{ hotel.adrNet | hcMoney: hotel.currency }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'reports.kpi.revParNet' | translate }}</dt>
+                <dd class="numeric">{{ hotel.revParNet | hcMoney: hotel.currency }}</dd>
+              </div>
+              <div>
+                <dt class="eyebrow">{{ 'reports.cityTax.short' | translate }}</dt>
+                <dd class="numeric text-brass">
+                  {{ hotel.cityTaxCollected | hcMoney: hotel.currency }}
+                </dd>
+              </div>
+            </dl>
+          </li>
+        }
+      </ul>
+
+      <!-- Gunluk ciro serisi — tablo olarak okunur, gorsele bagli degildir. -->
+      <div class="border border-rule bg-paper-raised">
+        <div class="max-h-[30rem] overflow-y-auto overscroll-contain">
+          <table
+            class="w-full border-collapse text-left text-sm"
+            data-testid="reports-revenue-daily-table"
+          >
+            <caption class="sr-only">
+              {{
+                'reports.revenueDaily.caption' | translate
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th
+                  scope="col"
+                  class="hc-sticky-head border-b border-rule px-3 py-2 label-mono text-ink-muted"
+                >
+                  {{ 'reports.daily.columns.date' | translate }}
+                </th>
+                <th
+                  scope="col"
+                  class="hc-sticky-head border-b border-rule px-3 py-2 text-right label-mono text-ink-muted"
+                >
+                  {{ 'reports.channels.columns.roomRevenueNet' | translate }}
+                </th>
+                <th
+                  scope="col"
+                  class="hc-sticky-head border-b border-rule px-3 py-2 text-right label-mono text-ink-muted"
+                >
+                  {{ 'reports.kpi.adrNet' | translate }}
+                </th>
+                <th
+                  scope="col"
+                  class="hc-sticky-head border-b border-rule px-3 py-2 text-right label-mono text-ink-muted"
+                >
+                  {{ 'reports.cityTax.short' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rule">
+              @for (day of report.daily; track day.date) {
+                <tr data-testid="reports-revenue-daily-row" [attr.data-date]="day.date">
+                  <th scope="row" class="px-3 py-2 text-left font-normal text-ink">
+                    <span class="numeric">{{ day.date | hcDate: 'medium' }}</span>
+                  </th>
+                  <td class="px-3 py-2 text-right numeric">
+                    {{ day.roomRevenue.net | hcMoney: store.currency() }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric text-ink-muted">
+                    {{ day.adrNet | hcMoney: store.currency() }}
+                  </td>
+                  <td class="px-3 py-2 text-right numeric text-brass">
+                    {{ day.cityTaxCollected | hcMoney: store.currency() }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="border-t border-rule px-3 py-2 text-xs text-ink-muted">
+          {{ 'reports.daily.roundingNote' | translate }}
+        </p>
+      </div>
+    }
+  </section>
+</div>

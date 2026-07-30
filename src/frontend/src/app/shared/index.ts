@@ -4,6 +4,7 @@ export * from './forms/date-validators';
 export * from './forms/numeric-validators';
 export * from './pipes/localized-date.pipe';
 export * from './pipes/money.pipe';
+export * from './pipes/number.pipe';
 export * from './ui/badge/badge';
 export * from './ui/button/button';
 export * from './ui/card/card';

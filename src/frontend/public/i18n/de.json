@@ -1133,9 +1133,140 @@
   "reports": {
     "title": "Berichte",
     "subtitle": "Umsatz, Belegung, ADR und RevPAR im Zeitverlauf.",
-    "empty": {
-      "title": "Noch keine Auswertungen",
-      "description": "Auswertungen lassen sich je Hotel oder konsolidiert über alle Häuser abrufen."
+    "range": {
+      "navLabel": "Berichtszeitraum wählen",
+      "from": "Von",
+      "to": "Bis (einschließlich)",
+      "quickLabel": "Schnellauswahl",
+      "quick": {
+        "last7": "Letzte 7 Tage",
+        "last30": "Letzte 30 Tage",
+        "thisMonth": "Dieser Monat",
+        "lastMonth": "Vormonat"
+      },
+      "dayCount": "Tage im Zeitraum: {{count}}",
+      "inclusiveHint": "Der Zeitraum ist geschlossen: der Bis-Tag zählt mit, ein einzelner Tag ist zulässig. „Dieser Monat“ endet bewusst heute — noch nicht eingetretene Tage würden den Nenner von Auslastung und RevPAR aufblähen.",
+      "clamped": "Der Zeitraum wurde auf {{max}} Tage gekürzt; mehr lässt der Server nicht zu. Längere Zeiträume bitte aufteilen.",
+      "tooLong": "Der Zeitraum ist zu lang. Erlaubt sind höchstens 366 Tage."
+    },
+    "scope": {
+      "label": "Auswertungsbereich",
+      "mode": {
+        "hotel": "Einzelhaus",
+        "consolidated": "Konsolidiert"
+      },
+      "hotels": "Häuser: {{count}}",
+      "hotelHint": "Alle Zahlen beziehen sich auf das aktive Haus.",
+      "consolidatedHint": "Kein aktives Haus gewählt: die Zahlen sind über alle zugänglichen Häuser summiert. Die Aufschlüsselung je Haus steht in den Tabellen weiter unten.",
+      "mixedCurrencies": "Die Häuser rechnen in unterschiedlichen Währungen. Die Gesamtbeträge sind eine reine Addition verschiedener Währungen und werden deshalb ohne Währungszeichen gezeigt — maßgeblich ist die Aufschlüsselung je Haus."
+    },
+    "kpi": {
+      "occupancyRate": "Auslastung",
+      "occupancyRateHint": "Verkaufte / verfügbare Zimmernächte",
+      "soldRoomNights": "Verkaufte Zimmernächte",
+      "soldRoomNightsHint": "Storno und No-Show zählen nicht mit",
+      "availableRoomNights": "Verfügbare Zimmernächte",
+      "availableRoomNightsHint": "Nenner von Auslastung und RevPAR",
+      "adrNet": "ADR (netto)",
+      "adrNetHint": "Zimmerumsatz netto / verkaufte Zimmernächte",
+      "adrGross": "ADR (brutto)",
+      "revParNet": "RevPAR (netto)",
+      "revParNetHint": "Zimmerumsatz netto / verfügbare Zimmernächte",
+      "revParGross": "RevPAR (brutto)",
+      "totalRevenueNet": "Umsatz (netto)",
+      "totalRevenueNetHint": "Zimmer + Extras, ohne Kurtaxe"
+    },
+    "occupancy": {
+      "title": "Auslastung",
+      "subtitle": "Zimmernächte, Kapazität und Auslastung je Tag.",
+      "loadFailed": "Die Auslastung konnte nicht geladen werden.",
+      "overCapacity": "Die Auslastung liegt über 100 %. „Außer Betrieb“ ist eine Momentaufnahme ohne Datum: heute gesperrte Zimmer waren in der Vergangenheit womöglich belegt. Die Zahl wird bewusst nicht gekappt.",
+      "empty": {
+        "title": "Keine Kapazität im Zeitraum",
+        "description": "Für diesen Zeitraum sind weder Zimmer noch verkaufte Nächte hinterlegt. Der Bericht ist gültig — er ist nur leer."
+      }
+    },
+    "capacity": {
+      "physical": "Physische Zimmernächte",
+      "physicalHint": "{{rooms}} Zimmer × Tage, außer Betrieb eingeschlossen",
+      "outOfOrder": "Außer Betrieb",
+      "outOfOrderHint": "{{rooms}} Zimmer — kein verkaufbarer Bestand",
+      "available": "Verfügbare Zimmernächte",
+      "availableHint": "Physisch − außer Betrieb; auf diesen Nenner wird die Auslastung gerechnet."
+    },
+    "daily": {
+      "caption": "Auslastung je Tag: verkaufte und verfügbare Zimmernächte",
+      "columns": {
+        "date": "Tag",
+        "sold": "Verkauft",
+        "available": "Verfügbar",
+        "rate": "Auslastung",
+        "bar": "Verlauf"
+      },
+      "barDecorative": "Der Balken wiederholt nur den Prozentwert derselben Zeile.",
+      "roundingNote": "Rundung: die Tageswerte sind auf zwei Nachkommastellen gerundet, ihre Summe kann daher um einige Cent von den Gesamtsummen abweichen. Maßgeblich sind die Gesamtsummen."
+    },
+    "hotels": {
+      "occupancyCaption": "Auslastung je Haus",
+      "revenueCaption": "Umsatz je Haus",
+      "columns": {
+        "hotel": "Haus"
+      }
+    },
+    "revenue": {
+      "title": "Umsatz",
+      "subtitle": "Aus festgeschriebenen Rechnungen (Soll-Versteuerung). Entwürfe zählen nicht; Storno und Stornorechnung werden beide gezählt und heben sich auf.",
+      "loadFailed": "Der Umsatzbericht konnte nicht geladen werden.",
+      "caption": "Umsatz nach Art — netto, USt. und brutto",
+      "columns": {
+        "kind": "Art"
+      },
+      "roomRevenue": "Zimmerumsatz",
+      "extraRevenue": "Extras",
+      "totalRevenue": "Gesamtumsatz",
+      "totalRevenueHint": "Zimmer + Extras. Die Kurtaxe ist NICHT enthalten, nicht zuordenbare Rechnungserlöse ebenso wenig — beides steht unten getrennt.",
+      "rateHint": "ADR und RevPAR beziehen sich ausschließlich auf den Zimmerumsatz; Extras und Kurtaxe fließen nicht ein. Netto und brutto sind getrennte Felder und werden nie vermischt.",
+      "empty": {
+        "title": "Kein Umsatz im Zeitraum",
+        "description": "Im gewählten Zeitraum gibt es keine festgeschriebene Rechnung."
+      }
+    },
+    "money": {
+      "net": "Netto",
+      "vat": "USt.",
+      "gross": "Brutto"
+    },
+    "excluded": {
+      "title": "Nicht im Gesamtumsatz enthalten",
+      "accountingTotal": "Buchhalterische Summe (Gesamtumsatz + nicht zuordenbare Erlöse, netto):"
+    },
+    "cityTax": {
+      "label": "Kurtaxe (vereinnahmt)",
+      "short": "Kurtaxe",
+      "hint": "Kein Umsatz: durchlaufender Posten, im Namen der Gemeinde vereinnahmt. Weder im Gesamtumsatz noch im ADR enthalten."
+    },
+    "unbilled": {
+      "label": "Noch nicht fakturiert (brutto)",
+      "hint": "Übernachtungen ohne festgeschriebene Rechnung. Rein operativer Vergleichswert — fließt in keine Summe ein."
+    },
+    "other": {
+      "label": "Nicht zuordenbare Erlöse (netto)",
+      "hint": "Freie Rechnungen sowie Rechnungen zu stornierten oder No-Show-Reservierungen. Keiner Übernachtung zuzuordnen, daher nicht im Gesamtumsatz und nicht im ADR.",
+      "breakdown": "davon Zimmer / Extras:"
+    },
+    "channels": {
+      "caption": "Umsatz nach Buchungskanal",
+      "columns": {
+        "channel": "Kanal",
+        "reservations": "Reservierungen",
+        "roomNights": "Zimmernächte",
+        "roomRevenueNet": "Zimmerumsatz (netto)",
+        "share": "Anteil"
+      },
+      "zeroNote": "Ein Kanal mit 0,00 ist normal: eine festgeschriebene Rechnung und ihre Stornorechnung werden beide gezählt und heben sich exakt auf. Die Zeile wird bewusst nicht ausgeblendet."
+    },
+    "revenueDaily": {
+      "caption": "Umsatz je Tag: Zimmerumsatz netto, ADR und Kurtaxe"
     }
   },
   "country": {

@@ -9,6 +9,7 @@ export * from './paged-result.model';
 export * from './permission.model';
 export * from './problem-details.model';
 export * from './rate-plan.model';
+export * from './report.model';
 export * from './reservation.model';
 export * from './room-type.model';
 export * from './room.model';

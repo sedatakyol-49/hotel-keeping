@@ -1133,9 +1133,140 @@
   "reports": {
     "title": "Raporlar",
     "subtitle": "Zaman içinde ciro, doluluk, ADR ve RevPAR.",
-    "empty": {
-      "title": "Henüz rapor yok",
-      "description": "Raporlar otel bazında veya tüm oteller için konsolide alınabilir."
+    "range": {
+      "navLabel": "Rapor dönemi seç",
+      "from": "Başlangıç",
+      "to": "Bitiş (dâhil)",
+      "quickLabel": "Hızlı aralıklar",
+      "quick": {
+        "last7": "Son 7 gün",
+        "last30": "Son 30 gün",
+        "thisMonth": "Bu ay",
+        "lastMonth": "Geçen ay"
+      },
+      "dayCount": "Aralıktaki gün: {{count}}",
+      "inclusiveHint": "Dönem kapalı aralıktır: bitiş günü sayılır ve tek günlük rapor geçerlidir. \"Bu ay\" bilinçli olarak bugünde biter — henüz gerçekleşmemiş günler doluluk ve RevPAR paydasını şişirirdi.",
+      "clamped": "Aralık {{max}} güne kısaltıldı; sunucu daha fazlasına izin vermiyor. Daha uzun dönemleri bölerek sorgulayın.",
+      "tooLong": "Aralık çok uzun. En fazla 366 gün sorgulanabilir."
+    },
+    "scope": {
+      "label": "Hesaplama kapsamı",
+      "mode": {
+        "hotel": "Tek otel",
+        "consolidated": "Konsolide"
+      },
+      "hotels": "Otel sayısı: {{count}}",
+      "hotelHint": "Tüm sayılar aktif otele aittir.",
+      "consolidatedHint": "Aktif otel seçilmedi: sayılar erişilebilen tüm otellerin toplamıdır. Otel bazlı kırılım aşağıdaki tablolardadır.",
+      "mixedCurrencies": "Oteller farklı para birimleri kullanıyor. Üst toplamlar farklı birimlerin düz toplamıdır ve bu yüzden para birimi sembolü olmadan gösterilir — esas alınacak olan otel bazlı kırılımdır."
+    },
+    "kpi": {
+      "occupancyRate": "Doluluk",
+      "occupancyRateHint": "Satılan / müsait oda-gece",
+      "soldRoomNights": "Satılan oda-gece",
+      "soldRoomNightsHint": "İptal ve gelmeyen sayılmaz",
+      "availableRoomNights": "Müsait oda-gece",
+      "availableRoomNightsHint": "Doluluğun ve RevPAR’ın paydası",
+      "adrNet": "ADR (net)",
+      "adrNetHint": "Net oda geliri / satılan oda-gece",
+      "adrGross": "ADR (brüt)",
+      "revParNet": "RevPAR (net)",
+      "revParNetHint": "Net oda geliri / müsait oda-gece",
+      "revParGross": "RevPAR (brüt)",
+      "totalRevenueNet": "Ciro (net)",
+      "totalRevenueNetHint": "Oda + ekstra, Kurtaxe hariç"
+    },
+    "occupancy": {
+      "title": "Doluluk",
+      "subtitle": "Gün bazında oda-gece, kapasite ve doluluk.",
+      "loadFailed": "Doluluk raporu yüklenemedi.",
+      "overCapacity": "Doluluk %100’ün üzerinde. \"Servis dışı\" tarihsiz bir anlık durum bayrağıdır: bugün kapatılan bir oda geçmişte dolu olmuş olabilir. Sayı bilinçli olarak kırpılmaz.",
+      "empty": {
+        "title": "Bu dönemde kapasite yok",
+        "description": "Seçilen dönemde ne oda ne de satılan gece var. Rapor geçerlidir — yalnızca boştur."
+      }
+    },
+    "capacity": {
+      "physical": "Fiziksel oda-gece",
+      "physicalHint": "{{rooms}} oda × gün, servis dışı dâhil",
+      "outOfOrder": "Servis dışı",
+      "outOfOrderHint": "{{rooms}} oda — satılabilir envanter değil",
+      "available": "Müsait oda-gece",
+      "availableHint": "Fiziksel − servis dışı; doluluk bu paydaya göre hesaplanır."
+    },
+    "daily": {
+      "caption": "Gün bazında doluluk: satılan ve müsait oda-gece",
+      "columns": {
+        "date": "Gün",
+        "sold": "Satılan",
+        "available": "Müsait",
+        "rate": "Doluluk",
+        "bar": "Seyir"
+      },
+      "barDecorative": "Çubuk yalnızca aynı satırdaki yüzdeyi tekrar eder.",
+      "roundingNote": "Yuvarlama: günlük değerler iki ondalığa yuvarlanmıştır, toplamları üst toplamlardan birkaç kuruş sapabilir. Esas olan üst toplamlardır."
+    },
+    "hotels": {
+      "occupancyCaption": "Otel bazında doluluk",
+      "revenueCaption": "Otel bazında ciro",
+      "columns": {
+        "hotel": "Otel"
+      }
+    },
+    "revenue": {
+      "title": "Ciro",
+      "subtitle": "Kesinleşmiş faturalardan okunur (tahakkuk esaslı). Taslaklar sayılmaz; iptal edilen fatura ve iptal faturası birlikte sayılır ve tam sıfır eder.",
+      "loadFailed": "Ciro raporu yüklenemedi.",
+      "caption": "Türe göre ciro — net, KDV ve brüt",
+      "columns": {
+        "kind": "Tür"
+      },
+      "roomRevenue": "Oda geliri",
+      "extraRevenue": "Ekstralar",
+      "totalRevenue": "Toplam ciro",
+      "totalRevenueHint": "Oda + ekstra. Kurtaxe DÂHİL DEĞİLDİR; dağıtılamayan fatura geliri de değildir — ikisi de aşağıda ayrı durur.",
+      "rateHint": "ADR ve RevPAR yalnızca oda gelirine dayanır; ekstralar ve Kurtaxe girmez. Net ve brüt ayrı alanlardır, hiçbir zaman karıştırılmaz.",
+      "empty": {
+        "title": "Bu dönemde ciro yok",
+        "description": "Seçilen dönemde kesinleşmiş fatura bulunmuyor."
+      }
+    },
+    "money": {
+      "net": "Net",
+      "vat": "KDV",
+      "gross": "Brüt"
+    },
+    "excluded": {
+      "title": "Toplam ciroya dâhil olmayanlar",
+      "accountingTotal": "Muhasebe toplamı (toplam ciro + dağıtılamayan gelir, net):"
+    },
+    "cityTax": {
+      "label": "Kurtaxe (tahsil edilen)",
+      "short": "Kurtaxe",
+      "hint": "Gelir değildir: belediye adına tahsil edilen, aktarılan bir kalemdir. Ne toplam ciroya ne ADR’ye girer."
+    },
+    "unbilled": {
+      "label": "Henüz faturalanmadı (brüt)",
+      "hint": "Kesinleşmiş faturası olmayan konaklamalar. Yalnızca operasyonel karşılaştırma değeridir — hiçbir toplama girmez."
+    },
+    "other": {
+      "label": "Dağıtılamayan gelir (net)",
+      "hint": "Elle kesilen faturalar ile iptal/gelmeyen rezervasyonlara bağlı faturalar. Bir oda-gecesine yazılamadığı için toplam ciroya ve ADR’ye girmez.",
+      "breakdown": "bunun oda / ekstra kısmı:"
+    },
+    "channels": {
+      "caption": "Rezervasyon kanalına göre ciro",
+      "columns": {
+        "channel": "Kanal",
+        "reservations": "Rezervasyon",
+        "roomNights": "Oda-gece",
+        "roomRevenueNet": "Oda geliri (net)",
+        "share": "Pay"
+      },
+      "zeroNote": "Bir kanalın 0,00 görünmesi normaldir: kesinleşmiş fatura ve onun iptal faturası birlikte sayılır ve tam sıfır eder. Satır bilinçli olarak gizlenmez."
+    },
+    "revenueDaily": {
+      "caption": "Gün bazında ciro: net oda geliri, ADR ve Kurtaxe"
     }
   },
   "country": {
