@@ -40,6 +40,29 @@ public sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .HasForeignKey(x => x.CancelledByInvoiceId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Storno zincirinin TERS yönü: iptal faturası -> iptal ettiği orijinal fatura.
+        // İki yön de saklanır çünkü "bu belge iptal edildi mi?" ve "bu belge neyi iptal ediyor?"
+        // sorularının ikisi de fatura listesinde/detayında sorulur; ters yön saklanmazsa ikincisi
+        // her satır için ilintili alt sorgu (Invoices üzerinde ek tarama) gerektirir.
+        //
+        // Restrict BİLİNÇLİ: iki self-referencing FK ile Cascade bir döngü üretir (PostgreSQL
+        // "multiple cascade paths" yerine döngüsel silme riski) ve zaten fatura hiçbir koşulda
+        // hard-delete edilmez (AppDbContext.EnforceInvoiceImmutability).
+        builder.HasOne(x => x.CancelsInvoice)
+            .WithMany()
+            .HasForeignKey(x => x.CancelsInvoiceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Satır içi (tek satırda doğrulanabilir) storno değişmezi: bir fatura kendisini iptal
+        // edemez. Çiftin karşılıklı eşitliği (A.CancelledByInvoiceId = B.Id <=>
+        // B.CancelsInvoiceId = A.Id) CHECK ile ifade EDİLEMEZ — CHECK yalnızca kendi satırını
+        // görür. O değişmezin sahibi Invoice.MarkCancelled(Invoice) domain metodu; kaydetme
+        // sırasında AppDbContext.ReconcileStornoBackReferences güvenlik ağı olarak tamamlar.
+        builder.ToTable(table => table.HasCheckConstraint(
+            "CK_Invoices_NoSelfCancellation",
+            "(\"CancelledByInvoiceId\" IS NULL OR \"CancelledByInvoiceId\" <> \"Id\") AND " +
+            "(\"CancelsInvoiceId\" IS NULL OR \"CancelsInvoiceId\" <> \"Id\")"));
+
         // GoBD: fatura numarası otel bazında benzersiz ve boşluksuzdur.
         // Taslak faturalar numarasızdır; PostgreSQL'de birden çok boş string olamayacağı için
         // unique index yalnızca numarası atanmış (finalize edilmiş) satırlara uygulanır.
@@ -61,5 +84,8 @@ public sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasIndex(x => new { x.HotelId, x.IssuedAt });
         builder.HasIndex(x => x.GuestId);
         builder.HasIndex(x => x.ReservationId);
+        // FK index'i açıkça bildirilir (konvansiyon da üretirdi; niyet belgelenmiş olsun):
+        // "bu faturayı iptal eden storno hangisi" araması ve FK doğrulaması bu index'i kullanır.
+        builder.HasIndex(x => x.CancelsInvoiceId);
     }
 }

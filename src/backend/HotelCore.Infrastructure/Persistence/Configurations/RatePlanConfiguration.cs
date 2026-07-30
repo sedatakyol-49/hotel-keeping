@@ -24,8 +24,22 @@ public sealed class RatePlanConfiguration : IEntityTypeConfiguration<RatePlan>
             .HasForeignKey(x => x.RoomTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Geçerlilik aralığı kapalıdır [ValidFrom, ValidTo] ve ters aralık anlamsızdır.
+        // Bu kısıt aynı zamanda çakışma kısıtının ÖN KOŞULUdur: PostgreSQL'de
+        // daterange(ValidFrom, ValidTo, '[]') alt sınır > üst sınır olduğunda hata fırlatır,
+        // yani kısıt olmadan bozuk bir satır anlaşılmaz bir 500 üretirdi.
+        builder.ToTable(table => table.HasCheckConstraint(
+            "CK_RatePlans_ValidRange",
+            "\"ValidFrom\" <= \"ValidTo\""));
+
         builder.HasIndex(x => x.HotelId);
         // Tarih aralığı + kanal eşleşmesi fiyat arama sorgusunun sıcak yoludur.
         builder.HasIndex(x => new { x.RoomTypeId, x.ValidFrom, x.ValidTo });
+
+        // ÇAKIŞMA KISITI: aynı (RoomTypeId, Channel) için tarih aralığı çakışan iki AKTİF plan
+        // olamaz. Bu kısıt EF ile ifade edilemez (PostgreSQL "EXCLUDE USING gist" + daterange
+        // gerektirir) ve migration içinde HAM SQL olarak eklenmiştir:
+        // Persistence/Migrations/*_CloseDomainGapsForInvoicingAndRates.cs.
+        // İhlali SQLSTATE 23P01 üretir; AppDbContext bunu 409 Conflict'e çevirir.
     }
 }

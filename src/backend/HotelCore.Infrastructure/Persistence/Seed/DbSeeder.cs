@@ -267,7 +267,13 @@ public static class DbSeeder
                     VatRate = 19.00m,
                     ReducedVatRate = 7.00m,
                     CityTaxPerPersonNight = 3.00m,
-                    CityTaxEnabled = true
+                    CityTaxEnabled = true,
+                    // Almanya'da belediyelerin çoğunda reşit olmayanlar Kurtaxe'den muaftır;
+                    // kurgusal Berlin demo oteli bu yaygın kuralı örnekler. Yaş sınırı hesaba
+                    // GİRMEZ (rezervasyonda doğum tarihi yok), faturada muafiyetin dayanağı
+                    // olarak yazdırılır ve "çocuk" sayımının operasyonel tanımıdır.
+                    CityTaxExemptChildren = true,
+                    CityTaxChildAgeLimit = 18
                 }
             });
 

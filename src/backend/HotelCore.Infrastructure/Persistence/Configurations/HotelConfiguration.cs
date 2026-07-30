@@ -28,8 +28,24 @@ public sealed class HotelConfiguration : IEntityTypeConfiguration<Hotel>
             tax.Property(p => p.ReducedVatRate).HasPrecision(5, 2).IsRequired();
             tax.Property(p => p.CityTaxPerPersonNight).HasPrecision(18, 2).IsRequired();
             tax.Property(p => p.CityTaxEnabled).IsRequired();
+
+            // Kurtaxe çocuk muafiyeti. Varsayılan false: mevcut otellerin hesabı
+            // ((yetişkin + çocuk) × gece) değişmez — muafiyet opt-in'dir.
+            tax.Property(p => p.CityTaxExemptChildren).IsRequired().HasDefaultValue(false);
+
+            // Yaş sınırı belediyeye göre değişir; hesaba girmez (rezervasyonda doğum tarihi yok),
+            // faturada/beyanda muafiyetin dayanağı olarak yazdırılır. Bilinmiyorsa NULL.
+            tax.Property(p => p.CityTaxChildAgeLimit);
         });
         builder.Navigation(x => x.TaxProfile).IsRequired();
+
+        // Owned type kolonu Hotels tablosunda yaşadığı için kısıt da bu tabloya yazılır.
+        // Anlamsız değerleri (negatif yaş, 100+) veritabanı düzeyinde reddeder; Application
+        // katmanı ayrıca doğrulama eklemelidir (kullanıcıya anlamlı mesaj için).
+        builder.ToTable(table => table.HasCheckConstraint(
+            "CK_Hotels_CityTaxChildAgeLimit",
+            "\"TaxProfile_CityTaxChildAgeLimit\" IS NULL OR " +
+            "(\"TaxProfile_CityTaxChildAgeLimit\" >= 0 AND \"TaxProfile_CityTaxChildAgeLimit\" <= 99)"));
 
         // Otel silinmesi Head Office silinmesine bağlanmaz (Restrict) — organizasyon verisi korunur.
         builder.HasOne(x => x.HeadOffice)

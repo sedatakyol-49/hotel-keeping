@@ -53,6 +53,19 @@ public sealed class Invoice : EntityBase, ITenantEntity, IAuditableEntity, ISoft
 
     public Invoice? CancelledByInvoice { get; set; }
 
+    /// <summary>
+    /// Bu fatura bir <b>Stornorechnung</b> ise iptal ettiği orijinal faturanın kimliği; değilse null.
+    /// <para>
+    /// <see cref="CancelledByInvoiceId"/>'nin ters yönüdür. İki alan birlikte GoBD storno çiftini
+    /// <b>her iki yönden</b> okunabilir yapar: "bu belge iptal edildi mi?" ve "bu belge neyi iptal
+    /// ediyor?". Ters yön saklanmazsa ikinci soru ancak ilintili alt sorguyla (her satır için
+    /// <c>Invoices</c> taraması) cevaplanabilir.
+    /// </para>
+    /// </summary>
+    public Guid? CancelsInvoiceId { get; private set; }
+
+    public Invoice? CancelsInvoice { get; set; }
+
     public ICollection<InvoiceLineItem> LineItems { get; } = [];
 
     public ICollection<Payment> Payments { get; } = [];
@@ -103,6 +116,14 @@ public sealed class Invoice : EntityBase, ITenantEntity, IAuditableEntity, ISoft
     /// <summary>
     /// Faturayı iptal eder. Kesinleşmiş fatura silinmez/düzeltilmez; iptal faturası
     /// (Stornorechnung) oluşturulur ve orijinal ona bağlanır.
+    /// <para>
+    /// <b>Not:</b> bu aşırı yükleme yalnızca <b>ileri</b> yönü (<see cref="CancelledByInvoiceId"/>)
+    /// yazabilir; storno nesnesine erişimi olmadığı için geri referansı
+    /// (<see cref="CancelsInvoiceId"/>) kuramaz. Storno nesnesi elinizdeyse
+    /// <see cref="MarkCancelled(Invoice)"/> aşırı yüklemesini kullanın — çifti tek çağrıda ve
+    /// tutarlı biçimde kurar. Bu yol kullanıldığında geri referansı <c>AppDbContext</c> kaydetme
+    /// sırasında tamamlar (yalnızca güvenlik ağı; birincil yol domain metodudur).
+    /// </para>
     /// </summary>
     public void MarkCancelled(Guid? cancellationInvoiceId = null)
     {
@@ -116,7 +137,74 @@ public sealed class Invoice : EntityBase, ITenantEntity, IAuditableEntity, ISoft
             throw new InvalidOperationException("Kesinlesmis bir fatura ancak iptal faturasi (Stornorechnung) ile iptal edilebilir.");
         }
 
+        if (cancellationInvoiceId == Id)
+        {
+            throw new InvalidOperationException("Bir fatura kendisini iptal edemez.");
+        }
+
         CancelledByInvoiceId = cancellationInvoiceId;
         Status = InvoiceStatus.Cancelled;
+    }
+
+    /// <summary>
+    /// Faturayı verilen <b>Stornorechnung</b> ile iptal eder ve <b>çiftin iki yönünü birlikte</b>
+    /// kurar: <c>orijinal.CancelledByInvoiceId = storno.Id</c> ve
+    /// <c>storno.CancelsInvoiceId = orijinal.Id</c>.
+    /// <para>
+    /// Değişmez (invariant) burada korunur çünkü iki kolonun eşleşmesi <b>satır içi</b> bir kural
+    /// değildir: PostgreSQL'de karşılıklı iki FK'nin birbirini işaret ettiğini doğrulayan bir
+    /// bildirimsel kısıt yoktur (CHECK yalnızca aynı satırı görür). Bu yüzden değişmezin sahibi
+    /// domain metodudur; veritabanı tarafında yalnızca <b>satır içi</b> kısım
+    /// (kendini iptal etme yasağı) CHECK ile garanti edilir.
+    /// </para>
+    /// </summary>
+    public void MarkCancelled(Invoice cancellationInvoice)
+    {
+        ArgumentNullException.ThrowIfNull(cancellationInvoice);
+
+        if (ReferenceEquals(cancellationInvoice, this))
+        {
+            throw new InvalidOperationException("Bir fatura kendisini iptal edemez.");
+        }
+
+        if (cancellationInvoice.CancelsInvoiceId is Guid existing && existing != Id)
+        {
+            throw new InvalidOperationException(
+                $"Bu iptal faturasi baska bir faturayi iptal ediyor (CancelsInvoiceId: {existing}); " +
+                "bir Stornorechnung yalnizca tek bir faturayi iptal edebilir.");
+        }
+
+        // Sira onemli: once durum gecisi dogrulanir (hata firlatirsa storno'ya dokunulmaz).
+        MarkCancelled(cancellationInvoice.Id);
+        cancellationInvoice.CancelsInvoiceId = Id;
+    }
+
+    /// <summary>
+    /// Geri referansı (<see cref="CancelsInvoiceId"/>) tamamlar. Yalnızca <b>persistence
+    /// katmanının tutarlılık güvenlik ağı</b> için vardır: ileri yön
+    /// <see cref="MarkCancelled(Guid?)"/> ile yazıldığında çiftin ikinci yarısını kaydetme
+    /// sırasında doldurur. Zaten aynı değere sahipse işlem yapmaz; farklı bir faturayı işaret
+    /// ediyorsa hata verir.
+    /// </summary>
+    public void LinkCancelledInvoice(Guid cancelledInvoiceId)
+    {
+        if (cancelledInvoiceId == Id)
+        {
+            throw new InvalidOperationException("Bir fatura kendisini iptal edemez.");
+        }
+
+        if (CancelsInvoiceId is Guid existing)
+        {
+            if (existing != cancelledInvoiceId)
+            {
+                throw new InvalidOperationException(
+                    $"Iptal faturasi zaten {existing} kimlikli faturayi iptal ediyor; " +
+                    $"{cancelledInvoiceId} ile yeniden baglanamaz.");
+            }
+
+            return;
+        }
+
+        CancelsInvoiceId = cancelledInvoiceId;
     }
 }

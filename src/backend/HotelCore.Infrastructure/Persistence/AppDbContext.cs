@@ -21,8 +21,13 @@ namespace HotelCore.Infrastructure.Persistence;
 /// göstermez (HotelId = null, CanAccessAllHotels = false) — yani "güvenli varsayılan" kapalıdır.
 /// </para>
 /// <para>
-/// (4) Benzersizlik ihlali (SQLSTATE 23505) → <see cref="ConflictException"/> çevirisi; böylece
-/// ön kontrolü atlatan yarış durumları 500 değil 409 döner.
+/// (4) Benzersizlik (SQLSTATE 23505) ve <b>çakışma/dışlama</b> (SQLSTATE 23P01) ihlalleri →
+/// <see cref="ConflictException"/> çevirisi; böylece ön kontrolü atlatan yarış durumları 500 değil
+/// 409 döner.
+/// </para>
+/// <para>
+/// (5) Storno çiftinin geri referansı (<c>Invoice.CancelsInvoiceId</c>) tamamlanır — bkz.
+/// <see cref="ReconcileStornoBackReferences"/>.
 /// </para>
 /// </summary>
 public class AppDbContext : DbContext, IAppDbContext
@@ -125,7 +130,7 @@ public class AppDbContext : DbContext, IAppDbContext
         {
             return base.SaveChanges();
         }
-        catch (DbUpdateException exception) when (FindUniqueViolation(exception) is { } violation)
+        catch (DbUpdateException exception) when (FindConflictingViolation(exception) is { } violation)
         {
             throw ToConflictException(violation, exception);
         }
@@ -139,7 +144,7 @@ public class AppDbContext : DbContext, IAppDbContext
         {
             return await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (DbUpdateException exception) when (FindUniqueViolation(exception) is { } violation)
+        catch (DbUpdateException exception) when (FindConflictingViolation(exception) is { } violation)
         {
             throw ToConflictException(violation, exception);
         }
@@ -154,18 +159,28 @@ public class AppDbContext : DbContext, IAppDbContext
         "Kayit mevcut bir kayitla cakisiyor; girilen degerler benzersiz olmalidir. Lutfen tekrar deneyin.";
 
     /// <summary>
-    /// PostgreSQL benzersizlik ihlalini (SQLSTATE 23505) arar. Sarmalama derinliği sağlayıcıya göre
-    /// değişebildiği için tüm inner exception zinciri taranır.
+    /// Dışlama (EXCLUDE) kısıtı mesajı — bugün yalnızca fiyat planı tarih aralığı çakışmasında
+    /// oluşur. Şema detayı sızdırılmadan "aralık çakışması" olduğu söylenir; kullanıcı dostu,
+    /// plan adı içeren mesaj handler'ın ön kontrolünden gelir.
+    /// </summary>
+    private const string ExclusionViolationMessage =
+        "Kayit mevcut bir kaydin tarih araligiyla cakisiyor; ayni kapsamda cakisan aralik olamaz. " +
+        "Lutfen tarihleri kontrol edip tekrar deneyin.";
+
+    /// <summary>
+    /// PostgreSQL'in <b>çakışma</b> sınıfı hatalarını arar: benzersizlik ihlali (23505) ve dışlama
+    /// kısıtı ihlali (23P01). Sarmalama derinliği sağlayıcıya göre değişebildiği için tüm inner
+    /// exception zinciri taranır.
     /// <para>
     /// <b>Katman notu:</b> Npgsql tipine bağımlılık bilinçli olarak <b>Infrastructure'da</b> tutulur;
     /// Application katmanı veritabanı sağlayıcısını tanımaz (LayerDependencyTests bunu doğrular).
     /// </para>
     /// </summary>
-    private static PostgresException? FindUniqueViolation(Exception exception)
+    private static PostgresException? FindConflictingViolation(Exception exception)
     {
         for (var current = exception.InnerException; current is not null; current = current.InnerException)
         {
-            if (current is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } postgres)
+            if (current is PostgresException postgres && IsConflict(postgres.SqlState))
             {
                 return postgres;
             }
@@ -174,31 +189,128 @@ public class AppDbContext : DbContext, IAppDbContext
         return null;
     }
 
+    private static bool IsConflict(string? sqlState) =>
+        sqlState is PostgresErrorCodes.UniqueViolation or PostgresErrorCodes.ExclusionViolation;
+
     /// <summary>
     /// Savunma katmanı: ön kontrol ile INSERT arasındaki yarış durumunda (iki eşzamanlı istek)
     /// kullanıcı 500 değil <b>409</b> alır. Teşhis için kısıt/tablo adı log'lanır.
     /// </summary>
     private ConflictException ToConflictException(PostgresException violation, DbUpdateException exception)
     {
-        _logger?.UniqueConstraintViolation(
-            violation.ConstraintName ?? "(bilinmiyor)",
-            violation.TableName ?? "(bilinmiyor)",
-            exception);
+        var constraint = violation.ConstraintName ?? "(bilinmiyor)";
+        var table = violation.TableName ?? "(bilinmiyor)";
+
+        if (violation.SqlState is PostgresErrorCodes.ExclusionViolation)
+        {
+            _logger?.ExclusionConstraintViolation(constraint, table, exception);
+
+            return new ConflictException(ExclusionViolationMessage, exception);
+        }
+
+        _logger?.UniqueConstraintViolation(constraint, table, exception);
 
         return new ConflictException(UniqueViolationMessage, exception);
     }
 
     /// <summary>
     /// Kaydetmeden önceki ortak boru hattı. Sıra önemlidir: önce silme yumuşatılır
-    /// (Deleted -> Modified), sonra denetim alanları yazılır, en son GoBD guard'ı nihai
-    /// değişiklik kümesini denetler.
+    /// (Deleted -> Modified), storno çiftinin geri referansı tamamlanır (kendisi de bir
+    /// değişiklik ürettiği için denetim alanlarından ÖNCE), sonra denetim alanları yazılır,
+    /// en son GoBD guard'ı nihai değişiklik kümesini denetler.
     /// </summary>
     private void PrepareChanges()
     {
         ApplySoftDelete();
+        ReconcileStornoBackReferences();
         ApplyAuditInformation();
         BumpConcurrencyTokens();
         EnforceInvoiceImmutability();
+    }
+
+    /// <summary>
+    /// Storno çiftinin <b>ikinci yarısını</b> tamamlar: bir fatura
+    /// <c>CancelledByInvoiceId = storno.Id</c> ile iptal edildiğinde, aynı değişiklik kümesindeki
+    /// storno kaydına <c>CancelsInvoiceId = orijinal.Id</c> yazılır.
+    /// <para>
+    /// <b>Neden burada:</b> "A.CancelledByInvoiceId = B.Id ⟺ B.CancelsInvoiceId = A.Id" değişmezi
+    /// <b>iki satırı</b> ilgilendirir; PostgreSQL'de bunu bildirimsel olarak ifade eden bir kısıt
+    /// yoktur (CHECK yalnızca kendi satırını görür, FK yalnızca varlığı doğrular). Tek veri düzeyi
+    /// alternatifi trigger yazmaktı; trigger domain kuralını görünmez biçimde ikizler ve EF
+    /// tarafında takip edilen nesnelerle senkronizasyonu bozar. Bu yüzden değişmezin sahibi
+    /// <c>Invoice.MarkCancelled(Invoice)</c> domain metodudur; buradaki uzlaştırma yalnızca
+    /// <b>güvenlik ağıdır</b> — yalnızca kimliği alan aşırı yükleme kullanıldığında (bugün
+    /// Application katmanı böyle çağırıyor) devreye girer.
+    /// </para>
+    /// <para>
+    /// <b>Ters yön kasıtlı olarak zorlanmaz</b> ("CancelsInvoiceId dolu ⇒ orijinal iptal edilmiş"):
+    /// storno akışı iki transaction'dır — iptal faturası ilk adımda <i>taslak</i> olarak yazılır,
+    /// orijinalin iptali ancak ikinci adımda commit edilir. Yani "orijinali henüz iptal edilmemiş
+    /// storno taslağı" meşru bir ara durumdur.
+    /// </para>
+    /// </summary>
+    private void ReconcileStornoBackReferences()
+    {
+        var invoices = ChangeTracker.Entries<Invoice>().ToList();
+
+        foreach (var entry in invoices)
+        {
+            if (entry.State is not (EntityState.Added or EntityState.Modified))
+            {
+                continue;
+            }
+
+            if (entry.Entity.CancelledByInvoiceId is not Guid cancellationInvoiceId)
+            {
+                continue;
+            }
+
+            // Yalnızca bu kaydetmede KURULAN bağlantılar uzlaştırılır; mevcut satırların
+            // yeniden yazılması (ve kesinleşmiş storno'ya dokunulması) önlenir.
+            if (entry.State is EntityState.Modified
+                && !entry.Property(invoice => invoice.CancelledByInvoiceId).IsModified)
+            {
+                continue;
+            }
+
+            var storno = invoices.Find(candidate => candidate.Entity.Id == cancellationInvoiceId);
+            if (storno is not null)
+            {
+                storno.Entity.LinkCancelledInvoice(entry.Entity.Id);
+                continue;
+            }
+
+            EnsurePersistedStornoPointsBack(cancellationInvoiceId, entry.Entity.Id);
+        }
+    }
+
+    /// <summary>
+    /// İptal faturası bu değişiklik kümesinde takip edilmiyorsa geri referansı yazamayız (ve
+    /// kesinleşmiş bir belgeyi sessizce güncellemek GoBD açısından da doğru olmaz). Bu durumda
+    /// yalnızca <b>doğrulama</b> yapılır: veritabanındaki satır zaten doğru yönü gösteriyorsa
+    /// sorun yoktur; aksi hâlde çağıran, çifti kuran domain metodunu kullanmaya zorlanır.
+    /// </summary>
+    private void EnsurePersistedStornoPointsBack(Guid cancellationInvoiceId, Guid cancelledInvoiceId)
+    {
+        // IgnoreQueryFilters: bütünlük denetimi tenant bağlamından bağımsız çalışmalıdır.
+        var persisted = Set<Invoice>()
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(invoice => invoice.Id == cancellationInvoiceId)
+            .Select(invoice => new { invoice.CancelsInvoiceId })
+            .FirstOrDefault();
+
+        if (persisted is null || persisted.CancelsInvoiceId == cancelledInvoiceId)
+        {
+            // Satır yoksa FK zaten reddeder; eşleşiyorsa değişmez korunuyor.
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Storno cifti tutarsiz: {cancelledInvoiceId} kimlikli fatura {cancellationInvoiceId} " +
+            "kimlikli iptal faturasina baglaniyor, fakat iptal faturasinin CancelsInvoiceId degeri " +
+            $"'{persisted.CancelsInvoiceId?.ToString() ?? "null"}'. Cifti kuran domain metodunu " +
+            "kullanin: Invoice.MarkCancelled(Invoice cancellationInvoice).");
     }
 
     /// <summary>
@@ -272,6 +384,12 @@ public class AppDbContext : DbContext, IAppDbContext
     /// GoBD sonrası fatura üzerinde değişmesine izin verilen alanlar. Durum geçişi
     /// (Finalized -> Paid / Cancelled) ve iptal faturası bağlantısı meşrudur; tutar, satır,
     /// numara, tarih gibi içerik alanları değiştirilemez.
+    /// <para>
+    /// <c>CancelsInvoiceId</c> bu listede <b>bilinçli olarak yok</b>: bir Stornorechnung'un neyi
+    /// iptal ettiği belgenin <i>anlamının</i> parçasıdır ve düzenlenme (taslak) anında bellidir.
+    /// Kesinleştikten sonra başka bir faturaya yönlendirilememesi gerekir — mevcut iptal akışı da
+    /// bu alanı storno henüz taslakken yazar, dolayısıyla kısıt akışı engellemez.
+    /// </para>
     /// </summary>
     private static readonly string[] GoBdMutableInvoiceProperties =
     [

@@ -22,4 +22,22 @@ internal static class PersistenceLog
         string tableName,
         Exception exception) =>
         UniqueConstraintViolationMessage(logger, constraintName, tableName, exception);
+
+    private static readonly Action<ILogger, string, string, Exception?> ExclusionConstraintViolationMessage =
+        LoggerMessage.Define<string, string>(
+            LogLevel.Warning,
+            new EventId(4001, "ExclusionConstraintViolation"),
+            "Dislama (EXCLUDE) kisiti ihlali 409 Conflict'e cevrildi. Kisit: {ConstraintName}, tablo: {TableName}");
+
+    /// <summary>
+    /// Aralık çakışması kısıtı (örn. fiyat planı <c>EXCLUDE USING gist</c>) ihlali. Bu uyarının
+    /// görülmesi, handler'ın ön kontrolünü atlatan <b>eşzamanlı</b> bir yazma olduğunu gösterir —
+    /// yani kısıt tam olarak var olma sebebini yerine getirmiştir.
+    /// </summary>
+    public static void ExclusionConstraintViolation(
+        this ILogger logger,
+        string constraintName,
+        string tableName,
+        Exception exception) =>
+        ExclusionConstraintViolationMessage(logger, constraintName, tableName, exception);
 }
