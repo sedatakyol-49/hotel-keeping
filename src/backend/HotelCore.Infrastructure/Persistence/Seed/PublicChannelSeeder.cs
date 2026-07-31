@@ -107,8 +107,13 @@ internal static class PublicChannelSeeder
 
         // "Musterstraße" bir yer tutucudur ve Impressum'da yer tutucu bir adres göstermek
         // demonun anlamını bozar; kanal açılırken gerçekçi bir Berlin-Mitte adresine geçilir.
+        //
+        // Adres TEK parçadır: sokak ve posta kodu yeniden yazılıp şehir olduğu gibi bırakılırsa,
+        // şehir alanı bu arada (ör. Ayarlar ekranından) değiştirilmişse ortaya var olmayan bir
+        // adres çıkar. §5 DDG künyede yanlış adresi tolere etmez, o yüzden üçü birlikte yazılır.
         hotel.AddressLine = "Chausseestraße 5";
         hotel.PostalCode = "10115";
+        hotel.City = "Berlin";
         hotel.Amenities = "wifi,breakfast,bar,fitness,luggageStorage,petsAllowed,parking";
 
         hotel.PublicBookingSettings = new PublicBookingSettings
