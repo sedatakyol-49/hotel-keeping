@@ -73,6 +73,12 @@ public class AppDbContext : DbContext, IAppDbContext
 
     public DbSet<RoomType> RoomTypes => Set<RoomType>();
 
+    public DbSet<RoomTypeImage> RoomTypeImages => Set<RoomTypeImage>();
+
+    public DbSet<HotelImage> HotelImages => Set<HotelImage>();
+
+    public DbSet<HotelLegalDocument> HotelLegalDocuments => Set<HotelLegalDocument>();
+
     public DbSet<Room> Rooms => Set<Room>();
 
     public DbSet<RatePlan> RatePlans => Set<RatePlan>();
@@ -80,6 +86,19 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Guest> Guests => Set<Guest>();
 
     public DbSet<Reservation> Reservations => Set<Reservation>();
+
+    /// <summary>
+    /// Misafir kanalının 15 dakikalık geçici tutmaları.
+    /// <para>
+    /// <b>Not:</b> <see cref="BookingHold"/> <c>ISoftDeletable</c> DEĞİLDİR — süresi dolan
+    /// kayıt <c>Remove</c> ile <b>fiziksel</b> olarak silinir (bkz. entity dokümantasyonu).
+    /// <c>ApplySoftDelete</c> bu tipe dokunmaz, bu yüzden <c>Remove</c> gerçekten siler.
+    /// </para>
+    /// </summary>
+    public DbSet<BookingHold> BookingHolds => Set<BookingHold>();
+
+    /// <summary>Rezervasyonların public kanal yüzü ve rıza anlık görüntüsü.</summary>
+    public DbSet<PublicBooking> PublicBookings => Set<PublicBooking>();
 
     public DbSet<Folio> Folios => Set<Folio>();
 

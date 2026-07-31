@@ -464,6 +464,13 @@ internal sealed class BookingScenario : IAsyncDisposable
             .Where(counter => hotelIds.Contains(counter.HotelId)).ExecuteDeleteAsync();
         await database.Folios.IgnoreQueryFilters()
             .Where(folio => hotelIds.Contains(folio.HotelId)).ExecuteDeleteAsync();
+        // Public kanal kayitlari rezervasyondan ONCE silinir: PublicBooking -> Reservation FK'si
+        // Restrict'tir ve BookingHold.ConsumedByReservationId de oyle (bkz.
+        // CK_BookingHolds_ConsumptionIsComplete — SetNull olsaydi kisiti ihlal ederdi).
+        await database.PublicBookings.IgnoreQueryFilters()
+            .Where(booking => hotelIds.Contains(booking.HotelId)).ExecuteDeleteAsync();
+        await database.BookingHolds.IgnoreQueryFilters()
+            .Where(hold => hotelIds.Contains(hold.HotelId)).ExecuteDeleteAsync();
         await database.Reservations.IgnoreQueryFilters()
             .Where(reservation => hotelIds.Contains(reservation.HotelId)).ExecuteDeleteAsync();
         await database.RatePlans.IgnoreQueryFilters()
@@ -472,6 +479,12 @@ internal sealed class BookingScenario : IAsyncDisposable
             .Where(room => hotelIds.Contains(room.HotelId)).ExecuteDeleteAsync();
         await database.Guests.IgnoreQueryFilters()
             .Where(guest => hotelIds.Contains(guest.HotelId)).ExecuteDeleteAsync();
+        await database.RoomTypeImages.IgnoreQueryFilters()
+            .Where(image => hotelIds.Contains(image.HotelId)).ExecuteDeleteAsync();
+        await database.HotelImages.IgnoreQueryFilters()
+            .Where(image => hotelIds.Contains(image.HotelId)).ExecuteDeleteAsync();
+        await database.HotelLegalDocuments.IgnoreQueryFilters()
+            .Where(document => hotelIds.Contains(document.HotelId)).ExecuteDeleteAsync();
         await database.RoomTypes.IgnoreQueryFilters()
             .Where(roomType => hotelIds.Contains(roomType.HotelId)).ExecuteDeleteAsync();
         await database.Hotels.IgnoreQueryFilters()

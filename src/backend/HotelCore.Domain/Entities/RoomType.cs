@@ -35,6 +35,9 @@ public sealed class RoomType : EntityBase, ITenantEntity, IAuditableEntity, ISof
 
     public ICollection<RatePlan> RatePlans { get; } = [];
 
+    /// <summary>Katalog ve detay sayfası görselleri (sıraya göre).</summary>
+    public ICollection<RoomTypeImage> Images { get; } = [];
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public Guid? CreatedByUserId { get; set; }

@@ -99,11 +99,25 @@ public static class DbSeeder
         new("Management", "Yönetim / Direktion")
     ];
 
+    /// <summary>
+    /// Oda tipleri. Ad ve açıklama <b>otelin varsayılan dilindedir</b> (de) — çeviri tablosu
+    /// yalnızca diğer dilleri taşır (bkz. <see cref="PublicChannelSeeder"/>). Metinler misafir
+    /// sitesinde birebir görüneceği için gerçekçi Almanca yazılmıştır.
+    /// </summary>
     private static readonly RoomTypeSeed[] RoomTypeSeeds =
     [
-        new("SGL", "Einzelzimmer", "Tek kişilik oda, şehir manzarası", 89.00m, 1, 18, "wifi,desk,safe"),
-        new("DBL", "Doppelzimmer", "Çift kişilik oda, king-size yatak", 129.00m, 2, 26, "wifi,minibar,safe"),
-        new("SUI", "Suite", "Oturma odalı süit, balkonlu", 219.00m, 4, 45, "wifi,minibar,balcony,safe")
+        new("SGL", "Einzelzimmer",
+            "Ruhiges Einzelzimmer zum begrünten Innenhof, mit Schreibtisch, Regendusche und "
+            + "kostenfreiem WLAN. Ideal für Geschäftsreisende.",
+            89.00m, 1, 18, "wifi,desk,safe,airConditioning"),
+        new("DBL", "Doppelzimmer",
+            "Großzügiges Doppelzimmer mit Kingsize-Bett, Sitzecke und bodentiefen Fenstern zur "
+            + "Chausseestraße. Nespresso-Maschine und Minibar inklusive.",
+            129.00m, 2, 26, "wifi,minibar,safe,coffeeMachine,airConditioning"),
+        new("SUI", "Suite",
+            "Suite mit separatem Wohnbereich, Balkon und Blick über Berlin-Mitte. Für bis zu vier "
+            + "Personen, mit freistehender Badewanne und Regendusche.",
+            219.00m, 4, 45, "wifi,minibar,balcony,safe,bathtub,coffeeMachine")
     ];
 
     private static readonly RoomSeed[] RoomSeeds =
@@ -282,6 +296,13 @@ public static class DbSeeder
 
         await SeedDemoDepartmentsAsync(context, cancellationToken).ConfigureAwait(false);
         await SeedDemoRoomsAsync(context, cancellationToken).ConfigureAwait(false);
+
+        // Misafire açık kanal (slug, saat dilimi, künye, hukuki belgeler, görseller, web fiyat
+        // planı). Odalar ve oda tipleri kurulduktan SONRA çalışır: görseller ve fiyat planları
+        // oda tiplerine bağlanır.
+        await PublicChannelSeeder
+            .SeedAsync(context, DemoHeadOfficeId, DemoHotelId, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private static async Task SeedDemoDepartmentsAsync(AppDbContext context, CancellationToken cancellationToken)

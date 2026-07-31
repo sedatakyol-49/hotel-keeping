@@ -37,6 +37,15 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
             .HasForeignKey(x => x.RatePlanId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // En az bir gece. Bu kısıt yalnızca "day-use yok" kuralını tekrar etmez; ÇAKIŞMA
+        // KISITININ ÖN ŞARTIDIR: CheckIn = CheckOut olduğunda daterange BOŞ aralık üretir, boş
+        // aralık hiçbir şeyle çakışmaz ve o satır EX_Reservations_NoOverlappingStays kapsamından
+        // sessizce düşerdi. CheckIn > CheckOut ise daterange doğrudan hata fırlatır (22000) ve
+        // kullanıcı anlamsız bir veritabanı hatası görürdü.
+        builder.ToTable(table => table.HasCheckConstraint(
+            "CK_Reservations_ValidStay",
+            "\"CheckIn\" < \"CheckOut\""));
+
         // Rezervasyon numarası otel içinde benzersiz. Rezervasyon GoBD belgesi DEĞİLDİR (fatura
         // öyledir), bu yüzden silinmiş kayıtlar benzersizlik kapsamı dışında bırakılır; iptal
         // edilen rezervasyon silinmez, Status = Cancelled ile durur ve numarasını korur.
