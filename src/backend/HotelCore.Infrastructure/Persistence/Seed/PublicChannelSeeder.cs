@@ -16,7 +16,14 @@ namespace HotelCore.Infrastructure.Persistence.Seed;
 ///
 /// <para><b>Görseller:</b> bu fazda yükleme/CDN boru hattı yoktur (architecture-public-booking.md
 /// §12). Seed <b>köke göreli</b> yollar yazar (<c>/assets/demo/...</c>) — dış bir kaynağa
-/// bağlanmaz, böylece demo çevrimdışı da çalışır ve kırık bir dış bağlantı üretmez.</para>
+/// bağlanmaz, böylece demo çevrimdışı da çalışır ve kırık bir dış bağlantı üretmez.
+/// <b>Dosyalar gerçekten vardır:</b> misafir uygulamasının
+/// <c>projects/guest-web/public/assets/demo/berlin-mitte/</c> klasöründe, arayüzün kendi yer
+/// tutucu diliyle (kâğıt zemin, 1px cetvel, çapraz iki çizgi) çizilmiş SVG'lerdir. Fotoğraf
+/// taklidi <b>değildir</b> ve öyle görünmezler; ama ölçüleri gerçektir, dolayısıyla
+/// <c>width</c>/<c>height</c> → CLS ve <c>alt</c> → WCAG yolları uçtan uca çalışır. Daha önce
+/// yollar var dosya yoktu: her sayfa yüklemesi birkaç 404 üretiyordu ve bir demo sırasında bu,
+/// gerçek bir entegrasyon hatasından ayırt edilemez.</para>
 ///
 /// <para><b>İdempotentlik:</b> otel yapılandırması yalnızca <c>PublicSlug</c> boşken uygulanır
 /// (yani kanal ilk kez açılırken); belgeler, görseller, çeviriler ve fiyat planları doğal
@@ -330,9 +337,9 @@ internal static class PublicChannelSeeder
 
     private static readonly ImageSeed[] HotelImageSeeds =
     [
-        new($"{ImageRoot}/hotel-fassade.jpg", 0, "Fassade des HotelCore Berlin Mitte an der Chausseestraße", 1600, 900),
-        new($"{ImageRoot}/hotel-lobby.jpg", 1, "Lobby mit Empfang und Sitzbereich", 1600, 900),
-        new($"{ImageRoot}/hotel-fruehstueck.jpg", 2, "Frühstücksraum mit Buffet", 1600, 900)
+        new($"{ImageRoot}/hotel-fassade.svg", 0, "Fassade des HotelCore Berlin Mitte an der Chausseestraße", 1600, 900),
+        new($"{ImageRoot}/hotel-lobby.svg", 1, "Lobby mit Empfang und Sitzbereich", 1600, 900),
+        new($"{ImageRoot}/hotel-fruehstueck.svg", 2, "Frühstücksraum mit Buffet", 1600, 900)
     ];
 
     private static async Task SeedHotelImagesAsync(
@@ -340,12 +347,23 @@ internal static class PublicChannelSeeder
         Guid hotelId,
         CancellationToken cancellationToken)
     {
-        var existingUrls = await context.HotelImages
+        var existing = await context.HotelImages
             .IgnoreQueryFilters()
             .Where(image => image.HotelId == hotelId)
-            .Select(image => image.Url)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        // Demo kümesinden ÇIKARILMIŞ satırlar temizlenir (yalnızca demo kökü altındakiler;
+        // geliştiricinin/müşterinin eklediği görseller korunur). Gerekçe: seed dosya adları
+        // değiştiğinde (örneğin .jpg → .svg) yalnızca "eksikleri ekle" mantığı eski satırları
+        // bırakır ve galeri sessizce ikiye katlanır.
+        var stale = existing
+            .Where(image => image.Url.StartsWith(ImageRoot, StringComparison.Ordinal)
+                            && !HotelImageSeeds.Any(seed =>
+                                string.Equals(seed.Url, image.Url, StringComparison.Ordinal)))
+            .ToList();
+
+        var existingUrls = existing.Select(image => image.Url).ToList();
 
         var missing = HotelImageSeeds
             .Where(seed => !existingUrls.Contains(seed.Url, StringComparer.Ordinal))
@@ -360,11 +378,12 @@ internal static class PublicChannelSeeder
             })
             .ToList();
 
-        if (missing.Count == 0)
+        if (stale.Count == 0 && missing.Count == 0)
         {
             return;
         }
 
+        context.HotelImages.RemoveRange(stale);
         context.HotelImages.AddRange(missing);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -380,8 +399,8 @@ internal static class PublicChannelSeeder
             "Ruhiges Einzelzimmer zum begrünten Innenhof, mit Schreibtisch, Regendusche und "
             + "kostenfreiem WLAN. Ideal für Geschäftsreisende.",
             "wifi,desk,safe,airConditioning",
-            [new($"{ImageRoot}/sgl-1.jpg", 0, "Einzelzimmer mit Schreibtisch und Fenster zum Innenhof", 1600, 900),
-             new($"{ImageRoot}/sgl-2.jpg", 1, "Badezimmer des Einzelzimmers mit Regendusche", 1600, 900)],
+            [new($"{ImageRoot}/sgl-1.svg", 0, "Einzelzimmer mit Schreibtisch und Fenster zum Innenhof", 1600, 900),
+             new($"{ImageRoot}/sgl-2.svg", 1, "Badezimmer des Einzelzimmers mit Regendusche", 1600, 900)],
             new TranslatedText("Single Room", "Quiet single room facing the courtyard, with desk, rain shower and free Wi-Fi. Ideal for business travellers."),
             new TranslatedText("Tek Kişilik Oda", "İç avluya bakan sessiz tek kişilik oda; çalışma masası, yağmur duşu ve ücretsiz Wi-Fi. İş seyahatleri için ideal.")),
         new(
@@ -389,8 +408,8 @@ internal static class PublicChannelSeeder
             "Großzügiges Doppelzimmer mit Kingsize-Bett, Sitzecke und bodentiefen Fenstern zur "
             + "Chausseestraße. Nespresso-Maschine und Minibar inklusive.",
             "wifi,minibar,safe,coffeeMachine,airConditioning",
-            [new($"{ImageRoot}/dbl-1.jpg", 0, "Doppelzimmer mit Kingsize-Bett und Sitzecke", 1600, 900),
-             new($"{ImageRoot}/dbl-2.jpg", 1, "Blick aus dem Doppelzimmer auf die Chausseestraße", 1600, 900)],
+            [new($"{ImageRoot}/dbl-1.svg", 0, "Doppelzimmer mit Kingsize-Bett und Sitzecke", 1600, 900),
+             new($"{ImageRoot}/dbl-2.svg", 1, "Blick aus dem Doppelzimmer auf die Chausseestraße", 1600, 900)],
             new TranslatedText("Double Room", "Spacious double room with king-size bed, seating area and floor-to-ceiling windows facing Chausseestrasse. Nespresso machine and minibar included."),
             new TranslatedText("Çift Kişilik Oda", "King-size yatak, oturma köşesi ve Chausseestrasse'ye bakan tavandan tabana pencereli geniş çift kişilik oda. Nespresso makinesi ve minibar dahil.")),
         new(
@@ -398,9 +417,9 @@ internal static class PublicChannelSeeder
             "Suite mit separatem Wohnbereich, Balkon und Blick über Berlin-Mitte. Für bis zu vier "
             + "Personen, mit freistehender Badewanne und Regendusche.",
             "wifi,minibar,balcony,safe,bathtub,coffeeMachine",
-            [new($"{ImageRoot}/sui-1.jpg", 0, "Wohnbereich der Suite mit Sofa und Esstisch", 1600, 900),
-             new($"{ImageRoot}/sui-2.jpg", 1, "Schlafbereich der Suite", 1600, 900),
-             new($"{ImageRoot}/sui-3.jpg", 2, "Balkon der Suite mit Blick über Berlin-Mitte", 1600, 900)],
+            [new($"{ImageRoot}/sui-1.svg", 0, "Wohnbereich der Suite mit Sofa und Esstisch", 1600, 900),
+             new($"{ImageRoot}/sui-2.svg", 1, "Schlafbereich der Suite", 1600, 900),
+             new($"{ImageRoot}/sui-3.svg", 2, "Balkon der Suite mit Blick über Berlin-Mitte", 1600, 900)],
             new TranslatedText("Suite", "Suite with a separate living area, balcony and views over Berlin-Mitte. For up to four guests, with a freestanding bathtub and rain shower."),
             new TranslatedText("Suit", "Ayrı oturma alanı, balkon ve Berlin-Mitte manzaralı suit. Dört kişiye kadar; ayaklı küvet ve yağmur duşu."))
     ];
@@ -422,12 +441,30 @@ internal static class PublicChannelSeeder
             return;
         }
 
-        var existingImageUrls = await context.RoomTypeImages
+        var existingImages = await context.RoomTypeImages
             .IgnoreQueryFilters()
             .Where(image => image.HotelId == hotelId)
-            .Select(image => image.Url)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        // Otel görselleriyle aynı gerekçe: demo kümesinden çıkarılmış satırlar temizlenir,
+        // demo kökü dışındaki (elle eklenmiş) görsellere dokunulmaz.
+        var seededUrls = RoomTypeContents
+            .SelectMany(content => content.Images)
+            .Select(image => image.Url)
+            .ToList();
+
+        var staleImages = existingImages
+            .Where(image => image.Url.StartsWith(ImageRoot, StringComparison.Ordinal)
+                            && !seededUrls.Contains(image.Url, StringComparer.Ordinal))
+            .ToList();
+
+        if (staleImages.Count > 0)
+        {
+            context.RoomTypeImages.RemoveRange(staleImages);
+        }
+
+        var existingImageUrls = existingImages.Select(image => image.Url).ToList();
 
         var newImages = new List<RoomTypeImage>();
         var newTranslations = new List<Translation>();

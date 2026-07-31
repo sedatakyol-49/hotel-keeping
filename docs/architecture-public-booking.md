@@ -119,22 +119,39 @@ tanımında açıkça yazılır:
 **Aşağıdaki tablo uygulanan hâlidir** (ilk taslaktaki Almanca segmentli ve `hotelSlug`'lı yollar
 uygulanmadı; gerekçesi tablonun altında ve api-contracts-public-booking.md §13.2/F1'de).
 
+**Tek ölçüt: sayfanın içeriği derleme anında doğru olabilir mi?** Fiyat taşıyan hiçbir sayfa
+prerender edilmez.
+
 | Route | Mod | Neden |
 |---|---|---|
-| `/{lang}` (ana sayfa) | **Prerender (SSG)** | İçerik dateless; CDN'den saniyeler içinde |
-| `/{lang}/legal/imprint` · `/legal/privacy` · `/legal/terms` | **Prerender** | §5 DDG / Art. 13 sayfaları her zaman erişilebilir olmalı — **içerik derleme anında HTML'e gömülür** (§7.2) |
+| `/{lang}/legal/imprint` · `/legal/privacy` · `/legal/terms` | **Prerender (SSG)** | §5 DDG / Art. 13 sayfaları her zaman erişilebilir olmalı — **içerik derleme anında HTML'e gömülür** (§2.3). İçerik versiyonlu bir belgedir, fiyat iddiası taşımaz |
+| `/{lang}` (ana sayfa) | **SSR (istek anında)** | Katalog kartları **"ab" fiyatı** taşır ve oda tipi listesi veritabanından gelir. Taslakta "içerik dateless" gerekçesiyle prerender yazıyordu; **bu gerekçe yanlıştı** — bkz. tablonun altındaki not |
 | `/{lang}/rooms/{code}` (oda tipi detay) | **SSR (istek anında)** | SEO'nun asıl hedefi, **ama fiyat ve müsaitlik canlıdır**: bir hafta önce üretilmiş sayfa yanlış fiyat gösterir (PAngV). Taslakta prerender yazıyordu; değiştirildi |
 | `/{lang}/search?checkIn=…` (sonuçlar) | **SSR** | Tarihe bağlı; **asla cache'lenmez**, `noindex` |
 | `/{lang}/booking` (form, özet, buton) | **CSR** (SSR devre dışı) | Kişisel veri taşır; sunucuda render edilmesi log/cache riskidir |
 | `/{lang}/confirmation/{accessToken}` (onay) | **CSR** | Aynı; ayrıca `noindex, nofollow` (HTTP başlığı olarak da) |
 | `/{lang}/manage` · `/{lang}/manage/{accessToken}` (sorgulama + iptal) | **CSR** | Aynı gerekçe; girilen e-posta sunucu log'una düşmemeli |
 
+> **Ana sayfa neden prerender'dan çıkarıldı (düzeltme).** İlk gerekçe "herkes için aynı, nadiren
+> değişir" idi. O gerekçe kendi kuralımızla çelişiyordu: oda tipi detayını SSR'a koyarken
+> gerekçemiz *"önceden üretilmiş sayfa geçen haftanın fiyatını gösterir"* idi — aynı cümle ana
+> sayfa için de geçerli, çünkü katalog kartları **"ab" fiyatı** taşıyor. Depoda bayatlayan bir
+> "ab 139 €" **yanlış bir fiyat iddiasıdır** (PAngV/UWG) ve hukuki metnin bayatlamasından
+> kategorik olarak farklıdır: biri *eski ama yayımlanmış bir belge*, diğeri *bugün geçerli olmayan
+> bir fiyat*. Üstelik uygulamada prerender sırasında API olmadığı için ana sayfa **katalogsuz**
+> üretiliyordu (`Unable to handle request: /hotels/{slug}` ve `/room-types`): arama motoru ana
+> sayfada ne oda adı ne fiyat görüyordu — yani prerender'ın SEO gerekçesi fiilen çalışmıyordu.
+> Bedeli TTFB ve ana sayfanın CDN'den dosya olarak servis edilememesidir; kazancı fiyatın her
+> zaman canlı olmasıdır. Alternatif — anlık görüntüyü kataloğu kapsayacak şekilde genişletmek —
+> **reddedildi**: bu, fiyatı depoya dondurmak demekti.
+
 - **`hotelSlug` yolda değildir.** Bu tur **otel başına alan adı** dağıtımını hedefler: host → slug
   çevirisi dağıtım yapılandırmasındadır, uygulama slug'ı yapılandırmadan okur
   (`environment.hotelSlug` → `GUEST_HOTEL_SLUG` token'ı) ve **her API çağrısında yola koyar**.
   Çok otelli marka sitesi eklendiğinde tek değişiklik bu token'ın bir rota `resolve`'undan
   beslenmesidir; **API sözleşmesi değişmez.**
-- Prerender kombinasyonu **dil × sayfa**'dır (12 sayfa): `/de|/en|/tr` + üç hukuki sayfa.
+- Prerender kombinasyonu **dil × hukuki sayfa**'dır (9 sayfa). Başka hiçbir sayfa prerender
+  edilmez ve bu **derlemede zorlanır** (§2.3).
 - Booking/confirmation sayfalarında `<meta name="robots" content="noindex,nofollow">` **zorunlu**.
 - SSR sunucusu **hiçbir sır tutmaz**: public API anonimdir, sunucu tarafında token yoktur.
   Dağıtımda `SSR_ALLOWED_HOSTS` gerçek alan adlarını taşır (SSRF / mutlak adres zehirlenmesi).
@@ -168,6 +185,22 @@ npm run legal:snapshot:check                                     # ag gerektirme
   boş bir hukuki sayfa iş akışını kırar.
 - Anlık görüntü **otel başınadır** (`GUEST_HOTEL_SLUG`); misafir uygulaması zaten tek otele
   dağıtıldığı için bu, dağıtım birimiyle aynı sınırdır.
+- **Anlık görüntü yalnızca hukuki metinler içindir.** Katalog/fiyat bu mekanizmaya *bilinçli
+  olarak* alınmadı: depoda bayatlayan bir fiyat, PAngV açısından yanlış bir iddiadır. Fiyat
+  taşıyan sayfaların doğru cevabı SSR'dır (§2.2).
+
+**Derleme bunu artık sessizce geçemez** — iki kapı:
+
+1. `scripts/run-builds.mjs`: Angular prerender sırasında düşen bir isteği `Unable to handle
+   request: …` diye yazıp **çıkış kodu 0 ile devam eder**. Sarmalayıcı çıktıyı yakalar ve bu
+   deseni görürse derlemeyi kırar; mesaj iki doğru çözümü de söyler (rotayı SSR yap ya da veriyi
+   derleme anında sağla).
+2. `scripts/verify-build-output.mjs` (`npm run verify:build`): (a) prerender edilen sayfa kümesi
+   **yalnızca** hukuki sayfalar mı — fiyat taşıyan bir sayfa prerender'a geri konursa kırılır;
+   (b) her hukuki sayfa gerçek metin taşıyor ve hata paneli içermiyor mu; (c) **SSR smoke**:
+   üretilen SSR sunucusu sahte bir origin arkasında ayağa kaldırılır ve `/de`'nin katalog +
+   "ab" fiyatını HTML'e bastığı doğrulanır. Sahte origin `/api`'yi sabit bir fikstürden
+   karşılar, dolayısıyla **backend, veritabanı ve ağ gerekmez**; denetlenen şey kablolamadır.
 
 ---
 
@@ -687,9 +720,9 @@ motorunun sessizce doğmasını kalıcı olarak engeller.
 - Rate limit testi: uç başına eşik aşımında 429 + `Retry-After`.
 - Hukuki alan testi: hold yanıtı `orderSummary`, `legal.withdrawalRight`, `legal.orderButton`,
   `price.cityTax` alanlarını **her zaman** taşır (eksikse test kırılır).
-- CI: `frontend-ci.yml` iki uygulamayı da derler (`npm run build` sarmalayıcısı) ve **prerender
-  çıktısını denetler**: `dist/guest-web/browser/{de,en,tr}/legal/imprint/index.html` içinde künye
-  metni yoksa iş akışı kırılır (§2.3). `npm run legal:snapshot:check` derlemeden önce koşar.
+- CI: `frontend-ci.yml` iki uygulamayı da derler (`npm run build` sarmalayıcısı; düşen prerender
+  isteği derlemeyi kırar) ve `npm run verify:build` ile **çıktıyı denetler**: prerender kümesi +
+  içerik + SSR smoke (§2.3). `npm run legal:snapshot:check` derlemeden önce koşar.
   `backend-ci.yml` migration'ların **uygulandığını** ve model ile migration'ların ayrışmadığını
   ayrıca doğrular (`migrations list` → "(Pending)" yok, `has-pending-model-changes`).
   Lighthouse/a11y kontrolü guest app için hâlâ eklenmedi.

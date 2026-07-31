@@ -9,17 +9,31 @@ import { LEGAL_DOCUMENTS } from './features/legal/legal-documents';
  * RENDER MODU KARARI — neden "hepsi prerender" veya "hepsi SSR" degil
  * ===========================================================================
  *
- * Misafir sitesinin icerigi tek tip degildir; render modu da tek tip olmamali:
+ * TEK OLCUT: **sayfanin icerigi derleme aninda dogru olabilir mi?**
  *
- *  - ANA SAYFA ve HUKUKI SAYFALAR: herkes icin ayni, nadiren degisir, SEO
- *    acisindan kritik. -> PRERENDER (SSG). Derleme aninda uretilir, istek
- *    aninda CDN'den dosya olarak doner: en hizli TTFB, sifir sunucu maliyeti.
- *    Dil basina bir dosya (`/de`, `/en`, `/tr`).
+ *  - HUKUKI SAYFALAR (Impressum / Datenschutz / AGB): icerik versiyonlu bir
+ *    belgedir, fiyat iddiasi tasimaz ve nadiren degisir. Derleme aninda alinan
+ *    metin **yayimlanmis** metindir. -> PRERENDER (SSG). §5 DDG kunyenin
+ *    "unmittelbar erreichbar" olmasini ister; dosya olarak servis edilen bir
+ *    sayfa bu kosulu en gucu bicimde saglar. Icerik derleme oncesi alinmis
+ *    anlik goruntuden gelir (core/legal/legal-snapshot.ts).
+ *
+ *  - ANA SAYFA: katalog kartlari **"ab" FIYATI** tasir ve oda tipi listesi
+ *    veritabanindan gelir. -> SERVER (SSR).
+ *    <b>Bu bir duzeltmedir:</b> ana sayfa once "herkes icin ayni, nadiren
+ *    degisir" gerekcesiyle prerender edilmisti. O gerekce yanlisti ve kendi
+ *    kuralimizla celisiyordu: oda tipi detayini SSR'a koyarken gerekcemiz
+ *    "onceden uretilmis sayfa gecen haftanin fiyatini gosterir" idi — ayni
+ *    cumle ana sayfa icin de gecerli. Depoda bayatlayan bir "ab 139 €",
+ *    PAngV/UWG acisindan **yanlis bir fiyat iddiasidir**; hukuki metnin
+ *    bayatlamasindan kategorik olarak farklidir (biri eski ama yayimlanmis bir
+ *    belgedir, digeri bugun gecerli olmayan bir fiyattir). Ayrica prerender
+ *    sirasinda API olmadigi icin sayfa katalogsuz ureiliyordu: arama motoru
+ *    ana sayfada ne oda adi ne fiyat goruyordu — yani prerender'in SEO gerekcesi
+ *    de fiilen calismiyordu.
  *
  *  - ODA TIPI DETAYI: SEO'nun asil hedefi, ama fiyat ve musaitlik CANLI veridir.
- *    Onceden uretilmis bir sayfa bir hafta once gecerli olan fiyati gosterirdi;
- *    fiyat yanlissa sayfa yalan soyler. Ayrica oda tipi listesi veritabanindan
- *    gelir, derleme aninda bilinmez (bu turda API de yok). -> SERVER (SSR).
+ *    -> SERVER (SSR). Ana sayfayla ayni gerekce.
  *
  *  - ARAMA SONUCLARI: sorgu bagimli; onceden uretilebilecek sonlu bir kume
  *    degil. Yine de sunucuda render edilir: ilk boyama hizli olsun ve JavaScript
@@ -30,8 +44,13 @@ import { LEGAL_DOCUMENTS } from './features/legal/legal-documents';
  *    SEO degeri sifir, sunucuda render etmenin tek etkisi kisisel veriyi
  *    sunucu tarafina (ve olasi ara onbelleklere) tasimak olurdu. -> CLIENT.
  *
- * Ozet: statik olan onceden uretilir, canli olan istek aninda uretilir, ozel
- * olan hic sunucuya ugramaz.
+ * Ozet: **fiyat tasiyan hicbir sayfa prerender edilmez.** Prerender edilen tek
+ * sey, derleme aninda dogru olabilen icerik: versiyonlu hukuki belgeler.
+ * Bedeli, ana sayfanin CDN'den dosya olarak degil SSR sunucusundan gelmesidir
+ * (TTFB); kazanci, fiyatin her zaman canli olmasidir.
+ *
+ * Bu kural derleme adiminda ZORLANIR: `scripts/verify-build-output.mjs`
+ * prerender ciktisinda hukuki sayfalar disinda bir sayfa gorurse derlemeyi kirar.
  */
 
 /** Prerender edilecek dil parametreleri: `/de`, `/en`, `/tr`. */
@@ -42,11 +61,8 @@ export const serverRoutes: ServerRoute[] = [
   // Dil pazarligi istegin `Accept-Language` basligini okur -> onceden uretilemez.
   { path: '', renderMode: RenderMode.Server },
 
-  {
-    path: ':lang',
-    renderMode: RenderMode.Prerender,
-    getPrerenderParams: languageParams,
-  },
+  // Ana sayfa: katalog ve "ab" fiyati CANLI veridir (yukaridaki gerekce).
+  { path: ':lang', renderMode: RenderMode.Server },
 
   ...LEGAL_DOCUMENTS.map((document): ServerRoute => ({
     path: `:lang/legal/${document.slug}`,

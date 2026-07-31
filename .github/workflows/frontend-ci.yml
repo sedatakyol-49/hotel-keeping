@@ -85,31 +85,17 @@ jobs:
         run: npm run test -- --run
 
       # Iki uygulama derlenir; misafir sitesinde ayrica prerender + SSR sunucusu uretilir.
+      # Sarmalayici, prerender sirasinda DUSEN istekleri (Angular bunlari yazip cikis kodu 0
+      # ile devam eder) yakalar ve derlemeyi kirar.
       - name: Build (production — admin + guest SSR/prerender)
         run: npm run build
 
-      # Derleme "basarili" olup prerender'in bos sayfa uretmesi mumkundur (gercekten oldu).
-      # Bu adim uretilen HTML'e bakar: iki uygulamanin ciktisi var mi, SSR sunucusu uretildi
-      # mi ve hukuki sayfalarda GERCEK metin var mi.
-      - name: Verify build output (two apps, SSR bundle, prerendered legal pages)
-        run: |
-          set -e
-          test -f dist/hotelcore-web/browser/index.html
-          test -f dist/guest-web/server/server.mjs
-
-          entity=$(node -p "require('./projects/guest-web/src/generated/legal-snapshot.json').documents.de.imprint.legalEntityName")
-          echo "Beklenen tuzel kisi: $entity"
-
-          for lang in de en tr; do
-            page="dist/guest-web/browser/$lang/legal/imprint/index.html"
-            test -f "$page" || { echo "::error::$page prerender edilmemis"; exit 1; }
-            # Metin satir sonlariyla bolunebilir; etiketler ve bosluklar sadelestirilir.
-            if ! sed -e 's/<[^>]*>/ /g' "$page" | tr -s ' \n' '  ' | grep -qF "$entity"; then
-              echo "::error::$page icinde kunye (Impressum) YOK — JS'siz ziyaretci bos sayfa gorur."
-              exit 1
-            fi
-            echo "ok: $page"
-          done
+      # Derleme "basarili" olup icerigi eksik sayfa uretmesi mumkundur (gercekten oldu).
+      # Betik uc kapiyi denetler: iki uygulamanin ciktisi + SSR paketi; prerender kumesinin
+      # YALNIZCA hukuki sayfalar olmasi ve gercek metin tasimasi; ve SSR sunucusunun ana
+      # sayfa katalogunu HTML'e basmasi (sahte origin ile, backend gerekmez).
+      - name: Verify build output (prerender content + SSR smoke)
+        run: npm run verify:build
 
       - name: Upload build output
         if: always()

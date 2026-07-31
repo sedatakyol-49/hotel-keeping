@@ -77,9 +77,11 @@ Sözleşme ile **gerçekleşen kod** arasındaki farkların tam listesi: aynı d
   ve sitenin kendi çerez metniyle de çelişir. **Çözüm:** fontları kendi origin'imizden servis etmek
   (dosyaları depoya almak + lisans notu). Bu tur yapılmadı: ikili varlık eklemek ve font lisansı
   seçmek ayrı bir karardır.
-- **Demo görselleri yok.** Seed `/assets/demo/berlin-mitte/*.jpg` yazar, dosyalar yoktur (bu fazda
-  yükleme/CDN boru hattı yok). Arayüz kırık görsel **göstermez**, ölçüsü doğru bir yer tutucuya
-  düşer; ama her sayfa yüklemesinde birkaç 404 üretilir.
+- **Demo görselleri fotoğraf değil, çizimdir.** Yükleme/CDN boru hattı bu fazda yok; seed'in
+  işaret ettiği yollarda (`src/frontend/projects/guest-web/public/assets/demo/berlin-mitte/`)
+  arayüzün kendi yer tutucu diliyle çizilmiş, **doğru ölçülü** SVG'ler durur. Gerçek fotoğraf
+  gerektiğinde bu dosyalar değiştirilir; şema, alan adları ve `width`/`height`/`alt` yolu aynı
+  kalır.
 - **§312j kanıt ekranı yok.** `GET /reservations/{id}/public-booking` (rıza, gösterilen düğme
   metni, donmuş özet ve fiyat) yalnızca API'de vardır; yönetim panelinde bir ekranı yoktur.
   Uyuşmazlıkta otelin kanıtı bugün ancak API'den okunabilir.
@@ -191,10 +193,12 @@ hotel-core/
     │   └── tests/HotelCore.{Domain,Application,Api.Integration}Tests/
     └── frontend/                      # Angular 22 workspace
         ├── src/                       # hotelcore-web — ADMIN uygulaması (CSR, :4200)
-        ├── scripts/                   # build/test sarmalayıcıları + legal-snapshot.mjs
+        ├── scripts/                   # build/test sarmalayıcıları, legal-snapshot.mjs,
+        │                              # verify-build-output.mjs (prerender/SSR içerik kapısı)
         └── projects/
             ├── shared/                # paylaşılan kütüphane (@hotelcore/shared)
             └── guest-web/             # MİSAFİR uygulaması (SSR + prerender, :4300)
+                ├── public/assets/demo/ # demo yer tutucu görselleri (SVG, seed bunlara işaret eder)
                 └── src/generated/     # legal-snapshot.json (ÜRETİLMİŞ — §5 DDG prerender'ı)
 ```
 
@@ -252,6 +256,14 @@ npx ng serve hotelcore-web --port 4201 --proxy-config <kendi-proxy.json>
 enjeksiyon belirteci) ve her API çağrısında yola konur; bu tur **otel başına alan adı** dağıtımını
 hedefler. Demo slug: `berlin-mitte`.
 
+**Render modu kuralı: fiyat taşıyan hiçbir sayfa prerender edilmez.** Prerender edilen tek şey
+hukuki sayfalardır (dil × 3 = **9 sayfa**); ana sayfa, oda tipi detayı ve arama **SSR**'dır, çünkü
+katalog "ab" fiyatı taşır ve depoda bayatlayan bir fiyat PAngV açısından yanlış bir iddiadır.
+Gerekçe: [architecture-public-booking.md §2.2](docs/architecture-public-booking.md).
+Kural derlemede zorlanır — `npm run build` düşen bir prerender isteğinde kırılır ve
+`npm run verify:build` prerender kümesini, içeriğini ve SSR çıktısını denetler (SSR denetimi sahte
+bir origin kullanır: backend/veritabanı gerekmez).
+
 **Hukuki metinlerin prerender'ı (§5 DDG).** Impressum/AGB/Datenschutz sayfaları derleme anında
 üretilir ve içerik HTML'e **gömülür** — JavaScript'siz ziyaretçide de doludur. İçerik, derleme
 öncesi alınmış bir anlık görüntüden gelir:
@@ -304,7 +316,9 @@ ConnectionStrings__Default="Host=localhost;Database=HotelDb_IntegrationTests;Use
   service container'a karşı `ef database update` → **"(Pending)" migration yok** +
   **model ile migration ayrışmamış** → integration test) ve `frontend-ci.yml`
   (`npm ci` → lint → **hukuki anlık görüntü denetimi** → test (iki uygulama) → production build
-  (iki uygulama + SSR/prerender) → **prerender çıktısında künye var mı**) çalışır.
+  (iki uygulama + SSR/prerender; **düşen prerender isteği derlemeyi kırar**) →
+  **çıktı denetimi**: prerender kümesi yalnızca hukuki sayfalar mı, içerikleri dolu mu, SSR ana
+  sayfası katalog + fiyat basıyor mu) çalışır.
 - Frontend işi **hiçbir servise bağlı değildir**: hukuki metinler derleme öncesi alınmış
   anlık görüntüden gelir, dolayısıyla CI'da API/veritabanı ve secret gerekmez.
 - Her iki workflow'da `paths` filtresi var: sadece frontend değişen bir PR'da backend-ci **hiç

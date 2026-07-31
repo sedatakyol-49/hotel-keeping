@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Suite · Schlafbereich — Demo-Platzhalter">
+  <title>Suite · Schlafbereich — Demo-Platzhalter</title>
+  <rect width="1600" height="900" fill="#e9e3d6"/>
+  <path d="M0 0L1600 900M1600 0L0 900" stroke="#cdc5b1" stroke-width="1" shape-rendering="geometricPrecision"/>
+  <rect x="0.5" y="0.5" width="1599" height="899" fill="none" stroke="#d9d3c3" stroke-width="1"/>
+  <text x="32" y="864" fill="#8b8574" font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="26" letter-spacing="4">SUITE · SCHLAFBEREICH</text>
+  <text x="32" y="828" fill="#8b8574" font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="20" letter-spacing="4">DEMO · 1600×900</text>
+</svg>
