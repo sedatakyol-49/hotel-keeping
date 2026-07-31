@@ -4,7 +4,7 @@ import { PublicBookingApi } from '../api/public-booking.api';
 import { toPublicError } from '../api/public-error';
 import type { PublicAvailabilityQuery, PublicAvailabilityResponse } from '../api/public-models';
 import { isIsoDate, nightsBetween } from '../dates/stay-dates';
-import { asyncSlot } from './async-state';
+import { transferredSlot } from './transferred-slot';
 
 /** Istemci tarafi on dogrulama — sunucu kurallari yine sunucudadir. */
 export type SearchQueryProblem =
@@ -16,7 +16,20 @@ export type SearchQueryProblem =
 @Injectable({ providedIn: 'root' })
 export class SearchStore {
   private readonly api = inject(PublicBookingApi);
-  private readonly slot = asyncSlot<PublicAvailabilityResponse>();
+
+  /*
+   * Devredilen slot. Musaitlik ucu `Cache-Control: no-store` doner ve oyle
+   * kalmali — ama bu, SUNUCUNUN AZ ONCE cizdigi sonucun tarayicida bir kez
+   * daha cekilmesini gerektirmez. Devir olmadan sonuc listesi hidrasyondan
+   * sonra kayboluyor ve yanit gelince geri geliyordu; 1440'ta olculen bedel
+   * **CLS 0.35** (alt bilgi 307px asagi-yukari ziplyor).
+   *
+   * Kapsam SORGUNUN KENDISIDIR: baska bir tarih/kisi kombinasyonu icin
+   * devralma olmaz, yani "eski aramanin fiyati yeni aramada gorunur" durumu
+   * yapisal olarak imkansizdir. Kullanici formu degistirdiginde ya da
+   * `retry()` cagrildiginda uc her zaman yeniden sorulur.
+   */
+  private readonly slot = transferredSlot<PublicAvailabilityResponse>('hc.availability');
 
   /** En son **calistirilan** sorgu (URL'den turer, formdan degil). */
   private readonly _query = signal<PublicAvailabilityQuery | null>(null);
@@ -57,9 +70,19 @@ export class SearchStore {
     }
 
     this._query.set(query);
+
+    /* Sunucu bu sorguyu az once cizdiyse tarayici sonucu devralir (bkz. slot). */
+    const scope = scopeOf(query);
+    if (!force && this.slot.adopt(scope)) {
+      return;
+    }
+
     this.slot.begin();
     this.api.getAvailability(query).subscribe({
-      next: (response) => this.slot.succeed(response),
+      next: (response) => {
+        this.slot.succeed(response);
+        this.slot.handOver(response, scope);
+      },
       error: (error: unknown) => this.slot.fail(toPublicError(error)),
     });
   }
@@ -76,6 +99,11 @@ export class SearchStore {
     const code = roomTypeCode.toUpperCase();
     return this.offers().find((offer) => offer.roomTypeCode.toUpperCase() === code) ?? null;
   }
+}
+
+/** Devir kapsami: sorgunun tam kimligi. Tek bir alan bile degisirse eslesmez. */
+function scopeOf(query: PublicAvailabilityQuery): string {
+  return `${query.checkIn}|${query.checkOut}|${query.adults}|${query.children}`;
 }
 
 /**

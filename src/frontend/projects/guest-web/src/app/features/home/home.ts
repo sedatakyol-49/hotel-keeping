@@ -12,7 +12,7 @@ import type {
 } from '../../core/api/public-models';
 import { defaultStay } from '../../core/dates/stay-dates';
 import { languagePath } from '../../core/i18n/language-url';
-import { asyncSlot } from '../../core/state/async-state';
+import { transferredSlot } from '../../core/state/transferred-slot';
 import { HotelStore } from '../../core/state/hotel.store';
 import { MediaFrame } from '../../shared/ui/media-frame/media-frame';
 import { SearchForm } from '../../shared/ui/search-form/search-form';
@@ -154,7 +154,8 @@ export class HomePage {
   private readonly router = inject(Router);
   private readonly hotel = inject(HotelStore);
 
-  protected readonly catalog = asyncSlot<readonly PublicRoomTypeSummary[]>();
+  /* Devredilen slot — gerekce: core/state/transferred-slot.ts. */
+  protected readonly catalog = transferredSlot<readonly PublicRoomTypeSummary[]>('hc.catalog');
   protected readonly limits = this.hotel.limits;
 
   protected readonly searchPath = computed(() => languagePath(this.language.current(), 'search'));
@@ -188,11 +189,17 @@ export class HomePage {
 
   constructor() {
     this.hotel.load();
-    this.catalog.begin();
-    this.api.getRoomTypes().subscribe({
-      next: (rooms) => this.catalog.succeed(rooms),
-      error: (error: unknown) => this.catalog.fail(toPublicError(error)),
-    });
+
+    if (!this.catalog.adopt()) {
+      this.catalog.begin();
+      this.api.getRoomTypes().subscribe({
+        next: (rooms) => {
+          this.catalog.succeed(rooms);
+          this.catalog.handOver(rooms);
+        },
+        error: (error: unknown) => this.catalog.fail(toPublicError(error)),
+      });
+    }
   }
 
   protected startSearch(query: PublicAvailabilityQuery): void {

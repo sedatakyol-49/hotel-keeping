@@ -17,7 +17,7 @@ import { toPublicError } from '../../core/api/public-error';
 import type { PublicAvailabilityQuery, PublicRoomTypeDetail } from '../../core/api/public-models';
 import { isIsoDate } from '../../core/dates/stay-dates';
 import { languagePath } from '../../core/i18n/language-url';
-import { asyncSlot } from '../../core/state/async-state';
+import { transferredSlot } from '../../core/state/transferred-slot';
 import { HoldStore } from '../../core/state/hold.store';
 import { HotelStore } from '../../core/state/hotel.store';
 import { SearchStore } from '../../core/state/search.store';
@@ -217,7 +217,14 @@ export class RoomTypePage {
   private readonly search = inject(SearchStore);
 
   protected readonly hold = inject(HoldStore);
-  protected readonly detail = asyncSlot<PublicRoomTypeDetail>();
+  /*
+   * Devredilen slot: sunucunun cektigi oda detayini tarayici DEVRALIR, ikinci
+   * kez cekmez. Gerekce ve olcum `core/state/transferred-slot.ts` icinde —
+   * ozeti: bu sayfa hidrasyondan sonra bosalip yeniden doluyordu ve 1440'ta
+   * **CLS 1.29** uretiyordu (icerik 835px -> 113px -> 820px). Kapsam slug'dir:
+   * bir oda tipinin verisi bir baskasinda devralinamaz.
+   */
+  protected readonly detail = transferredSlot<PublicRoomTypeDetail>('hc.roomType');
   protected readonly limits = this.hotel.limits;
 
   private readonly requested = signal('');
@@ -337,9 +344,16 @@ export class RoomTypePage {
   }
 
   private load(slug: string): void {
+    // Sunucu bu slug'i zaten cektiyse istek acilmaz (bkz. slot tanimi).
+    if (this.detail.adopt(slug)) {
+      return;
+    }
     this.detail.begin();
     this.api.getRoomType(slug).subscribe({
-      next: (room) => this.detail.succeed(room),
+      next: (room) => {
+        this.detail.succeed(room);
+        this.detail.handOver(room, slug);
+      },
       error: (error: unknown) => this.detail.fail(toPublicError(error)),
     });
   }

@@ -59,8 +59,17 @@ function originOf(url: string | undefined): string | null {
  *
  * Bu interceptor yalnizca **o durumda** (gelen istek yok + anlik goruntu var)
  * devreye girer ve derleme oncesi alinmis yaniti dondurur. SSR'da ve tarayicida
- * hicbir sey yapmaz — canli metin her zaman kazanir. Anlik goruntunun nasil
- * uretildigi ve neden depoda durdugu: core/legal/legal-snapshot.ts.
+ * hicbir sey yapmaz. Anlik goruntunun nasil uretildigi ve neden depoda durdugu:
+ * core/legal/legal-snapshot.ts.
+ *
+ * DIKKAT — bu kisa devre Angular'in HTTP aktarim onbelleginin ONUNDEDIR.
+ * `HttpInterceptorHandler` zinciri `[...HTTP_INTERCEPTOR_FNS,
+ * ...HTTP_ROOT_INTERCEPTOR_FNS]` sirasiyla kurar; aktarim onbellegi aracisi kok
+ * listesinde, yani backend'e en yakin halkadadir. Buradan `of(...)` ile donen
+ * yanit ona hic ulasmaz ve prerender ciktisinda onbelleklenmez. Bu yuzden
+ * sunucu -> istemci devri `HotelStore` icinde ACIKCA yapilir; bir gun
+ * "gereksiz" gorunup silinirse hukuki sayfa hidrasyondan sonra yeniden
+ * cizilmeye ve alt bilgi ziplamaya baslar (olculdu: CLS 0.60).
  */
 export const legalPrerenderInterceptor: HttpInterceptorFn = (request, next) => {
   if (request.method !== 'GET' || !request.url.endsWith('/legal')) {

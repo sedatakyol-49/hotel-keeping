@@ -16,12 +16,21 @@ import type { PublicLegalResponse } from '../api/public-models';
  *
  * Cozum: derleme oncesinde alinmis bir anlik goruntu (`npm run legal:snapshot`)
  * yalnizca **sunucu** yapilandirmasinda saglanir ve prerender sirasinda
- * `GET /legal` istegini karsilar. Uretilen HTML gercek metni tasir; Angular'in
- * hidrasyon aktarim onbellegi ayni yaniti istemciye tasidigi icin sayfa
- * hidrasyondan sonra bos gorunup yeniden dolmaz.
+ * `GET /legal` istegini karsilar. Uretilen HTML gercek metni tasir.
+ *
+ * DUZELTME: burada eskiden "Angular'in hidrasyon aktarim onbellegi ayni yaniti
+ * istemciye tasir" yaziyordu. **Tasimiyordu** — bu interceptor istegi aktarim
+ * onbellegi aracisindan ONCE kisa devre ettigi icin prerender ciktisinda tek
+ * bir HTTP girdisi olusmuyordu (olculdu). Sonuc gorunur bir hataydi: tarayici
+ * metni ikinci kez cekiyor, sayfa yeniden ciziliyor ve alt bilgi ziplyordu
+ * (`/de/legal/terms` masaustunde CLS 0.60). Devir artik ACIKCA yapiliyor —
+ * bkz. `core/state/hotel.store.ts`.
  *
  * Anlik goruntu **yalnizca prerender'da** devrededir: gercek bir istek varsa
- * (SSR) veya tarayicida canli API kullanilir, yani metin guncelligini kaybetmez.
+ * (SSR) canli API kullanilir. Prerender edilen hukuki sayfada ise tarayici da
+ * derleme anindaki metni gorur; bu bilinclidir — JS calistiran ve calistirmayan
+ * ziyaretcinin gordugu hukuki metin AYNI olur, ve o metnin guncelligi dagitim
+ * adiminin (`npm run legal:snapshot:check`) sorumlulugudur.
  *
  * Tarayici paketi bu dosyanin ICERIGINI tasimaz: varsayilan deger `null`'dur,
  * JSON'u yalnizca sunucu yapilandirmasi (`legal-snapshot.server.ts`) import eder.
