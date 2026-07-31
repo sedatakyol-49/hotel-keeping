@@ -9,7 +9,8 @@ namespace HotelCore.Application.Features.Reservations.Common;
 
 /// <summary>
 /// Konaklama tutarının <b>sunucuda</b> hesaplandığı tek yer. İstemciden gelen tutara asla
-/// güvenilmez (fiyat manipülasyonu); <c>POST</c> ve <c>PUT</c> aynı hesabı kullanır.
+/// güvenilmez (fiyat manipülasyonu); <c>POST</c>, <c>PUT</c> ve <b>misafir kanalının teklifi</b>
+/// aynı hesabı kullanır.
 /// <para>
 /// <b>Hesap:</b> gece sayısı = <c>CheckOut - CheckIn</c> (yarı açık aralık: çıkış günü için
 /// ücret alınmaz). Her gece için o geceye ait fiyat bulunur ve toplanır — böylece sezon
@@ -26,6 +27,12 @@ namespace HotelCore.Application.Features.Reservations.Common;
 /// Aynı <c>(RoomTypeId, Channel)</c> için çakışan aktif plan oluşturulması engellendiği için
 /// (bkz. <c>RatePlanReader.EnsureNoOverlapAsync</c>) her adımda en fazla bir aday bulunur;
 /// yine de determinizm için <c>ValidFrom</c> sırası uygulanır.
+/// </para>
+/// <para>
+/// <b>İki giriş, tek hesap</b> (architecture-public-booking.md §8): asıl hesabı
+/// <see cref="CalculateForRoomTypeAsync"/> yapar; <see cref="CalculateAsync"/> odadan oda tipini
+/// çözüp ona <b>delege eder</b>. Misafir kanalı somut odayı ancak hold anında seçtiği için oda
+/// tipi bazlı girişe ihtiyaç duyar — <b>ikinci bir fiyat motoru yazılmaz</b>.
 /// </para>
 /// </summary>
 internal sealed class ReservationPricingService(IAppDbContext database)
@@ -53,6 +60,40 @@ internal sealed class ReservationPricingService(IAppDbContext database)
         ReservationChannel channel,
         CancellationToken cancellationToken)
     {
+        var room = await database.Rooms
+            .Where(candidate => candidate.Id == roomId)
+            .Select(candidate => new { candidate.RoomTypeId, candidate.RoomType.BasePrice })
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new NotFoundException(nameof(Room), roomId);
+
+        return await CalculateForRoomTypeAsync(
+                room.RoomTypeId,
+                room.BasePrice,
+                checkIn,
+                checkOut,
+                channel,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Asıl hesap: verilen <b>oda tipi</b> için gece gece fiyatlama.
+    /// </summary>
+    /// <param name="roomTypeId">Oda tipi.</param>
+    /// <param name="basePrice">Oda tipinin liste fiyatı (plan bulunamayan geceler için).</param>
+    /// <param name="checkIn">Giriş günü (dahil).</param>
+    /// <param name="checkOut">Çıkış günü (dahil değil).</param>
+    /// <param name="channel">Kanal — <c>Website</c> planı yoksa "tüm kanallar" planına düşülür.</param>
+    /// <param name="cancellationToken">İptal belirteci.</param>
+    public async Task<ReservationPricing> CalculateForRoomTypeAsync(
+        Guid roomTypeId,
+        decimal basePrice,
+        DateOnly checkIn,
+        DateOnly checkOut,
+        ReservationChannel channel,
+        CancellationToken cancellationToken)
+    {
         var nights = checkOut.DayNumber - checkIn.DayNumber;
         if (nights is <= 0 or > MaxNights)
         {
@@ -63,19 +104,12 @@ internal sealed class ReservationPricingService(IAppDbContext database)
             });
         }
 
-        var room = await database.Rooms
-            .Where(candidate => candidate.Id == roomId)
-            .Select(candidate => new { candidate.RoomTypeId, candidate.RoomType.BasePrice })
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false)
-            ?? throw new NotFoundException(nameof(Room), roomId);
-
         var lastNight = checkOut.AddDays(-1);
 
         // Adaylar TEK sorguda alınır (gece başına sorgu = N+1). Filtre: oda tipi, aktif,
         // konaklama aralığıyla kesişen geçerlilik ve ilgili kanal (ya da tüm kanallar).
         var candidates = await database.RatePlans
-            .Where(plan => plan.RoomTypeId == room.RoomTypeId
+            .Where(plan => plan.RoomTypeId == roomTypeId
                            && plan.IsActive
                            && plan.ValidFrom <= lastNight
                            && checkIn <= plan.ValidTo
@@ -93,13 +127,16 @@ internal sealed class ReservationPricingService(IAppDbContext database)
 
         var total = 0m;
         Guid? firstNightPlanId = null;
+        var nightly = new List<NightlyRate>(nights);
 
         for (var offset = 0; offset < nights; offset++)
         {
             var night = checkIn.AddDays(offset);
             var plan = SelectPlanForNight(candidates, night, channel);
+            var price = plan?.Price ?? basePrice;
 
-            total += plan?.Price ?? room.BasePrice;
+            total += price;
+            nightly.Add(new NightlyRate(night, price));
 
             if (offset == 0)
             {
@@ -110,7 +147,8 @@ internal sealed class ReservationPricingService(IAppDbContext database)
         return new ReservationPricing(
             Math.Round(total, 2, MidpointRounding.AwayFromZero),
             nights,
-            firstNightPlanId);
+            firstNightPlanId,
+            nightly);
     }
 
     /// <summary>
@@ -150,8 +188,22 @@ internal sealed class ReservationPricingService(IAppDbContext database)
         ReservationChannel? Channel);
 }
 
+/// <summary>Tek gecenin brüt fiyatı — sezon geçişinde geceler farklı olabilir.</summary>
+/// <param name="Date">Konaklama gecesi (giriş günü dahil, çıkış günü hariç).</param>
+/// <param name="Gross">O gecenin brüt (KDV dâhil) fiyatı.</param>
+internal sealed record NightlyRate(DateOnly Date, decimal Gross);
+
 /// <summary>Sunucuda hesaplanan fiyat sonucu.</summary>
 /// <param name="TotalAmount">Konaklamanın toplam brüt tutarı.</param>
 /// <param name="Nights">Gece sayısı (<c>CheckOut - CheckIn</c>).</param>
 /// <param name="RatePlanId">İlk gecenin fiyat planı; plan yoksa <c>null</c> (BasePrice kullanıldı).</param>
-internal sealed record ReservationPricing(decimal TotalAmount, int Nights, Guid? RatePlanId);
+/// <param name="Nightly">
+/// Gece gece kırılım. <b>Neden döndürülüyor:</b> PAngV gereği misafire "gecelik X €" tek bir
+/// sayıyla gösterilemez (sezon geçişinde yanıltıcı olur); sözleşme <c>nightly[]</c> dizisini ve
+/// ayrıca etiketlenmiş bir ortalamayı ister. Toplamı yeniden bölmek kuruş kaçağı üretirdi.
+/// </param>
+internal sealed record ReservationPricing(
+    decimal TotalAmount,
+    int Nights,
+    Guid? RatePlanId,
+    IReadOnlyList<NightlyRate> Nightly);

@@ -7,6 +7,7 @@ using HotelCore.Application;
 using HotelCore.Application.Common.Interfaces;
 using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Security;
+using HotelCore.Application.Features.Public.Common;
 using HotelCore.Domain.Common;
 using HotelCore.Infrastructure;
 using HotelCore.Infrastructure.Security;
@@ -36,6 +37,12 @@ builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// --- Misafire açık (public) rezervasyon kanalı ------------------------------
+// Soyutlamalar Application'da, taşıyıcılar burada: gerçek bir PSP/bot sağlayıcısı/e-posta
+// taşıyıcısı bu fazda YOKTUR ve geliştirme implementasyonları bunu görünür kılar
+// (architecture-public-booking.md §6.1, §9.8).
+builder.Services.AddPublicChannel(builder.Configuration);
 
 // --- Kimlik doğrulama -------------------------------------------------------
 builder.Services
@@ -93,7 +100,16 @@ var localizationOptions = LocalizationConfiguration.Create(builder.Configuration
 // Dönüştürücü hem gövde okumasını ("status": "Inspected") hem OpenAPI şemasındaki enum
 // değerlerini üretir; hatalı değerde tip adı sızdırmayan bir mesaj döner.
 builder.Services.AddControllers().AddJsonOptions(options =>
-    options.JsonSerializerOptions.Converters.Add(new StringEnumConverterFactory()));
+{
+    options.JsonSerializerOptions.Converters.Add(new StringEnumConverterFactory());
+
+    // Saat alanları sözleşmede "HH:mm"dir (checkInFromLocal, estimatedArrivalLocalTime ...).
+    // Varsayılan biçim saniyeyi de yazar; fark kozmetik DEĞİLDİR: orderSummary.hash kanonik
+    // JSON üzerinden hesaplandığı için biçim değişikliği hash'i değiştirir ve istemciyle sunucu
+    // asla uzlaşamaz (409 SUMMARY_CHANGED).
+    options.JsonSerializerOptions.Converters.Add(new PublicTimeOnlyConverter());
+    options.JsonSerializerOptions.Converters.Add(new PublicNullableTimeOnlyConverter());
+});
 
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
 {
@@ -159,7 +175,16 @@ app.UseStatusCodePages();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "HotelCore API v1"));
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "HotelCore API v1");
+
+        // İKİNCİ belge: misafir uygulaması client'ını buradan üretir ve admin şemalarının
+        // tek bir tipini bile görmez (architecture-public-booking.md §3).
+        options.SwaggerEndpoint(
+            $"/swagger/{PublicApiDocument.DocumentName}/swagger.json",
+            "HotelCore Public Booking API");
+    });
 
     // Development: bekleyen migration'lar uygulanır + seed çalıştırılır (demo veri dâhil).
     await DatabaseInitializer.InitializeDevelopmentAsync(app.Services).ConfigureAwait(false);
@@ -175,10 +200,26 @@ app.UseCors(CorsPolicyName);
 
 app.UseAuthentication();
 
-// Localization, kullanıcı profilindeki culture claim'ine düşebilmek için authentication'dan SONRA.
+// Public tenant kapsamı: yoldaki hotelSlug -> HotelId. Localization'dan ÖNCE olmak zorunda,
+// çünkü Accept-Language yoksa yanıt OTELİN varsayılan dilinde üretilir ve o dil bu middleware'in
+// çözdüğü otelden gelir. Ayrıca kapsam, kimliği public yolda tamamen bastırır: "admin token +
+// public uç = daha geniş veri" yolu hiç açılmaz.
+app.UseMiddleware<PublicTenantMiddleware>();
+
+// Localization, kullanıcı profilindeki culture claim'ine ve otelin varsayılan diline
+// düşebilmek için authentication ve public tenant çözümünden SONRA.
 app.UseRequestLocalization(localizationOptions);
 
+// Hız sınırı: uç bazında (hotelSlug, istemci IP). Aşımda 429 + Retry-After. Localization'dan
+// sonra, böylece 429 gövdesi de isteğin dilinde döner.
+app.UseMiddleware<PublicRateLimitMiddleware>();
+
+// PCI tuzak teli: public gövdede kart alanı adı geçerse 400 CARD_DATA_NOT_ACCEPTED ve gövde
+// LOGLANMAZ. Model binding'den ÖNCE çalışır — alan sözleşmeye girse bile gövde bu kapıdan geçemez.
+app.UseMiddleware<PublicCardDataTripwireMiddleware>();
+
 // X-Hotel-Id doğrulaması: yetkisiz otel isteği endpoint'e hiç ulaşmadan 403 ile reddedilir.
+// (Public yollarda atlanır — orada otorite yoldadır.)
 app.UseMiddleware<HotelContextMiddleware>();
 
 app.UseAuthorization();

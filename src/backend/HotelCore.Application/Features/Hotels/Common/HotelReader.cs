@@ -1,7 +1,9 @@
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
 using HotelCore.Application.Common.Localization;
+using HotelCore.Application.Features.RoomTypes.Common;
 using HotelCore.Domain.Entities;
+using HotelCore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelCore.Application.Features.Hotels.Common;
@@ -70,6 +72,53 @@ internal sealed class HotelReader(IAppDbContext database, ICurrentUser currentUs
             .Where(candidate => candidate.Id == id)
             .Select(candidate => new HotelResponse
             {
+                VatId = candidate.VatId,
+                TimeZoneId = candidate.TimeZoneId,
+                CheckInFromLocal = candidate.CheckInFromLocal,
+                CheckOutUntilLocal = candidate.CheckOutUntilLocal,
+                PublicBooking = new PublicBookingSettingsDto
+                {
+                    IsEnabled = candidate.PublicBookingSettings.IsEnabled,
+                    Slug = candidate.PublicSlug,
+                    Host = candidate.PublicHost,
+                    MinNights = candidate.PublicBookingSettings.MinNights,
+                    MaxNights = candidate.PublicBookingSettings.MaxNights,
+                    MaxAdvanceDays = candidate.PublicBookingSettings.MaxAdvanceDays,
+                    MinAdvanceHours = candidate.PublicBookingSettings.MinAdvanceHours,
+                    MaxAdults = candidate.PublicBookingSettings.MaxAdults,
+                    MaxChildren = candidate.PublicBookingSettings.MaxChildren,
+                    ConfirmationMode = candidate.PublicBookingSettings.ConfirmationMode.ToString(),
+                },
+                CancellationPolicy = new CancellationPolicyDto
+                {
+                    Type = candidate.CancellationPolicy.Type.ToString(),
+                    FreeCancellationDaysBeforeArrival =
+                        candidate.CancellationPolicy.FreeCancellationDaysBeforeArrival,
+                    CutoffLocalTime = candidate.CancellationPolicy.CutoffLocalTime,
+                    LateCancellationFeePercent = candidate.CancellationPolicy.LateCancellationFeePercent,
+                    NoShowFeePercent = candidate.CancellationPolicy.NoShowFeePercent,
+                },
+                LegalProfile = new HotelLegalProfileDto
+                {
+                    LegalEntityName = candidate.LegalProfile.LegalEntityName,
+                    LegalForm = candidate.LegalProfile.LegalForm,
+                    RepresentedBy = candidate.LegalProfile.RepresentedBy,
+                    AddressLine = candidate.LegalProfile.AddressLine,
+                    PostalCode = candidate.LegalProfile.PostalCode,
+                    City = candidate.LegalProfile.City,
+                    Country = candidate.LegalProfile.Country == null
+                        ? null
+                        : candidate.LegalProfile.Country.ToString(),
+                    Phone = candidate.LegalProfile.Phone,
+                    Email = candidate.LegalProfile.Email,
+                    RegisterCourt = candidate.LegalProfile.RegisterCourt,
+                    RegisterNumber = candidate.LegalProfile.RegisterNumber,
+                    SupervisoryAuthority = candidate.LegalProfile.SupervisoryAuthority,
+                    ParticipatesInDisputeResolution =
+                        candidate.LegalProfile.ParticipatesInDisputeResolution,
+                    OnlineDisputeResolutionUrl = candidate.LegalProfile.OnlineDisputeResolutionUrl,
+                    DisputeResolutionNotice = candidate.LegalProfile.DisputeResolutionNotice,
+                },
                 Id = candidate.Id,
                 HeadOfficeId = candidate.HeadOfficeId,
                 Name = candidate.Name,
@@ -96,7 +145,57 @@ internal sealed class HotelReader(IAppDbContext database, ICurrentUser currentUs
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return hotel ?? throw new NotFoundException(Messages.HotelNotFound);
+        if (hotel is null)
+        {
+            throw new NotFoundException(Messages.HotelNotFound);
+        }
+
+        // Donanım listesi kolonda CSV'dir; dönüşüm kuralı tek yerdedir (AmenityList) ve EF
+        // izdüşümünde çalıştırılamaz, bu yüzden materyalizasyondan sonra uygulanır.
+        var amenities = AmenityList.Parse(
+            await AccessibleHotels()
+                .Where(candidate => candidate.Id == id)
+                .Select(candidate => candidate.Amenities)
+                .FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false));
+
+        return hotel with
+        {
+            Amenities = amenities,
+            Warnings = await BuildWarningsAsync(id, hotel, cancellationToken).ConfigureAwait(false)
+        };
+    }
+
+    /// <summary>
+    /// Engelleyici olmayan yapılandırma uyarıları.
+    /// <para>
+    /// <b><c>NoRatePlanForWebsiteChannel</c>:</b> fiyat seçimi kanalı <b>birebir</b> karşılaştırır
+    /// (<c>ReservationPricingService</c>), yani <c>Channel = Direct</c> planları web
+    /// rezervasyonlarına uygulanmaz. Otelin <c>Website</c> ya da "tüm kanallar"
+    /// (<c>Channel = null</c>) planı yoksa web fiyatı sessizce <c>RoomType.BasePrice</c>'a düşer —
+    /// bu, kanal açılırken görülmesi gereken bir sürprizdir
+    /// (architecture-public-booking.md §7.1).
+    /// </para>
+    /// </summary>
+    private async Task<IReadOnlyList<string>> BuildWarningsAsync(
+        Guid hotelId,
+        HotelResponse hotel,
+        CancellationToken cancellationToken)
+    {
+        if (!hotel.PublicBooking.IsEnabled)
+        {
+            return [];
+        }
+
+        var hasApplicablePlan = await database.RatePlans
+            .AnyAsync(
+                plan => plan.HotelId == hotelId
+                        && plan.IsActive
+                        && (plan.Channel == null || plan.Channel == ReservationChannel.Website),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        return hasApplicablePlan ? [] : ["NoRatePlanForWebsiteChannel"];
     }
 
     /// <summary>Yazma yolu için izlenen (tracked) varlık; erişilemiyorsa 404.</summary>

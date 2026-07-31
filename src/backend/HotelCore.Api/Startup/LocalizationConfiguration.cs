@@ -1,6 +1,7 @@
 using System.Globalization;
 using HotelCore.Application.Common.Security;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelCore.Api.Startup;
 
@@ -33,6 +34,22 @@ public static class LocalizationConfiguration
         options.RequestCultureProviders.Add(new CustomRequestCultureProvider(context =>
         {
             var culture = context.User.FindFirst(JwtClaimNames.Culture)?.Value;
+
+            return Task.FromResult<ProviderCultureResult?>(
+                string.IsNullOrWhiteSpace(culture) ? null : new ProviderCultureResult(culture));
+        }));
+
+        // Misafir kanalı: kimlik yoktur, bu yüzden profil sağlayıcısı hiçbir zaman sonuç vermez.
+        // Accept-Language da yoksa yanıt OTELİN varsayılan dilinde üretilir
+        // (api-contracts-public-booking.md §1) — global varsayılana düşmek, Almanca konuşmayan bir
+        // otelin misafirine yanlış dilde hukuki metin göstermek olurdu.
+        //
+        // Sağlayıcı, PublicTenantMiddleware'in doldurduğu kapsamı okur; bu yüzden o middleware
+        // boru hattında UseRequestLocalization'dan ÖNCE çalışır.
+        options.RequestCultureProviders.Add(new CustomRequestCultureProvider(context =>
+        {
+            var scope = context.RequestServices.GetService<PublicTenantScope>();
+            var culture = scope?.DefaultCulture;
 
             return Task.FromResult<ProviderCultureResult?>(
                 string.IsNullOrWhiteSpace(culture) ? null : new ProviderCultureResult(culture));

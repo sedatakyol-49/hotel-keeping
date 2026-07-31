@@ -20,7 +20,11 @@ public sealed class HotelContextMiddleware(RequestDelegate next)
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(currentUser);
 
-        if (!currentUser.IsAuthenticated)
+        // Public yolda X-Hotel-Id YOK SAYILIR (400 üretmez): otorite yoldaki hotelSlug'dadır ve
+        // tenant kapsamı PublicTenantMiddleware tarafından zaten kurulmuştur. Burada
+        // doğrulamayı tetiklemek, admin token'ı taşıyan bir public isteği 403 ile reddederdi —
+        // oysa public uçlar kimliği tamamen görmezden gelmelidir.
+        if (!currentUser.IsAuthenticated || PublicTenantMiddleware.IsPublicRequest(context.Request.Path))
         {
             await next(context).ConfigureAwait(false);
             return;

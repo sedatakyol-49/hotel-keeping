@@ -506,4 +506,125 @@
   <data name="Conflict_InvoiceLineItemsImmutable" xml:space="preserve">
     <value>Die Positionen einer festgeschriebenen Rechnung dürfen nicht geändert werden (GoBD). Rechnung Id: {0}, Status: {1}, Position Id: {2}, Vorgang: {3}.</value>
   </data>
+
+  <!-- === Misafire acik (public) rezervasyon kanali =========================================
+       api-contracts-public-booking.md §8. Bu metinler istemci MANTIGINDA kullanilmaz: istemci
+       status + extensions.code cifitine bakar, metin yalnizca kullaniciya gosterilir. -->
+  <data name="Public_HotelNotFound" xml:space="preserve">
+    <value>Das Hotel wurde nicht gefunden.</value>
+  </data>
+  <data name="Public_BrandNotFound" xml:space="preserve">
+    <value>Die Marke wurde nicht gefunden.</value>
+  </data>
+  <data name="Public_RoomTypeNotFound" xml:space="preserve">
+    <value>Die Zimmerkategorie wurde nicht gefunden.</value>
+  </data>
+  <data name="Public_HoldNotFound" xml:space="preserve">
+    <value>Die Reservierungsvormerkung wurde nicht gefunden.</value>
+  </data>
+  <data name="Public_BookingNotFound" xml:space="preserve">
+    <value>Die Buchung wurde nicht gefunden.</value>
+  </data>
+  <data name="Public_HoldExpired" xml:space="preserve">
+    <value>Die 15-minütige Vormerkung ist abgelaufen. Preis und Verfügbarkeit werden neu ermittelt.</value>
+  </data>
+  <data name="Public_HoldAlreadyUsed" xml:space="preserve">
+    <value>Diese Vormerkung wurde bereits in eine Buchung umgewandelt.</value>
+  </data>
+  <data name="Public_RoomNoLongerAvailable" xml:space="preserve">
+    <value>Für den gewählten Zeitraum ist kein Zimmer dieser Kategorie mehr verfügbar.</value>
+  </data>
+  <data name="Public_CapacityExceeded" xml:space="preserve">
+    <value>Die Zimmerkategorie ist für höchstens {0} Person(en) ausgelegt.</value>
+  </data>
+  <data name="Public_SummaryChanged" xml:space="preserve">
+    <value>Die Bestellübersicht hat sich geändert. Bitte prüfen Sie die Angaben erneut.</value>
+  </data>
+  <data name="Public_LegalTextChanged" xml:space="preserve">
+    <value>Die rechtlichen Texte wurden aktualisiert. Bitte lesen und bestätigen Sie die aktuelle Fassung.</value>
+  </data>
+  <data name="Public_CancellationNotAllowed" xml:space="preserve">
+    <value>Diese Buchung kann online nicht storniert werden. Bitte wenden Sie sich direkt an das Hotel.</value>
+  </data>
+  <data name="Public_FeeAcknowledgementRequired" xml:space="preserve">
+    <value>Für diese Stornierung fallen {0} {1} an. Bitte bestätigen Sie den Betrag.</value>
+  </data>
+  <data name="Public_BookingAlreadyCancelled" xml:space="preserve">
+    <value>Diese Buchung wurde bereits storniert.</value>
+  </data>
+  <data name="Public_RateLimitExceeded" xml:space="preserve">
+    <value>Zu viele Anfragen. Bitte versuchen Sie es später erneut.</value>
+  </data>
+  <data name="Public_CardDataNotAccepted" xml:space="preserve">
+    <value>Kartendaten werden von dieser Schnittstelle nicht angenommen. Die Zahlung erfolgt im Hotel.</value>
+  </data>
+  <data name="Public_ChannelNotConfigured" xml:space="preserve">
+    <value>Diese Zahlungsart ist für dieses Hotel nicht eingerichtet.</value>
+  </data>
+  <data name="Public_BotChallengeFailed" xml:space="preserve">
+    <value>Die Sicherheitsprüfung konnte nicht bestätigt werden. Bitte versuchen Sie es erneut.</value>
+  </data>
+  <data name="Validation_PublicCheckInInPast" xml:space="preserve">
+    <value>Das Anreisedatum darf nicht vor dem aktuellen Tag des Hotels ({0}) liegen.</value>
+  </data>
+  <data name="Validation_PublicNightsRange" xml:space="preserve">
+    <value>Die Aufenthaltsdauer muss zwischen {0} und {1} Nächten liegen.</value>
+  </data>
+  <data name="Validation_PublicMaxAdvanceDays" xml:space="preserve">
+    <value>Buchungen sind höchstens {0} Tage im Voraus möglich.</value>
+  </data>
+  <data name="Validation_PublicMinAdvanceHours" xml:space="preserve">
+    <value>Buchungen sind bis {0} Stunde(n) vor Anreise möglich.</value>
+  </data>
+  <data name="Validation_PublicAdultsRange" xml:space="preserve">
+    <value>Die Anzahl der Erwachsenen muss zwischen 1 und {0} liegen.</value>
+  </data>
+  <data name="Validation_PublicChildrenRange" xml:space="preserve">
+    <value>Die Anzahl der Kinder muss zwischen 0 und {0} liegen.</value>
+  </data>
+  <data name="Validation_PublicConsentRequired" xml:space="preserve">
+    <value>Diese Einwilligung ist erforderlich, um die Buchung abzuschließen.</value>
+  </data>
+  <data name="Validation_PublicHoldTokenFormat" xml:space="preserve">
+    <value>Die Kennung der Vormerkung hat ein ungültiges Format.</value>
+  </data>
+  <data name="Validation_PublicSummaryHashFormat" xml:space="preserve">
+    <value>Die Prüfsumme der Bestellübersicht hat ein ungültiges Format.</value>
+  </data>
+  <data name="Validation_PublicFeeNotExpected" xml:space="preserve">
+    <value>Für diese Stornierung fällt keine Gebühr an; es darf kein Betrag bestätigt werden.</value>
+  </data>
+  <data name="Validation_PublicArrivalTimeFormat" xml:space="preserve">
+    <value>Die voraussichtliche Ankunftszeit muss im Format HH:mm angegeben werden.</value>
+  </data>
+  <data name="Validation_PublicCountryUnknown" xml:space="preserve">
+    <value>Das angegebene Land ist unbekannt.</value>
+  </data>
+  <data name="Validation_PublicPaymentMethod" xml:space="preserve">
+    <value>Die gewählte Zahlungsart wird nicht angeboten.</value>
+  </data>
+  <data name="Problem_TooManyRequests_Title" xml:space="preserve">
+    <value>Zu viele Anfragen</value>
+  </data>
+  <data name="Validation_InvalidTimeZone" xml:space="preserve">
+    <value>Die Zeitzone ist unbekannt. Bitte geben Sie eine IANA-Kennung an (z. B. Europe/Berlin).</value>
+  </data>
+  <data name="Validation_InvalidConfirmationMode" xml:space="preserve">
+    <value>Der Bestaetigungsmodus muss Instant oder OnHotelAcceptance sein.</value>
+  </data>
+  <data name="Validation_InvalidCancellationPolicyType" xml:space="preserve">
+    <value>Die Stornobedingung muss Flexible oder Restricted sein.</value>
+  </data>
+  <data name="Validation_InvalidPublicSlug" xml:space="preserve">
+    <value>Die URL-Kennung darf nur Kleinbuchstaben, Ziffern und Bindestriche enthalten (3-60 Zeichen).</value>
+  </data>
+  <data name="Validation_PublicSlugRequired" xml:space="preserve">
+    <value>Fuer einen aktiven Gastkanal ist eine URL-Kennung erforderlich.</value>
+  </data>
+  <data name="Validation_LegalEntityNameRequired" xml:space="preserve">
+    <value>Fuer einen aktiven Gastkanal ist der Name des Betreibers im Impressum erforderlich (§ 5 DDG).</value>
+  </data>
+  <data name="Conflict_PublicSlugTaken" xml:space="preserve">
+    <value>Die URL-Kennung '{0}' wird bereits von einem anderen Hotel verwendet.</value>
+  </data>
 </root>

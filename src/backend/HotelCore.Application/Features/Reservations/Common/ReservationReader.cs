@@ -2,6 +2,7 @@ using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
 using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Models;
+using HotelCore.Application.Common.Security;
 using HotelCore.Domain.Entities;
 using HotelCore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -194,6 +195,13 @@ internal sealed class ReservationReader(IAppDbContext database)
         }
     }
 
+    /// <summary>
+    /// Public referansı gösterim biçimine (<c>4-4-4</c>) çevirir. Veritabanında tiresiz saklanır;
+    /// resepsiyon misafirin telefonda söylediği biçimi ekranda <b>aynen</b> görmelidir.
+    /// </summary>
+    private static string? FormatPublicReference(string? stored) =>
+        string.IsNullOrEmpty(stored) ? null : PublicBookingReference.Format(stored);
+
     private static ReservationResponse ToResponse(ReservationRow row) =>
         new()
         {
@@ -226,6 +234,7 @@ internal sealed class ReservationReader(IAppDbContext database)
             CheckedInAt = row.CheckedInAt,
             CheckedOutAt = row.CheckedOutAt,
             FolioId = row.FolioId,
+            PublicReference = FormatPublicReference(row.PublicReference),
         };
 
     /// <summary>
@@ -368,6 +377,7 @@ internal static class ReservationQueryExtensions
             reservation.Notes,
             reservation.CheckedInAt,
             reservation.CheckedOutAt,
-            (Guid?)reservation.Folio!.Id));
+            (Guid?)reservation.Folio!.Id,
+            reservation.PublicBooking!.BookingReference));
     }
 }

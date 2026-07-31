@@ -53,6 +53,9 @@ public static class Messages
 
     public static string ConflictTitle => Text("Problem_Conflict_Title");
 
+    /// <summary>Hız sınırı aşımı (429) — public kanalda kullanılır.</summary>
+    public static string TooManyRequestsTitle => Text("Problem_TooManyRequests_Title");
+
     public static string ClientClosedRequestTitle => Text("Problem_ClientClosedRequest_Title");
 
     public static string ClientClosedRequestDetail => Text("Problem_ClientClosedRequest_Detail");
@@ -90,6 +93,7 @@ public static class Messages
         403 => ForbiddenTitle,
         404 => NotFoundTitle,
         409 => ConflictTitle,
+        429 => TooManyRequestsTitle,
         500 => UnhandledTitle,
         _ => null
     };
@@ -210,6 +214,24 @@ public static class Messages
     public static string CurrencyFormat => Text("Validation_CurrencyFormat");
 
     public static string ChildAgeLimit(int maxAge) => Format("Validation_ChildAgeLimit", maxAge);
+
+    // Misafire açık kanal ayarları (admin tarafı) — yeni izin anahtarı YOKTUR, alanlar mevcut
+    // Settings.Manage altında yönetilir.
+
+    public static string InvalidTimeZone => Text("Validation_InvalidTimeZone");
+
+    public static string InvalidConfirmationMode => Text("Validation_InvalidConfirmationMode");
+
+    public static string InvalidCancellationPolicyType => Text("Validation_InvalidCancellationPolicyType");
+
+    public static string InvalidPublicSlug => Text("Validation_InvalidPublicSlug");
+
+    public static string PublicSlugRequired => Text("Validation_PublicSlugRequired");
+
+    public static string LegalEntityNameRequired => Text("Validation_LegalEntityNameRequired");
+
+    /// <summary>Slug canlı satırlar arasında <b>global</b> benzersizdir; çakışma 409 üretir.</summary>
+    public static string PublicSlugTaken(string slug) => Format("Conflict_PublicSlugTaken", slug);
 
     // ---------------------------------------------------------------------------------------
     // Faturalar (GoBD)
@@ -443,6 +465,83 @@ public static class Messages
 
     public static string VacationMaxDays(int maxDays) =>
         Format("Validation_VacationMaxDays", maxDays);
+
+    // ---------------------------------------------------------------------------------------
+    // Misafire açık (public) rezervasyon kanalı
+    // ---------------------------------------------------------------------------------------
+    // Not: bu metinler istemci MANTIĞINDA kullanılmaz. Public yanıtlar dilden bağımsız bir
+    // `extensions.code` anahtarı taşır (api-contracts-public-booking.md §1); metin yalnızca
+    // kullanıcıya gösterilir ve serbestçe yeniden yazılabilir.
+
+    public static string PublicHotelNotFound => Text("Public_HotelNotFound");
+
+    public static string PublicBrandNotFound => Text("Public_BrandNotFound");
+
+    public static string PublicRoomTypeNotFound => Text("Public_RoomTypeNotFound");
+
+    public static string PublicHoldNotFound => Text("Public_HoldNotFound");
+
+    public static string PublicBookingNotFound => Text("Public_BookingNotFound");
+
+    public static string PublicHoldExpired => Text("Public_HoldExpired");
+
+    public static string PublicHoldAlreadyUsed => Text("Public_HoldAlreadyUsed");
+
+    public static string PublicRoomNoLongerAvailable => Text("Public_RoomNoLongerAvailable");
+
+    public static string PublicCapacityExceeded(int capacity) =>
+        Format("Public_CapacityExceeded", capacity);
+
+    public static string PublicSummaryChanged => Text("Public_SummaryChanged");
+
+    public static string PublicLegalTextChanged => Text("Public_LegalTextChanged");
+
+    public static string PublicCancellationNotAllowed => Text("Public_CancellationNotAllowed");
+
+    public static string PublicFeeAcknowledgementRequired(decimal amount, string currency) =>
+        Format("Public_FeeAcknowledgementRequired", amount, currency);
+
+    public static string PublicBookingAlreadyCancelled => Text("Public_BookingAlreadyCancelled");
+
+    public static string PublicRateLimitExceeded => Text("Public_RateLimitExceeded");
+
+    public static string PublicCardDataNotAccepted => Text("Public_CardDataNotAccepted");
+
+    public static string PublicChannelNotConfigured => Text("Public_ChannelNotConfigured");
+
+    public static string PublicBotChallengeFailed => Text("Public_BotChallengeFailed");
+
+    public static string PublicCheckInInPast(DateOnly hotelToday) =>
+        Format("Validation_PublicCheckInInPast", Iso(hotelToday));
+
+    public static string PublicNightsRange(int minNights, int maxNights) =>
+        Format("Validation_PublicNightsRange", minNights, maxNights);
+
+    public static string PublicMaxAdvanceDays(int maxAdvanceDays) =>
+        Format("Validation_PublicMaxAdvanceDays", maxAdvanceDays);
+
+    public static string PublicMinAdvanceHours(int minAdvanceHours) =>
+        Format("Validation_PublicMinAdvanceHours", minAdvanceHours);
+
+    public static string PublicAdultsRange(int maxAdults) =>
+        Format("Validation_PublicAdultsRange", maxAdults);
+
+    public static string PublicChildrenRange(int maxChildren) =>
+        Format("Validation_PublicChildrenRange", maxChildren);
+
+    public static string PublicConsentRequired => Text("Validation_PublicConsentRequired");
+
+    public static string PublicHoldTokenFormat => Text("Validation_PublicHoldTokenFormat");
+
+    public static string PublicSummaryHashFormat => Text("Validation_PublicSummaryHashFormat");
+
+    public static string PublicFeeNotExpected => Text("Validation_PublicFeeNotExpected");
+
+    public static string PublicArrivalTimeFormat => Text("Validation_PublicArrivalTimeFormat");
+
+    public static string PublicCountryUnknown => Text("Validation_PublicCountryUnknown");
+
+    public static string PublicPaymentMethodNotOffered => Text("Validation_PublicPaymentMethod");
 
     // ---------------------------------------------------------------------------------------
     // Kalıcılık katmanı (AppDbContext): veritabanı kısıtları ve GoBD guard'ı

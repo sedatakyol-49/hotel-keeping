@@ -33,6 +33,7 @@ namespace HotelCore.Application.Features.Reservations.Common;
 /// <param name="CheckedInAt">Check-in zamanı.</param>
 /// <param name="CheckedOutAt">Check-out zamanı.</param>
 /// <param name="FolioId">Açık hesap kimliği.</param>
+/// <param name="PublicReference">Misafir kanalından geldiyse public referans; aksi halde null.</param>
 internal sealed record ReservationRow(
     Guid Id,
     string ReservationNumber,
@@ -58,4 +59,5 @@ internal sealed record ReservationRow(
     string? Notes,
     DateTimeOffset? CheckedInAt,
     DateTimeOffset? CheckedOutAt,
-    Guid? FolioId);
+    Guid? FolioId,
+    string? PublicReference);

@@ -36,6 +36,25 @@ public interface IAppDbContext
 
     DbSet<Reservation> Reservations { get; }
 
+    /// <summary>
+    /// Misafir kanalının 15 dakikalık geçici tutmaları. <b>Soft-delete edilmez</b>: süresi dolan
+    /// satır fiziksel olarak silinir, çünkü çakışma kısıtının kısmi predikatı zaman ifadesi
+    /// içeremez (bkz. <see cref="BookingHold"/>).
+    /// </summary>
+    DbSet<BookingHold> BookingHolds { get; }
+
+    /// <summary>Rezervasyonların public kanal yüzü ve rıza anlık görüntüsü.</summary>
+    DbSet<PublicBooking> PublicBookings { get; }
+
+    /// <summary>Oda tipi görselleri (katalog / detay sayfası).</summary>
+    DbSet<RoomTypeImage> RoomTypeImages { get; }
+
+    /// <summary>Otel tanıtım görselleri (galeri / marka listesi kapağı).</summary>
+    DbSet<HotelImage> HotelImages { get; }
+
+    /// <summary>Yayımlanmış hukuki belgeler (AGB, Datenschutzerklärung, Widerrufshinweis).</summary>
+    DbSet<HotelLegalDocument> HotelLegalDocuments { get; }
+
     DbSet<Folio> Folios { get; }
 
     DbSet<Invoice> Invoices { get; }

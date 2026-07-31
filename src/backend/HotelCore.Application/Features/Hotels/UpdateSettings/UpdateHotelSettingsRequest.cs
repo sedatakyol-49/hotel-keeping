@@ -47,4 +47,31 @@ public sealed record UpdateHotelSettingsRequest : IRequest<HotelResponse>
     /// </para>
     /// </summary>
     public TaxProfileDto TaxProfile { get; init; } = new();
+
+    /// <summary>USt-IdNr. — <see cref="TaxNumber"/> (Steuernummer) ile <b>ayrı</b> alandır.</summary>
+    public string? VatId { get; init; }
+
+    /// <summary>
+    /// IANA saat dilimi kimliği. <b>Zorunlu:</b> "otelin bugünü", ücretsiz iptalin mutlak anı ve
+    /// misafire gösterilen yerel saatler ancak bununla hesaplanabilir. Windows kimlikleri
+    /// (<c>W. Europe Standard Time</c>) kabul edilmez.
+    /// </summary>
+    public string TimeZoneId { get; init; } = "Europe/Berlin";
+
+    public TimeOnly CheckInFromLocal { get; init; } = new(15, 0);
+
+    public TimeOnly CheckOutUntilLocal { get; init; } = new(11, 0);
+
+    /// <summary>Otel donanım anahtarları (i18n katalog anahtarları; serbest metin değildir).</summary>
+    public IReadOnlyList<string>? Amenities { get; init; }
+
+    /// <summary>
+    /// Misafire açık kanal ayarları. <b>PUT tam değişim semantiğindedir</b>: gönderilmeyen blok
+    /// varsayılanlarına döner — kısmi güncelleme yoktur (mevcut <c>taxProfile</c> ile aynı kural).
+    /// </summary>
+    public PublicBookingSettingsDto PublicBooking { get; init; } = new();
+
+    public CancellationPolicyDto CancellationPolicy { get; init; } = new();
+
+    public HotelLegalProfileDto LegalProfile { get; init; } = new();
 }

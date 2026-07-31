@@ -4,6 +4,7 @@ using HotelCore.Application.Common.Interfaces;
 using HotelCore.Application.Common.Localization;
 using HotelCore.Application.Common.Messaging;
 using HotelCore.Application.Common.Messaging.Behaviors;
+using HotelCore.Application.Common.Security;
 using HotelCore.Application.Common.Services;
 using HotelCore.Application.Features.Auth.Common;
 using HotelCore.Application.Features.Availability.Common;
@@ -14,6 +15,7 @@ using HotelCore.Application.Features.HeadOffices.Common;
 using HotelCore.Application.Features.Hotels.Common;
 using HotelCore.Application.Features.Hr.Common;
 using HotelCore.Application.Features.Invoices.Common;
+using HotelCore.Application.Features.Public.Common;
 using HotelCore.Application.Features.RatePlans.Common;
 using HotelCore.Application.Features.Reports.Common;
 using HotelCore.Application.Features.Reservations.Common;
@@ -107,6 +109,24 @@ public static class DependencyInjection
         services.AddScoped<ReservationPricingService>();
         services.AddScoped<ReservationNumberGenerator>();
         services.AddScoped<ReservationFolioService>();
+
+        // --- Misafire açık (public) rezervasyon kanalı ----------------------------------------
+        // Tenant kapsamı kimlikten AYRILIR: PublicTenantScope middleware tarafından doldurulur,
+        // TenantContext onu ICurrentUser ile birleştirmeden SEÇER ve AppDbContext'in global
+        // query filter'ı yalnızca ITenantContext'i okur (architecture-public-booking.md §4.2).
+        services.AddScoped<PublicTenantScope>();
+        services.AddScoped<ITenantContext, TenantContext>();
+
+        // Okuma gövdeleri ve fiyat/politika üreticileri. Fiyat parçalarının SAHİBİ değil,
+        // TÜKETİCİSİDİR: ReservationPricingService + InvoiceAmounts + TaxProfile yeniden
+        // kullanılır, ikinci bir motor yoktur (§8).
+        services.AddScoped<PublicHotelReader>();
+        services.AddScoped<PublicContentReader>();
+        services.AddScoped<PublicLegalReader>();
+        services.AddScoped<PublicAvailabilityReader>();
+        services.AddScoped<PublicPricingService>();
+        services.AddScoped<PublicHoldService>();
+        services.AddScoped<PublicBookingReader>();
 
         // --- Raporlama -----------------------------------------------------------------------
         // Veri erişimi (toplulaştırılmış SQL) ile yanıt üretimi ayrı tutulur: ReportDataSource

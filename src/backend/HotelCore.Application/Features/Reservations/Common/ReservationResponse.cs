@@ -71,4 +71,16 @@ public sealed record ReservationResponse
 
     /// <summary>Açık hesap kimliği; folio satırları <c>GET /reservations/{id}/folio</c> ile okunur.</summary>
     public Guid? FolioId { get; init; }
+
+    /// <summary>
+    /// Misafir kanalından (<c>channel: "Website"</c>) gelen rezervasyonun <b>public referansı</b>
+    /// (<c>K7QM-3XPD-9RTV</c>); resepsiyondan girilen rezervasyonlarda <c>null</c>.
+    /// <para>
+    /// <b>Neden gerekli:</b> misafir telefonda <c>reservationNumber</c>'ı değil bu referansı
+    /// söyler (onay e-postasında yazan odur). Alan olmadan resepsiyon kaydı bulamaz.
+    /// Rıza ve hukuki anlık görüntü için bkz.
+    /// <c>GET /reservations/{id}/public-booking</c>.
+    /// </para>
+    /// </summary>
+    public string? PublicReference { get; init; }
 }

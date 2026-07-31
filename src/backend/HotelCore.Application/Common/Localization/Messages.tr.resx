@@ -473,4 +473,123 @@
   <data name="Conflict_InvoiceLineItemsImmutable" xml:space="preserve">
     <value>Kesinleşmiş faturanın satırları değiştirilemez (GoBD). Fatura Id: {0}, durum: {1}, satır Id: {2}, işlem: {3}.</value>
   </data>
+
+  <!-- === Misafire acik (public) rezervasyon kanali ========================================= -->
+  <data name="Public_HotelNotFound" xml:space="preserve">
+    <value>Otel bulunamadı.</value>
+  </data>
+  <data name="Public_BrandNotFound" xml:space="preserve">
+    <value>Marka bulunamadı.</value>
+  </data>
+  <data name="Public_RoomTypeNotFound" xml:space="preserve">
+    <value>Oda tipi bulunamadı.</value>
+  </data>
+  <data name="Public_HoldNotFound" xml:space="preserve">
+    <value>Geçici tutma kaydı bulunamadı.</value>
+  </data>
+  <data name="Public_BookingNotFound" xml:space="preserve">
+    <value>Rezervasyon bulunamadı.</value>
+  </data>
+  <data name="Public_HoldExpired" xml:space="preserve">
+    <value>15 dakikalık tutma süresi doldu. Fiyat ve uygunluk yeniden hesaplanıyor.</value>
+  </data>
+  <data name="Public_HoldAlreadyUsed" xml:space="preserve">
+    <value>Bu tutma kaydı zaten bir rezervasyona dönüştürüldü.</value>
+  </data>
+  <data name="Public_RoomNoLongerAvailable" xml:space="preserve">
+    <value>Seçilen tarihlerde bu oda tipinde müsait oda kalmadı.</value>
+  </data>
+  <data name="Public_CapacityExceeded" xml:space="preserve">
+    <value>Bu oda tipi en fazla {0} kişiliktir.</value>
+  </data>
+  <data name="Public_SummaryChanged" xml:space="preserve">
+    <value>Sipariş özeti değişti. Lütfen bilgileri yeniden kontrol edin.</value>
+  </data>
+  <data name="Public_LegalTextChanged" xml:space="preserve">
+    <value>Hukuki metinler güncellendi. Lütfen güncel sürümü okuyup onaylayın.</value>
+  </data>
+  <data name="Public_CancellationNotAllowed" xml:space="preserve">
+    <value>Bu rezervasyon çevrimiçi iptal edilemez. Lütfen doğrudan otelle iletişime geçin.</value>
+  </data>
+  <data name="Public_FeeAcknowledgementRequired" xml:space="preserve">
+    <value>Bu iptal için {0} {1} tutarında ücret doğar. Lütfen tutarı onaylayın.</value>
+  </data>
+  <data name="Public_BookingAlreadyCancelled" xml:space="preserve">
+    <value>Bu rezervasyon zaten iptal edilmiş.</value>
+  </data>
+  <data name="Public_RateLimitExceeded" xml:space="preserve">
+    <value>Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.</value>
+  </data>
+  <data name="Public_CardDataNotAccepted" xml:space="preserve">
+    <value>Bu arayüz kart verisi kabul etmez. Ödeme otelde yapılır.</value>
+  </data>
+  <data name="Public_ChannelNotConfigured" xml:space="preserve">
+    <value>Bu ödeme seçeneği bu otel için yapılandırılmamış.</value>
+  </data>
+  <data name="Public_BotChallengeFailed" xml:space="preserve">
+    <value>Güvenlik doğrulaması tamamlanamadı. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="Validation_PublicCheckInInPast" xml:space="preserve">
+    <value>Giriş tarihi otelin bugününden ({0}) önce olamaz.</value>
+  </data>
+  <data name="Validation_PublicNightsRange" xml:space="preserve">
+    <value>Konaklama süresi {0} ile {1} gece arasında olmalıdır.</value>
+  </data>
+  <data name="Validation_PublicMaxAdvanceDays" xml:space="preserve">
+    <value>Rezervasyon en fazla {0} gün önceden yapılabilir.</value>
+  </data>
+  <data name="Validation_PublicMinAdvanceHours" xml:space="preserve">
+    <value>Rezervasyon, girişten en geç {0} saat öncesine kadar yapılabilir.</value>
+  </data>
+  <data name="Validation_PublicAdultsRange" xml:space="preserve">
+    <value>Yetişkin sayısı 1 ile {0} arasında olmalıdır.</value>
+  </data>
+  <data name="Validation_PublicChildrenRange" xml:space="preserve">
+    <value>Çocuk sayısı 0 ile {0} arasında olmalıdır.</value>
+  </data>
+  <data name="Validation_PublicConsentRequired" xml:space="preserve">
+    <value>Rezervasyonu tamamlamak için bu onay zorunludur.</value>
+  </data>
+  <data name="Validation_PublicHoldTokenFormat" xml:space="preserve">
+    <value>Tutma kaydı anahtarının biçimi geçersiz.</value>
+  </data>
+  <data name="Validation_PublicSummaryHashFormat" xml:space="preserve">
+    <value>Sipariş özeti sağlama değerinin biçimi geçersiz.</value>
+  </data>
+  <data name="Validation_PublicFeeNotExpected" xml:space="preserve">
+    <value>Bu iptalde ücret doğmaz; tutar onayı gönderilmemelidir.</value>
+  </data>
+  <data name="Validation_PublicArrivalTimeFormat" xml:space="preserve">
+    <value>Tahmini geliş saati HH:mm biçiminde verilmelidir.</value>
+  </data>
+  <data name="Validation_PublicCountryUnknown" xml:space="preserve">
+    <value>Belirtilen ülke tanınmıyor.</value>
+  </data>
+  <data name="Validation_PublicPaymentMethod" xml:space="preserve">
+    <value>Seçilen ödeme yöntemi sunulmuyor.</value>
+  </data>
+  <data name="Problem_TooManyRequests_Title" xml:space="preserve">
+    <value>Cok fazla istek</value>
+  </data>
+  <data name="Validation_InvalidTimeZone" xml:space="preserve">
+    <value>Saat dilimi taninmiyor. Lutfen bir IANA kimligi girin (orn. Europe/Berlin).</value>
+  </data>
+  <data name="Validation_InvalidConfirmationMode" xml:space="preserve">
+    <value>Onay modu Instant veya OnHotelAcceptance olmalidir.</value>
+  </data>
+  <data name="Validation_InvalidCancellationPolicyType" xml:space="preserve">
+    <value>Iptal politikasi turu Flexible veya Restricted olmalidir.</value>
+  </data>
+  <data name="Validation_InvalidPublicSlug" xml:space="preserve">
+    <value>URL anahtari yalnizca kucuk harf, rakam ve tire icerebilir (3-60 karakter).</value>
+  </data>
+  <data name="Validation_PublicSlugRequired" xml:space="preserve">
+    <value>Acik bir misafir kanali icin URL anahtari zorunludur.</value>
+  </data>
+  <data name="Validation_LegalEntityNameRequired" xml:space="preserve">
+    <value>Acik bir misafir kanali icin kunyede isletmeci tuzel kisilik adi zorunludur (§ 5 DDG).</value>
+  </data>
+  <data name="Conflict_PublicSlugTaken" xml:space="preserve">
+    <value>'{0}' URL anahtari baska bir otel tarafindan kullaniliyor.</value>
+  </data>
 </root>

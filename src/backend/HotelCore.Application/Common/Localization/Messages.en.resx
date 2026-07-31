@@ -472,4 +472,123 @@
   <data name="Conflict_InvoiceLineItemsImmutable" xml:space="preserve">
     <value>The line items of a finalised invoice must not be changed (GoBD). Invoice Id: {0}, status: {1}, line item Id: {2}, operation: {3}.</value>
   </data>
+
+  <!-- === Public (guest-facing) booking channel ============================================= -->
+  <data name="Public_HotelNotFound" xml:space="preserve">
+    <value>The hotel was not found.</value>
+  </data>
+  <data name="Public_BrandNotFound" xml:space="preserve">
+    <value>The brand was not found.</value>
+  </data>
+  <data name="Public_RoomTypeNotFound" xml:space="preserve">
+    <value>The room type was not found.</value>
+  </data>
+  <data name="Public_HoldNotFound" xml:space="preserve">
+    <value>The reservation hold was not found.</value>
+  </data>
+  <data name="Public_BookingNotFound" xml:space="preserve">
+    <value>The booking was not found.</value>
+  </data>
+  <data name="Public_HoldExpired" xml:space="preserve">
+    <value>The 15-minute hold has expired. Price and availability are being refreshed.</value>
+  </data>
+  <data name="Public_HoldAlreadyUsed" xml:space="preserve">
+    <value>This hold has already been turned into a booking.</value>
+  </data>
+  <data name="Public_RoomNoLongerAvailable" xml:space="preserve">
+    <value>No room of this category is available for the selected dates any more.</value>
+  </data>
+  <data name="Public_CapacityExceeded" xml:space="preserve">
+    <value>This room type accommodates at most {0} guest(s).</value>
+  </data>
+  <data name="Public_SummaryChanged" xml:space="preserve">
+    <value>The order summary has changed. Please review the details again.</value>
+  </data>
+  <data name="Public_LegalTextChanged" xml:space="preserve">
+    <value>The legal texts have been updated. Please read and accept the current version.</value>
+  </data>
+  <data name="Public_CancellationNotAllowed" xml:space="preserve">
+    <value>This booking cannot be cancelled online. Please contact the hotel directly.</value>
+  </data>
+  <data name="Public_FeeAcknowledgementRequired" xml:space="preserve">
+    <value>Cancelling this booking incurs a fee of {0} {1}. Please confirm the amount.</value>
+  </data>
+  <data name="Public_BookingAlreadyCancelled" xml:space="preserve">
+    <value>This booking has already been cancelled.</value>
+  </data>
+  <data name="Public_RateLimitExceeded" xml:space="preserve">
+    <value>Too many requests. Please try again later.</value>
+  </data>
+  <data name="Public_CardDataNotAccepted" xml:space="preserve">
+    <value>Card data is not accepted by this interface. Payment is made at the property.</value>
+  </data>
+  <data name="Public_ChannelNotConfigured" xml:space="preserve">
+    <value>This payment option is not configured for this hotel.</value>
+  </data>
+  <data name="Public_BotChallengeFailed" xml:space="preserve">
+    <value>The security check could not be verified. Please try again.</value>
+  </data>
+  <data name="Validation_PublicCheckInInPast" xml:space="preserve">
+    <value>The arrival date must not be before the current day at the hotel ({0}).</value>
+  </data>
+  <data name="Validation_PublicNightsRange" xml:space="preserve">
+    <value>The stay must be between {0} and {1} nights.</value>
+  </data>
+  <data name="Validation_PublicMaxAdvanceDays" xml:space="preserve">
+    <value>Bookings can be made at most {0} days in advance.</value>
+  </data>
+  <data name="Validation_PublicMinAdvanceHours" xml:space="preserve">
+    <value>Bookings are accepted up to {0} hour(s) before arrival.</value>
+  </data>
+  <data name="Validation_PublicAdultsRange" xml:space="preserve">
+    <value>The number of adults must be between 1 and {0}.</value>
+  </data>
+  <data name="Validation_PublicChildrenRange" xml:space="preserve">
+    <value>The number of children must be between 0 and {0}.</value>
+  </data>
+  <data name="Validation_PublicConsentRequired" xml:space="preserve">
+    <value>This consent is required to complete the booking.</value>
+  </data>
+  <data name="Validation_PublicHoldTokenFormat" xml:space="preserve">
+    <value>The hold token has an invalid format.</value>
+  </data>
+  <data name="Validation_PublicSummaryHashFormat" xml:space="preserve">
+    <value>The order summary checksum has an invalid format.</value>
+  </data>
+  <data name="Validation_PublicFeeNotExpected" xml:space="preserve">
+    <value>No fee applies to this cancellation; no amount must be confirmed.</value>
+  </data>
+  <data name="Validation_PublicArrivalTimeFormat" xml:space="preserve">
+    <value>The estimated arrival time must be given in HH:mm format.</value>
+  </data>
+  <data name="Validation_PublicCountryUnknown" xml:space="preserve">
+    <value>The given country is unknown.</value>
+  </data>
+  <data name="Validation_PublicPaymentMethod" xml:space="preserve">
+    <value>The selected payment method is not offered.</value>
+  </data>
+  <data name="Problem_TooManyRequests_Title" xml:space="preserve">
+    <value>Too many requests</value>
+  </data>
+  <data name="Validation_InvalidTimeZone" xml:space="preserve">
+    <value>The time zone is unknown. Please provide an IANA identifier (e.g. Europe/Berlin).</value>
+  </data>
+  <data name="Validation_InvalidConfirmationMode" xml:space="preserve">
+    <value>The confirmation mode must be Instant or OnHotelAcceptance.</value>
+  </data>
+  <data name="Validation_InvalidCancellationPolicyType" xml:space="preserve">
+    <value>The cancellation policy type must be Flexible or Restricted.</value>
+  </data>
+  <data name="Validation_InvalidPublicSlug" xml:space="preserve">
+    <value>The URL key may only contain lowercase letters, digits and hyphens (3-60 characters).</value>
+  </data>
+  <data name="Validation_PublicSlugRequired" xml:space="preserve">
+    <value>An active guest channel requires a URL key.</value>
+  </data>
+  <data name="Validation_LegalEntityNameRequired" xml:space="preserve">
+    <value>An active guest channel requires the operating entity name for the imprint (section 5 DDG).</value>
+  </data>
+  <data name="Conflict_PublicSlugTaken" xml:space="preserve">
+    <value>The URL key '{0}' is already used by another hotel.</value>
+  </data>
 </root>

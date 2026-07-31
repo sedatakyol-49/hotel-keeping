@@ -7,6 +7,7 @@ using HotelCore.Application.Features.Reservations.Common;
 using HotelCore.Application.Features.Reservations.Create;
 using HotelCore.Application.Features.Reservations.GetById;
 using HotelCore.Application.Features.Reservations.GetFolio;
+using HotelCore.Application.Features.Reservations.GetPublicBooking;
 using HotelCore.Application.Features.Reservations.List;
 using HotelCore.Application.Features.Reservations.NoShow;
 using HotelCore.Application.Features.Reservations.Update;
@@ -153,6 +154,25 @@ public sealed class ReservationsController(IDispatcher dispatcher) : ControllerB
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
     public Task<ReservationResponse> NoShow(Guid id, CancellationToken cancellationToken) =>
         dispatcher.Send(new MarkNoShowRequest(id), cancellationToken);
+
+    /// <summary>Misafir kanalı kanıtı: rızalar, onaylanan metin versiyonları ve anlık görüntüler.</summary>
+    /// <remarks>
+    /// <b>Uyuşmazlıkta otelin elindeki tek belge budur</b> (api-contracts-public-booking.md §10):
+    /// hangi AGB/aydınlatma versiyonu onaylandı (DSGVO Art. 7 Abs. 1), düğmede hangi metin
+    /// gösterildi (§312j Abs. 3), düğmenin üstünde hangi özet duruyordu (§312j Abs. 2), hangi
+    /// fiyat ve iptal politikası taahhüt edildi.
+    /// <para>Resepsiyondan girilen rezervasyonda <b>404</b> döner — "rıza alınmamış" ile "rıza
+    /// sorulmamış" ayrımı korunur.</para>
+    /// <b>Yeni izin anahtarı yoktur:</b> <c>Reservations.View</c> yeterlidir.
+    /// </remarks>
+    [HttpGet("{id:guid}/public-booking")]
+    [Authorize(Policy = Permissions.ReservationsView)]
+    [ProducesResponseType<ReservationPublicBookingResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public Task<ReservationPublicBookingResponse> GetPublicBooking(
+        Guid id,
+        CancellationToken cancellationToken) =>
+        dispatcher.Send(new GetReservationPublicBookingRequest(id), cancellationToken);
 
     /// <summary>Folio (açık hesap): satırlar + net/KDV/brüt toplamlar.</summary>
     [HttpGet("{id:guid}/folio")]

@@ -36,24 +36,43 @@ public class AppDbContext : DbContext, IAppDbContext
     private readonly ICurrentUser? _currentUser;
     private readonly IDateTimeProvider? _dateTimeProvider;
     private readonly ILogger<AppDbContext>? _logger;
+    private readonly ITenantContext? _tenantContext;
 
     public AppDbContext(
         DbContextOptions<AppDbContext> options,
         ICurrentUser? currentUser = null,
         IDateTimeProvider? dateTimeProvider = null,
-        ILogger<AppDbContext>? logger = null)
+        ILogger<AppDbContext>? logger = null,
+        ITenantContext? tenantContext = null)
         : base(options)
     {
         _currentUser = currentUser;
         _dateTimeProvider = dateTimeProvider;
         _logger = logger;
+        _tenantContext = tenantContext;
     }
 
-    /// <summary>Global query filter tarafından okunur — kimlik yoksa null.</summary>
-    public Guid? CurrentHotelId => _currentUser?.HotelId;
+    /// <summary>
+    /// Global query filter tarafından okunur.
+    /// <para>
+    /// <b>Kaynak <see cref="ITenantContext"/>'tir</b> (architecture-public-booking.md §4.2):
+    /// kimlik doğrulanmış istekte değer <see cref="ICurrentUser"/>'dan gelir — davranış birebir
+    /// aynıdır —, misafire açık kanalda ise yoldaki <c>hotelSlug</c>'tan çözülmüş oteldir.
+    /// Kapsamın kimlikten ayrılmasının nedeni, anonim <b>ama kapsamlı</b> bir isteğin
+    /// <see cref="ICurrentUser"/> ile ifade edilememesidir (kimliksiz istek <c>null</c>
+    /// döndürmek zorundadır).
+    /// </para>
+    /// <para>
+    /// <see cref="ITenantContext"/> kayıtlı değilse (migration / design-time / eski testler)
+    /// <see cref="ICurrentUser"/>'a düşülür; her ikisi de yoksa hiçbir tenant satırı görünmez.
+    /// </para>
+    /// </summary>
+    public Guid? CurrentHotelId => _tenantContext is not null ? _tenantContext.HotelId : _currentUser?.HotelId;
 
     /// <summary>Head Office konsolide erişimi; filtre koşulunun tek bypass noktası.</summary>
-    public bool CurrentUserCanAccessAllHotels => _currentUser?.CanAccessAllHotels ?? false;
+    public bool CurrentUserCanAccessAllHotels => _tenantContext is not null
+        ? _tenantContext.CanAccessAllHotels
+        : _currentUser?.CanAccessAllHotels ?? false;
 
     public DbSet<HeadOffice> HeadOffices => Set<HeadOffice>();
 
