@@ -1,4 +1,4 @@
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideBrowserGlobalErrorListeners, type ApplicationConfig } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
@@ -7,6 +7,10 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { DEFAULT_LANGUAGE } from '@hotelcore/shared';
 
 import { routes } from './app.routes';
+import {
+  acceptLanguageInterceptor,
+  apiUrlInterceptor,
+} from './core/api/public-http.interceptors';
 import { BundledTranslateLoader } from './core/i18n/bundled-translate.loader';
 
 export const appConfig: ApplicationConfig = {
@@ -28,7 +32,16 @@ export const appConfig: ApplicationConfig = {
      */
     provideClientHydration(withEventReplay()),
 
-    provideHttpClient(withFetch()),
+    /*
+     * HTTP: `withFetch` SSR'da da calisir. Iki interceptor:
+     *   - apiUrlInterceptor      : sunucuda goreli adresi mutlaklastirir,
+     *   - acceptLanguageInterceptor: cok dilli icerik icin `Accept-Language`.
+     * Auth interceptor **yoktur ve olmayacaktir**: public yuzey anonimdir.
+     */
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([apiUrlInterceptor, acceptLanguageInterceptor]),
+    ),
 
     /*
      * Ceviriler pakete gomulur (bkz. BundledTranslateLoader): SSR ciktisinda

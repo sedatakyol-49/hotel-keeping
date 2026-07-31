@@ -12,7 +12,10 @@
  *      dilin **durumu** (`LanguageStore`). Sozlesme ortak olmazsa panel `tr`
  *      derken site `tr-TR` der ve API `Accept-Language` basliklari ayrisir.
  *   3) Tasarim tokenlari (`../styles/theme.css`) — tek renk/tipografi sistemi.
- *   4) (Sonraki tur) OpenAPI'dan uretilen API tipleri.
+ *   4) Bicimlendirme (`formatting/format.ts`): para/tarih/yuzde/geri sayim.
+ *      Ayni tutar iki uygulamada ayni okunmali; `de-DE` biciminin iki kopyasi
+ *      olursa bir gun biri virgul, digeri nokta gosterir.
+ *   5) (Sonraki tur) OpenAPI'dan uretilen API tipleri.
  *
  * SINIR — buraya NE girmez:
  *   - **Yan etki politikasi.** Dilin nereden okunacagi uygulamaya gore degisir:
@@ -30,6 +33,7 @@
  * paylasimi her iki uygulamada da tam tip guvenligi ve tek adimda build verir.
  */
 
+export * from './formatting/format';
 export * from './i18n/language.model';
 export * from './i18n/language.store';
 export * from './ui/brand-mark/brand-mark';

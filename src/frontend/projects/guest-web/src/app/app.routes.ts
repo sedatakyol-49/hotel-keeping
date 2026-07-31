@@ -47,8 +47,13 @@ export const LANGUAGE_ROUTES: Routes = [
     },
     loadComponent: () => import('./features/booking/booking').then((m) => m.BookingPage),
   },
+  /*
+   * Onay ve sorgulama ekranlarinin URL parametresi `accessToken`'dir,
+   * `bookingReference` DEGIL (sozlesme §7.1): referans tasiyici kimlik bilgisi
+   * degildir ve tek basina veri dondurmez; token dondurur.
+   */
   {
-    path: 'confirmation/:reference',
+    path: 'confirmation/:token',
     data: {
       titleKey: 'confirmation.meta.title',
       descriptionKey: 'confirmation.meta.description',
@@ -56,6 +61,26 @@ export const LANGUAGE_ROUTES: Routes = [
     },
     loadComponent: () =>
       import('./features/confirmation/confirmation').then((m) => m.ConfirmationPage),
+  },
+  {
+    path: 'manage',
+    data: {
+      titleKey: 'manage.meta.title',
+      descriptionKey: 'manage.meta.description',
+      noindex: true,
+    },
+    loadComponent: () =>
+      import('./features/manage/manage-lookup').then((m) => m.ManageLookupPage),
+  },
+  {
+    path: 'manage/:token',
+    data: {
+      titleKey: 'manage.detail.meta.title',
+      descriptionKey: 'manage.detail.meta.description',
+      noindex: true,
+    },
+    loadComponent: () =>
+      import('./features/manage/manage-booking').then((m) => m.ManageBookingPage),
   },
 
   /*

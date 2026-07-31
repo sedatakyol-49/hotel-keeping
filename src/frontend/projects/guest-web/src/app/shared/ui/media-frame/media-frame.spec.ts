@@ -62,6 +62,26 @@ describe('MediaFrame — yukleme onceligi', () => {
   });
 });
 
+describe('MediaFrame — kirik gorsel gostermez', () => {
+  it('kaynak yuklenemezse tarayicinin kirik simgesi yerine yer tutucuya duser', () => {
+    const fixture = TestBed.createComponent(MediaFrame);
+    fixture.componentRef.setInput('width', 1200);
+    fixture.componentRef.setInput('height', 800);
+    fixture.componentRef.setInput('alt', 'Zimmer');
+    fixture.componentRef.setInput('src', '/assets/demo/fehlt.jpg');
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector('img')?.dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+
+    expect(element.querySelector('[data-testid="media-image"]')).toBeNull();
+    expect(element.querySelector('[data-testid="media-placeholder"]')).not.toBeNull();
+    // Kutu olcusu KORUNUR: yer tutucuya dusmek de sayfayi ziplatmamali.
+    expect(element.querySelector('figure')?.style.aspectRatio).toBe('1200 / 800');
+  });
+});
+
 describe('MediaFrame — erisilebilirlik', () => {
   it('yer tutucu da erisilebilir ad tasir', () => {
     const element = render({ width: 4, height: 3, alt: 'Ansicht des Hauses' });

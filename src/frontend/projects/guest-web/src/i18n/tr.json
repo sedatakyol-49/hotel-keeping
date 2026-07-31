@@ -2,7 +2,6 @@
   "common": {
     "appName": "HotelCore",
     "tagline": "Otel & Restoran",
-    "pendingApi": "Bu sayfanın içeriği, API sözleşmesi netleştiğinde bağlanacak.",
     "loading": "Yükleniyor …"
   },
   "a11y": {
@@ -13,7 +12,7 @@
     "languageNavigation": "Dil seçin",
     "home": "Ana sayfa",
     "rooms": "Odalar & fiyatlar",
-    "book": "Rezervasyon"
+    "book": "Hemen rezervasyon"
   },
   "language": {
     "de": "Almanca",
@@ -24,6 +23,21 @@
     "defaultTitle": "HotelCore — doğrudan rezervasyon",
     "defaultDescription": "Odanızı doğrudan otelden ayırtın: en iyi fiyat, ücretsiz iptal, muhatabı belli bir hizmet."
   },
+  "amenities": {
+    "wifi": "Kablosuz internet",
+    "parking": "Otopark",
+    "breakfast": "Kahvaltı",
+    "minibar": "Minibar",
+    "balcony": "Balkon",
+    "airConditioning": "Klima",
+    "safe": "Kasa",
+    "tv": "Televizyon",
+    "desk": "Çalışma masası",
+    "bathtub": "Küvet",
+    "shower": "Duş",
+    "pets": "Evcil hayvan kabul edilir",
+    "nonSmoking": "Sigara içilmez"
+  },
   "home": {
     "meta": {
       "title": "HotelCore — odanızı doğrudan ayırtın",
@@ -31,91 +45,373 @@
     },
     "hero": {
       "eyebrow": "Doğrudan otelden",
-      "title": "Sizi bekleyen bir oda.",
-      "lede": "Aracı yok, gizli ücret yok. Rezervasyonu, kahvaltının hazırlandığı yerden yapıyorsunuz.",
-      "cta": "Uygunluğu görün",
+      "title": "Sizin için çoktan hazırlanmış bir oda.",
+      "lede": "Aracı yok, gizli ücret yok. Kahvaltının yapıldığı yerden rezervasyon yapıyorsunuz.",
       "imageAlt": "Otelin görünümü",
-      "imageCaption": "Görsel eklenecek"
+      "imageCaption": "Fotoğraf eklenecek"
     },
     "rooms": {
       "title": "Odalar",
       "all": "Tüm odalar",
-      "imageAlt": "Oda görünümü",
-      "pendingTitle": "Oda tipi",
-      "pendingBody": "Açıklama, donanım ve kapasite oda yönetiminden gelecek.",
-      "pendingPrice": "Fiyat için sorunuz"
+      "imageAlt": "Oda görünümü"
     },
     "direct": {
       "title": "Neden doğrudan rezervasyon",
       "bestRate": {
         "title": "En iyi fiyat",
-        "body": "Buradaki fiyat resepsiyondaki fiyattır — üzerine aracı komisyonu binmez."
+        "body": "Bu sayfadaki fiyat resepsiyondaki fiyattır — üçüncü tarafa komisyon yok."
       },
       "flexible": {
         "title": "Ücretsiz iptal",
-        "body": "Planlar değişir. Koşullar rezervasyondan önce yazılıdır, küçük puntoda değil."
+        "body": "Planlar değişir. Koşullar rezervasyondan önce yazar, küçük puntoda değil."
       },
       "contact": {
         "title": "Tek muhatap",
-        "body": "Varış saati veya oda ile ilgili istekler doğrudan resepsiyona ulaşır."
+        "body": "Geliş saati ya da oda ile ilgili istekleriniz doğrudan resepsiyona ulaşır."
       }
     }
   },
   "search": {
-    "eyebrow": "Uygunluk",
-    "title": "Müsait odalar",
-    "lede": "Tarih ve kişi sayısını seçin; fiyatlar güne göre gösterilir.",
+    "eyebrow": "Müsaitlik",
+    "title": "Boş odalar",
+    "lede": "Tarihleri ve kişi sayısını seçin; fiyatlar seçtiğiniz geceler için geçerlidir.",
+    "cityTaxNote": "Tüm fiyatlara kişi ve gece başına {{amount}} tutarındaki konaklama vergisi (Kurtaxe) dâhildir.",
     "meta": {
-      "title": "Müsait odalar — HotelCore",
-      "description": "Seçtiğiniz tarihler için uygunluk ve güncel fiyatlar."
+      "title": "Boş odalar — HotelCore",
+      "description": "Seçtiğiniz tarihler için müsaitlik ve güncel fiyatlar."
+    },
+    "form": {
+      "label": "Oda ara",
+      "checkIn": "Giriş",
+      "checkOut": "Çıkış",
+      "adults": "Yetişkin",
+      "children": "Çocuk",
+      "submit": "Ara",
+      "priceNote": "Tüm fiyatlar KDV ve zorunlu kalemler dâhildir.",
+      "errors": {
+        "missingDates": "Lütfen giriş ve çıkış tarihini girin.",
+        "pastDate": "Giriş tarihi geçmişte olamaz.",
+        "order": "Çıkış tarihi girişten sonra olmalı — en az bir gece."
+      }
+    },
+    "prompt": {
+      "title": "Tarih seçin",
+      "body": "Fiyat ve müsaitlik tarihe bağlıdır. Lütfen giriş ve çıkış tarihini girin."
+    },
+    "results": {
+      "title": "Müsait odalar",
+      "summary": "{{nights}} gece · {{adults}} yetişkin · {{children}} çocuk"
+    },
+    "empty": {
+      "title": "Bu tarihlerde boş oda yok",
+      "body": "Başka bir tarih ya da daha az kişi deneyin. Her oda tipi için sebep aşağıda yazıyor."
+    },
+    "unavailable": {
+      "title": "Müsait değil",
+      "reason": {
+        "NoRoomAvailable": "Bu tarihlerde dolu.",
+        "CapacityExceeded": "Bu kişi sayısı için küçük — lütfen kişi sayısını azaltın.",
+        "MinNightsNotMet": "Asgari konaklama süresi sağlanmıyor — lütfen tarihleri genişletin."
+      }
+    },
+    "offer": {
+      "remaining": "Yalnızca {{count}} oda kaldı",
+      "select": "Seç",
+      "selecting": "Ayrılıyor …",
+      "details": "Odayı incele",
+      "freeCancellation": "Belirtilen ana kadar ücretsiz iptal edilebilir.",
+      "restrictedCancellation": "Sınırlı iptal — koşullar bir sonraki adımda."
     }
   },
   "roomType": {
     "eyebrow": "Oda tipi",
-    "title": "Oda ayrıntıları",
+    "title": "Oda ayrıntısı",
     "lede": "Bu oda tipinin donanımı, kapasitesi ve fiyatları.",
     "imageAlt": "Oda görünümü",
+    "amenities": "Donanım",
+    "cancellation": "İptal",
+    "fromPriceLabel": "başlangıç",
+    "fromPriceNote": "Tarihsiz gecelik başlangıç fiyatı. Toplam fiyat, tarihleri girdikten sonra görünür.",
+    "perNight": "gecelik",
+    "unavailable": {
+      "title": "Bu tarihlerde rezerve edilemiyor"
+    },
     "meta": {
       "title": "Oda — HotelCore",
       "description": "Bu oda tipinin donanımı, kapasitesi ve güncel fiyatları."
     }
   },
+  "price": {
+    "total": "Toplam fiyat",
+    "perNight": "gecelik {{amount}} · {{nights}} gece",
+    "perNightAverage": "ortalama gecelik {{amount}} · {{nights}} gece",
+    "inclusiveVatCityTax": "KDV ve konaklama vergisi dâhil",
+    "inclusiveCityTax": "konaklama vergisi dâhil",
+    "inclusiveVat": "KDV dâhil",
+    "inclusiveNone": "Toplam fiyat",
+    "accommodation": "Konaklama · {{nights}} gece",
+    "cityTax": "Konaklama vergisi (Kurtaxe)",
+    "cityTaxBasis": "{{persons}} kişi × {{nights}} gece × {{rate}}",
+    "vatNote": "İçindeki KDV ({{rate}} %): {{amount}}",
+    "cityTaxNote": "Konaklama vergisi toplam fiyata dâhildir ve konaklama gerçekleşmezse tahsil edilmez.",
+    "cityTaxChildExemption": "{{age}} yaş altındaki çocuklar konaklama vergisinden muaftır.",
+    "dueAtProperty": "Girişte otelde ödenecek: {{amount}}"
+  },
+  "order": {
+    "summaryTitle": "Siparişiniz",
+    "roomType": "Oda",
+    "occupancy": "Kişi sayısı",
+    "occupancyValue": "{{rooms}} oda · {{adults}} yetişkin · {{children}} çocuk",
+    "board": "Pansiyon",
+    "boardValue": {
+      "None": "Sadece oda"
+    },
+    "duration": "Tarihler",
+    "durationValue": "{{checkIn}} – {{checkOut}} · {{nights}} gece",
+    "checkTimes": "Giriş {{from}}'dan itibaren · çıkış en geç {{until}}",
+    "mandatory": "Zorunlu",
+    "total": "Toplam fiyat",
+    "totalNoteVatAndMandatory": "KDV ve tüm zorunlu kalemler dâhildir. Başka bir ücret eklenmez.",
+    "totalNoteVat": "KDV dâhildir.",
+    "totalNoteNone": "Siparişin toplam fiyatı.",
+    "paymentAtProperty": "{{amount}} tutarı girişte otelde ödenecektir.",
+    "submitting": "Gönderiliyor …",
+    "reconfirmLabel": "Yeniden onay gerekiyor",
+    "reconfirmTitle": "Sipariş özeti değişti",
+    "reconfirmBody": "Siz formu doldururken fiyat veya koşullar güncellendi. Yasal olarak yalnızca size gerçekten gösterilen özeti rezerve edebiliriz. Lütfen yeni özeti inceleyip yeniden onaylayın.",
+    "reconfirmAction": "Yeni özeti göster",
+    "contract": {
+      "OnConfirmationEmail": "Sözleşme, onay e-postasıyla kurulur.",
+      "OnHotelAcceptance": "Talebiniz otele iletilir; sözleşme ancak otel kabul ettiğinde kurulur."
+    }
+  },
+  "hold": {
+    "remaining": "Ayrılan süre",
+    "hint": "Bu odayı sizin için tutuyoruz. Süre dolarsa oda serbest bırakılır ve fiyat yeniden hesaplanır.",
+    "expiredHint": "Süre doldu. Yeni bir teklif isteyebilirsiniz.",
+    "expiredLabel": "Süre doldu",
+    "expiredTitle": "Ayırma süresi doldu",
+    "expiredBody": "Oda yeniden serbest bırakıldı. Aynı tarihleri tekrar sorgulayabiliriz — müsaitlik ve fiyat baştan hesaplanır.",
+    "renew": "Yeni teklif al",
+    "backToSearch": "Aramaya dön",
+    "abandon": "Rezervasyondan vazgeç ve odayı serbest bırak",
+    "priceChangedTitle": "Fiyat değişti",
+    "priceChangedBody": "Önceki {{previous}}, şimdi {{current}}. Devam etmeden önce lütfen özeti kontrol edin.",
+    "a11y": {
+      "remaining": "Ayırma süresinin bitmesine {{minutes}} dakika {{seconds}} saniye kaldı",
+      "expired": "Ayırma süresi doldu",
+      "announceFiveMinutes": "Ayırma süresinin bitmesine beş dakika kaldı.",
+      "announceOneMinute": "Ayırma süresinin bitmesine bir dakika kaldı.",
+      "announceExpired": "Ayırma süresi doldu. Yeni bir teklif isteyebilirsiniz."
+    }
+  },
   "booking": {
     "eyebrow": "Rezervasyon",
     "title": "Rezervasyonunuz",
-    "lede": "Üç adım: tarih, bilgileriniz, onay.",
-    "steps": {
-      "dates": "Tarih ve oda",
-      "guest": "Bilgileriniz",
-      "confirm": "Kontrol ve onay"
-    },
+    "reference": "Rezervasyon numarası",
+    "hotel": "Otel",
     "meta": {
       "title": "Rezervasyon — HotelCore",
       "description": "Rezervasyon akışı."
+    },
+    "status": {
+      "Confirmed": "Onaylandı",
+      "InHouse": "Konaklama sürüyor",
+      "Completed": "Tamamlandı",
+      "Cancelled": "İptal edildi",
+      "NoShow": "Gelmedi"
+    },
+    "guest": {
+      "title": "Bilgileriniz",
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "email": "E-posta",
+      "emailHint": "Onayı ve rezervasyonunuza erişim bağlantısını bu adrese gönderiyoruz.",
+      "phone": "Telefon",
+      "optional": "İsteğe bağlı",
+      "minimizationNote": "Bundan fazlasını sormuyoruz. Doğum tarihi, uyrukluk ve kimlik bilgileri girişte, konaklama beyanı için alınır."
+    },
+    "stay": {
+      "title": "Konaklama ayrıntıları",
+      "arrival": "Tahmini geliş saati",
+      "arrivalHint": "İsteğe bağlı — geç gelişte resepsiyona yardımcı olur.",
+      "note": "Not",
+      "noteHint": "İsteğe bağlı, en fazla 500 karakter. Lütfen sağlık verisi veya diğer hassas bilgileri yazmayın.",
+      "roomType": "Oda",
+      "dates": "Tarihler",
+      "occupancy": "Yetişkin / çocuk"
+    },
+    "invoice": {
+      "title": "Fatura adresi",
+      "toggle": "Şirket adına veya farklı bir adrese fatura istiyorum.",
+      "company": "Firma",
+      "vatId": "Vergi kimlik numarası",
+      "addressLine": "Cadde ve numara",
+      "postalCode": "Posta kodu",
+      "city": "Şehir",
+      "country": "Ülke",
+      "countryHint": "İki harf, örneğin DE"
+    },
+    "payment": {
+      "title": "Ödeme",
+      "PayAtProperty": "Ödeme girişte otelde yapılır.",
+      "noCardNote": "Bu sitede kart bilgisi hiçbir zaman istenmez — ne şimdi ne sonra.",
+      "due": "Girişte ödenecek: {{amount}}"
+    },
+    "consents": {
+      "title": "Onaylar",
+      "terms": "Kabul ediyorum:",
+      "privacy": "Okudum:",
+      "withdrawal": "Cayma hakkına ilişkin bildirimi okudum.",
+      "adult": "En az 18 yaşındayım.",
+      "marketing": "Otelin tekliflerini zaman zaman e-posta ile almak istiyorum. (İsteğe bağlı, istediğiniz an geri alınabilir.)"
+    },
+    "summary": {
+      "title": "Konaklamanız"
+    },
+    "cancellation": {
+      "label": "İptal",
+      "freeTitle": "Ücretsiz iptal edilebilir",
+      "paidTitle": "İptal ücrete tabidir",
+      "until": "{{deadline}} tarihine kadar ücretsiz iptal.",
+      "lateFee": "Sonrasında konaklama tutarının % {{percent}} kadarı tahsil edilir — şu an {{amount}}.",
+      "cityTaxNote": "İptalde konaklama vergisi doğmaz ve iptal ücretinin matrahına girmez.",
+      "charged": "Tahsil edilen iptal ücreti: {{amount}}"
+    },
+    "legal": {
+      "title": "Hukuki kayıt",
+      "terms": "Sözleşme sürümü {{version}}",
+      "privacy": "Aydınlatma metni {{version}}",
+      "orderButton": "Sipariş düğmesi: „{{label}}“"
+    },
+    "noHold": {
+      "title": "Tutulan bir oda yok",
+      "body": "Bu adım için bir oda ve tarih aralığı gerekir. Lütfen aramadan başlayın."
     }
   },
   "confirmation": {
     "eyebrow": "Onaylandı",
     "title": "Rezervasyonunuzu aldık",
-    "lede": "Onay e-postası adresinize gönderiliyor.",
-    "reference": "Rezervasyon numarası",
+    "documentLabel": "Onay",
+    "emailTitle": "Onay e-postası yolda",
+    "emailBody": "Tüm ayrıntıları içeren rezervasyon onayını {{recipient}} adresine gönderdik. Sözleşme içeriğini kalıcı biçimde taşır.",
+    "documentVersion": "Belge sürümü {{version}} · dil {{culture}}",
+    "manage": "Rezervasyonu görüntüle veya iptal et",
+    "home": "Ana sayfaya dön",
+    "linkNote": "E-postadaki bağlantıyı saklayın: hesap ve parola olmadan rezervasyonunuza her zaman ulaşırsınız.",
+    "missing": {
+      "title": "Bu rezervasyonu gösteremiyoruz"
+    },
     "meta": {
       "title": "Rezervasyon onayı — HotelCore",
       "description": "Rezervasyonunuzun onayı."
     }
   },
+  "manage": {
+    "eyebrow": "Rezervasyonunuz",
+    "meta": {
+      "title": "Rezervasyon yönetimi — HotelCore",
+      "description": "Rezervasyonu görüntüleyin, erişim isteyin veya iptal edin."
+    },
+    "lookup": {
+      "title": "Rezervasyonunuza erişim",
+      "lede": "Rezervasyon numaranızı ve e-posta adresinizi girin. Erişim bağlantısını yeniden gönderelim.",
+      "reference": "Rezervasyon numarası",
+      "referenceHint": "Onayda olduğu gibi on iki karakter: XXXX-XXXX-XXXX",
+      "email": "E-posta",
+      "submit": "Bağlantıyı gönder",
+      "sending": "Gönderiliyor …",
+      "sentTitle": "Talebiniz alındı",
+      "sentBody": "Bu bilgilerle eşleşen bir rezervasyon varsa, erişim bağlantısını belirtilen e-posta adresine gönderdik.",
+      "again": "Başka bilgilerle dene",
+      "privacyNote": "Veri koruma gereği burada bir rezervasyonun var olup olmadığını bildirmiyoruz. Yanıt her zaman aynıdır.",
+      "cta": "Erişim iste"
+    },
+    "detail": {
+      "title": "Rezervasyonunuz",
+      "missingTitle": "Bu rezervasyonu gösteremiyoruz",
+      "meta": {
+        "title": "Rezervasyonunuz — HotelCore",
+        "description": "Rezervasyonunuzun ayrıntıları."
+      }
+    },
+    "cancel": {
+      "title": "İptal",
+      "open": "Rezervasyonu iptal et",
+      "free": "Bu iptal ücretsizdir. Hiçbir tutar tahsil edilmez.",
+      "feeDue": "Bu iptal için {{amount}} tutarında ücret doğar.",
+      "cityTaxNote": "Matrah yalnızca konaklama tutarıdır; konaklama vergisi doğmaz.",
+      "acknowledge": "{{amount}} tutarının tahsil edileceğini anladım.",
+      "reason": "Sebep",
+      "reasonHint": "İsteğe bağlı — otele yardımcı olur, zorunlu değildir.",
+      "confirm": "Şimdi iptal et",
+      "sending": "İptal ediliyor …",
+      "keep": "Rezervasyonu koru",
+      "offlineTitle": "Çevrimiçi iptal kapalı",
+      "offlineBody": "Bu konaklama site üzerinden iptal edilemiyor. Lütfen doğrudan oteli arayın."
+    },
+    "cancelled": {
+      "title": "Bu rezervasyon iptal edildi",
+      "body": "İptal onayı e-posta adresinize gönderildi.",
+      "fee": "Tahsil edilen ücret: {{amount}}"
+    }
+  },
+  "consent": {
+    "label": "Çerezler ve izleme",
+    "title": "Yalnızca izniniz ile",
+    "body": "Bu sayfanın nasıl kullanıldığını anlamak istiyoruz. Bunun için izniniz gerekir — izin olmadan hiçbir şey yüklenmez ve saklanmaz.",
+    "essential": "Teknik olarak zorunlu ve izinsiz kullanılabilir: dil seçiminiz ve süren oda ayırma işlemi. Bunlar olmadan rezervasyon tamamlanamaz.",
+    "privacyLink": "Aydınlatma metni",
+    "accept": "Kabul et",
+    "decline": "Reddet"
+  },
   "legal": {
     "eyebrow": "Hukuki",
-    "pending": "Bağlayıcı metin otel tarafından girilecek.",
+    "pending": "Bağlayıcı metin otel tarafından girilir.",
+    "version": "Sürüm {{version}}",
+    "adr": {
+      "participating": "Otel, tüketici tahkim kurulu önündeki uyuşmazlık çözüm sürecine katılmaktadır.",
+      "notParticipating": "Otel, tüketici tahkim kurulu önündeki uyuşmazlık çözüm sürecine katılmakla yükümlü değildir ve katılmamaktadır."
+    },
+    "orderButton": {
+      "payable": "ödeme yükümlülüğüyle rezerve et"
+    },
+    "withdrawal": {
+      "label": "Cayma hakkı",
+      "sectionTitle": "Cayma hakkı",
+      "basis": "Yasal dayanak: {{basis}}",
+      "version": "Sürüm {{version}}",
+      "cancellationHint": "Bu durum sözleşmeye dayalı iptal hakkınızı etkilemez: rezervasyonunuzu yukarıdaki koşullarla iptal edebilirsiniz.",
+      "excluded": {
+        "title": "Cayma hakkı yoktur",
+        "accommodation": "Belirli bir tarihe bağlı konaklama sözleşmelerinde 14 günlük cayma hakkı (Widerrufsrecht) bulunmaz. Bu istisna doğrudan kanundan doğar."
+      },
+      "included": {
+        "title": "Cayma hakkı",
+        "body": "Bu sözleşmeden on dört gün içinde, gerekçe göstermeksizin cayma hakkınız vardır."
+      }
+    },
     "imprint": {
       "label": "Künye",
       "title": "Künye (Impressum)",
       "description": "§5 DDG uyarınca sağlayıcı bilgileri.",
+      "fields": {
+        "legalEntityName": "Sağlayıcı",
+        "legalForm": "Hukuki biçim",
+        "representedBy": "Temsilci",
+        "address": "Adres",
+        "phone": "Telefon",
+        "email": "E-posta",
+        "registerCourt": "Sicil mahkemesi",
+        "registerNumber": "Sicil numarası",
+        "vatId": "KDV kimlik numarası",
+        "supervisoryAuthority": "Denetim makamı"
+      },
       "sections": {
         "provider": "Sağlayıcı",
         "contact": "İletişim",
-        "register": "Ticaret sicili",
-        "vat": "Vergi kimlik numarası",
+        "register": "Sicil kaydı",
+        "vat": "KDV kimlik numarası",
         "supervision": "Denetim makamı",
         "disputeResolution": "Uyuşmazlık çözümü"
       },
@@ -124,9 +420,9 @@
       }
     },
     "privacy": {
-      "label": "Gizlilik",
-      "title": "Gizlilik bildirimi",
-      "description": "Kişisel verilerin işlenmesine ilişkin bilgilendirme.",
+      "label": "Veri koruma",
+      "title": "Aydınlatma metni",
+      "description": "Kişisel verilerin işlenmesine ilişkin bilgiler.",
       "sections": {
         "controller": "Veri sorumlusu",
         "officer": "Veri koruma görevlisi",
@@ -136,33 +432,50 @@
         "rights": "Haklarınız"
       },
       "meta": {
-        "title": "Gizlilik bildirimi — HotelCore"
+        "title": "Aydınlatma metni — HotelCore"
       }
     },
     "terms": {
-      "label": "Koşullar",
-      "title": "Genel işlem koşulları",
+      "label": "Şartlar",
+      "title": "Genel işlem şartları",
       "description": "Rezervasyon ve konaklama koşulları.",
       "sections": {
         "scope": "Kapsam",
         "booking": "Rezervasyon ve sözleşmenin kurulması",
-        "payment": "Fiyatlar ve ödeme",
+        "payment": "Fiyat ve ödeme",
         "cancellation": "İptal ve gelmeme",
         "houseRules": "Otel kuralları",
         "liability": "Sorumluluk"
       },
       "meta": {
-        "title": "Genel işlem koşulları — HotelCore"
+        "title": "Genel işlem şartları — HotelCore"
       }
     }
   },
+  "form": {
+    "required": "Zorunlu alan",
+    "errorSummary": "Lütfen {{count}} alanı kontrol edin:",
+    "errors": {
+      "required": "Lütfen doldurun.",
+      "email": "Lütfen geçerli bir e-posta adresi girin.",
+      "maxLength": "En fazla {{max}} karakter.",
+      "time": "Lütfen SS:DD biçiminde girin.",
+      "consentRequired": "Bu onay olmadan rezervasyonu tamamlayamayız.",
+      "adultRequired": "Rezervasyon yalnızca 18 yaşından büyükler için mümkündür.",
+      "feeAcknowledgeRequired": "İptal etmeden önce lütfen tutarı onaylayın."
+    }
+  },
   "footer": {
-    "about": "Odalarını kendi kiralayan, misafirini kendi karşılayan bir otel.",
+    "about": "Odalarını kendi kiralayan — ve misafirini kendi karşılayan bir otel.",
     "legal": "Hukuki",
     "legalNavigation": "Hukuki bilgiler",
+    "service": "Hizmet",
+    "serviceNavigation": "Hizmet ve ayarlar",
+    "manageBooking": "Rezervasyon yönetimi",
+    "consentSettings": "Çerez ayarları",
     "language": "Dil",
     "copyright": "© {{year}} HotelCore",
-    "priceNote": "Tüm fiyatlara KDV dahildir."
+    "priceNote": "Tüm fiyatlar KDV ve zorunlu kalemler dâhildir."
   },
   "errors": {
     "notFound": {
@@ -170,6 +483,44 @@
       "title": "Böyle bir sayfa yok",
       "lede": "Taşınmış olabilir. Ana sayfadan her şeye yeniden ulaşabilirsiniz.",
       "home": "Ana sayfaya dön"
+    },
+    "recovery": {
+      "retry": "Yeniden dene",
+      "renewHold": "Yeni teklif al",
+      "reconfirmSummary": "Güncel bilgileri göster",
+      "backToSearch": "Aramaya dön",
+      "changeDates": "Tarihleri değiştir",
+      "fixForm": "Bilgileri kontrol et",
+      "contactHotel": "Oteli ara",
+      "wait": "Daha sonra dene"
+    },
+    "public": {
+      "label": "Bilgi",
+      "title": "Bu işlem tamamlanamadı",
+      "retryAfter": "Lütfen yaklaşık {{seconds}} saniye bekleyin.",
+      "validationFailed": "Bazı bilgiler kabul edilemedi. Lütfen işaretli alanları kontrol edin.",
+      "cardDataNotAccepted": "Bu sitede kart bilgisi işlenmez. Lütfen otelle iletişime geçin.",
+      "channelNotConfigured": "Bu ödeme yöntemi bu otel için tanımlı değil. Lütfen otelle iletişime geçin.",
+      "hotelNotFound": "Bu otel şu anda çevrimiçi rezervasyon almıyor.",
+      "roomTypeNotFound": "Bu oda tipi artık mevcut değil. Güncel odaları listede bulabilirsiniz.",
+      "holdNotFound": "Ayırma kaydınız artık yok. Aynı tarihleri yeniden sorgulayabiliriz.",
+      "bookingNotFound": "Bu bağlantıya ait bir rezervasyon bulamadık. Süresi dolmuş olabilir.",
+      "holdExpired": "Ayırma süresi doldu ve oda serbest bırakıldı. Yeni bir teklif alın — fiyat ve müsaitlik baştan hesaplanır.",
+      "holdAlreadyUsed": "Bu ayırma zaten bir rezervasyona dönüştü. Lütfen e-posta kutunuzu kontrol edin.",
+      "roomNoLongerAvailable": "Bu tipteki son oda az önce satıldı. Lütfen güncel sonuçlardan seçin.",
+      "capacityExceeded": "Bu oda tipi bu kişi sayısı için küçük. Lütfen kişi sayısını azaltın.",
+      "summaryChanged": "Siz bilgileri doldururken fiyat veya koşullar değişti. Yalnızca size gerçekten gösterileni rezerve edebiliriz — lütfen yeni özeti inceleyip yeniden onaylayın.",
+      "legalTextChanged": "Sözleşme veya aydınlatma metni güncellendi. Lütfen yeni sürümü inceleyip yeniden onaylayın.",
+      "cancellationNotAllowed": "Bu rezervasyon artık çevrimiçi iptal edilemiyor. Lütfen doğrudan oteli arayın.",
+      "feeAcknowledgementRequired": "İptal ücreti değişti. Lütfen güncel tutarı kontrol edip yeniden onaylayın.",
+      "bookingAlreadyCancelled": "Bu rezervasyon zaten iptal edilmiş.",
+      "rateLimitExceeded": "Bu bağlantıdan çok fazla istek geldi. Lütfen kısa süre sonra tekrar deneyin.",
+      "paymentProviderUnavailable": "Ödeme altyapısına şu anda ulaşılamıyor. Lütfen daha sonra deneyin.",
+      "network": "Otele ulaşamadık. Lütfen bağlantınızı kontrol edin.",
+      "notFound": "Bu kayıt artık mevcut değil.",
+      "conflict": "Bu arada bir şey değişti. Lütfen bilgileri yeniden yükleyin.",
+      "server": "Bizim tarafımızda bir sorun oldu. Lütfen tekrar deneyin.",
+      "unknown": "İşlem tamamlanamadı. Lütfen tekrar deneyin."
     }
   }
 }

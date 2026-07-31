@@ -2,7 +2,6 @@
   "common": {
     "appName": "HotelCore",
     "tagline": "Hotel & Restaurant",
-    "pendingApi": "This page will be connected as soon as the API contract is settled.",
     "loading": "Loading …"
   },
   "a11y": {
@@ -22,34 +21,45 @@
   },
   "seo": {
     "defaultTitle": "HotelCore — book direct",
-    "defaultDescription": "Book your room directly with the house: best rate, free cancellation, a real person to talk to."
+    "defaultDescription": "Book your room straight with the house: best rate, free cancellation, a real person to talk to."
+  },
+  "amenities": {
+    "wifi": "Wi-Fi",
+    "parking": "Parking",
+    "breakfast": "Breakfast",
+    "minibar": "Minibar",
+    "balcony": "Balcony",
+    "airConditioning": "Air conditioning",
+    "safe": "Safe",
+    "tv": "Television",
+    "desk": "Desk",
+    "bathtub": "Bathtub",
+    "shower": "Shower",
+    "pets": "Pets allowed",
+    "nonSmoking": "Non-smoking"
   },
   "home": {
     "meta": {
       "title": "HotelCore — book your room direct",
-      "description": "Book your room directly with the house: best rate, free cancellation, a real person to talk to."
+      "description": "Book your room straight with the house: best rate, free cancellation, a real person to talk to."
     },
     "hero": {
-      "eyebrow": "Direct with the house",
-      "title": "A room that is already expecting you.",
-      "lede": "No middlemen, no hidden fees. You book where breakfast is made.",
-      "cta": "Check availability",
+      "eyebrow": "Straight with the house",
+      "title": "A room that is already made up for you.",
+      "lede": "No middlemen, no hidden fees. You book where the breakfast is made.",
       "imageAlt": "View of the house",
       "imageCaption": "Photo to follow"
     },
     "rooms": {
       "title": "Rooms",
       "all": "All rooms",
-      "imageAlt": "Room view",
-      "pendingTitle": "Room type",
-      "pendingBody": "Description, amenities and occupancy will come from room management.",
-      "pendingPrice": "Rate on request"
+      "imageAlt": "Room view"
     },
     "direct": {
       "title": "Why book direct",
       "bestRate": {
         "title": "Best rate",
-        "body": "The price here is the price at the desk — no third-party commission on top."
+        "body": "The price here is the price at the desk — no third-party commission."
       },
       "flexible": {
         "title": "Free cancellation",
@@ -64,57 +74,343 @@
   "search": {
     "eyebrow": "Availability",
     "title": "Available rooms",
-    "lede": "Pick your dates and party size; rates are shown for the day.",
+    "lede": "Choose your dates and party; prices are shown for those exact nights.",
+    "cityTaxNote": "All prices already include the city tax of {{amount}} per person and night.",
     "meta": {
       "title": "Available rooms — HotelCore",
-      "description": "Availability and current rates for your dates."
+      "description": "Availability and current prices for your dates."
+    },
+    "form": {
+      "label": "Search rooms",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "adults": "Adults",
+      "children": "Children",
+      "submit": "Search",
+      "priceNote": "All prices include VAT and every mandatory charge.",
+      "errors": {
+        "missingDates": "Please enter a check-in and a check-out date.",
+        "pastDate": "Check-in cannot be in the past.",
+        "order": "Check-out must be after check-in — at least one night."
+      }
+    },
+    "prompt": {
+      "title": "Choose your dates",
+      "body": "Prices and availability depend on the dates. Please enter check-in and check-out."
+    },
+    "results": {
+      "title": "Available rooms",
+      "summary": "{{nights}} nights · {{adults}} adults · {{children}} children"
+    },
+    "empty": {
+      "title": "Nothing is free for these dates",
+      "body": "Try different dates or a smaller party. The reason for each room type is listed below."
+    },
+    "unavailable": {
+      "title": "Not available",
+      "reason": {
+        "NoRoomAvailable": "Fully booked for these dates.",
+        "CapacityExceeded": "Too small for this party — please reduce the number of guests.",
+        "MinNightsNotMet": "Minimum stay not reached — please extend your dates."
+      }
+    },
+    "offer": {
+      "remaining": "Only {{count}} rooms left",
+      "select": "Select",
+      "selecting": "Holding …",
+      "details": "View room",
+      "freeCancellation": "Free cancellation until the stated time.",
+      "restrictedCancellation": "Limited cancellation — terms shown in the next step."
     }
   },
   "roomType": {
     "eyebrow": "Room type",
-    "title": "The room in detail",
-    "lede": "Amenities, occupancy and rates for this room type.",
+    "title": "Room in detail",
+    "lede": "Facilities, occupancy and prices for this room type.",
     "imageAlt": "Room view",
+    "amenities": "Facilities",
+    "cancellation": "Cancellation",
+    "fromPriceLabel": "from",
+    "fromPriceNote": "Starting price per night without dates. The total price is shown once you enter your dates.",
+    "perNight": "per night",
+    "unavailable": {
+      "title": "Not bookable for these dates"
+    },
     "meta": {
       "title": "Room — HotelCore",
-      "description": "Amenities, occupancy and current rates for this room type."
+      "description": "Facilities, occupancy and current prices for this room type."
+    }
+  },
+  "price": {
+    "total": "Total price",
+    "perNight": "{{amount}} per night · {{nights}} nights",
+    "perNightAverage": "avg. {{amount}} per night · {{nights}} nights",
+    "inclusiveVatCityTax": "incl. VAT and city tax",
+    "inclusiveCityTax": "incl. city tax",
+    "inclusiveVat": "incl. VAT",
+    "inclusiveNone": "Total price",
+    "accommodation": "Accommodation · {{nights}} nights",
+    "cityTax": "City tax",
+    "cityTaxBasis": "{{persons}} guests × {{nights}} nights × {{rate}}",
+    "vatNote": "VAT included ({{rate}} %): {{amount}}",
+    "cityTaxNote": "The city tax is part of the total price and is not charged if the stay does not take place.",
+    "cityTaxChildExemption": "Children under {{age}} are exempt from the city tax.",
+    "dueAtProperty": "Payable at the property on arrival: {{amount}}"
+  },
+  "order": {
+    "summaryTitle": "Your order",
+    "roomType": "Room",
+    "occupancy": "Occupancy",
+    "occupancyValue": "{{rooms}} room · {{adults}} adults · {{children}} children",
+    "board": "Board",
+    "boardValue": {
+      "None": "Room only"
+    },
+    "duration": "Dates",
+    "durationValue": "{{checkIn}} – {{checkOut}} · {{nights}} nights",
+    "checkTimes": "Check-in from {{from}} · check-out until {{until}}",
+    "mandatory": "Mandatory",
+    "total": "Total price",
+    "totalNoteVatAndMandatory": "Including VAT and every mandatory charge. Nothing else will be added.",
+    "totalNoteVat": "Including VAT.",
+    "totalNoteNone": "Total price of this order.",
+    "paymentAtProperty": "The amount of {{amount}} is payable at the property on arrival.",
+    "submitting": "Sending …",
+    "reconfirmLabel": "Confirmation required",
+    "reconfirmTitle": "The order summary has changed",
+    "reconfirmBody": "The price or the terms were updated while you were filling in the form. By law we may only book what was actually shown to you. Please review the new summary and confirm again.",
+    "reconfirmAction": "Show the new summary",
+    "contract": {
+      "OnConfirmationEmail": "The contract is concluded with the confirmation e-mail.",
+      "OnHotelAcceptance": "Your request is passed to the house; the contract is concluded only once the house accepts it."
+    }
+  },
+  "hold": {
+    "remaining": "Held for",
+    "hint": "We are holding this room for you. When the time runs out the room is released and the price is calculated again.",
+    "expiredHint": "The hold has expired. You can request a new offer.",
+    "expiredLabel": "Time is up",
+    "expiredTitle": "The hold has expired",
+    "expiredBody": "The room has been released. We can check the same dates again — availability and price will be worked out afresh.",
+    "renew": "Request a new offer",
+    "backToSearch": "Back to search",
+    "abandon": "Cancel this booking and release the room",
+    "priceChangedTitle": "The price has changed",
+    "priceChangedBody": "Previously {{previous}}, now {{current}}. Please check the summary before continuing.",
+    "a11y": {
+      "remaining": "{{minutes}} minutes and {{seconds}} seconds left on the hold",
+      "expired": "Hold expired",
+      "announceFiveMinutes": "Five minutes left before the hold expires.",
+      "announceOneMinute": "One minute left before the hold expires.",
+      "announceExpired": "The hold has expired. You can request a new offer."
     }
   },
   "booking": {
     "eyebrow": "Booking",
     "title": "Your booking",
-    "lede": "Three steps: dates, your details, confirmation.",
-    "steps": {
-      "dates": "Dates and room",
-      "guest": "Your details",
-      "confirm": "Review and confirm"
-    },
+    "reference": "Booking reference",
+    "hotel": "Property",
     "meta": {
       "title": "Booking — HotelCore",
       "description": "Booking flow for your reservation."
+    },
+    "status": {
+      "Confirmed": "Confirmed",
+      "InHouse": "Stay in progress",
+      "Completed": "Completed",
+      "Cancelled": "Cancelled",
+      "NoShow": "No-show"
+    },
+    "guest": {
+      "title": "Your details",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "E-mail",
+      "emailHint": "We send the confirmation and the link to your booking to this address.",
+      "phone": "Phone",
+      "optional": "Optional",
+      "minimizationNote": "That is all we ask for. Date of birth, nationality and ID details are collected on arrival for the registration form, not now."
+    },
+    "stay": {
+      "title": "About your stay",
+      "arrival": "Estimated arrival",
+      "arrivalHint": "Optional — helps reception if you arrive late.",
+      "note": "Note",
+      "noteHint": "Optional, 500 characters at most. Please do not include health data or other sensitive details.",
+      "roomType": "Room",
+      "dates": "Dates",
+      "occupancy": "Adults / children"
+    },
+    "invoice": {
+      "title": "Invoice address",
+      "toggle": "I need an invoice for a company or to a different address.",
+      "company": "Company",
+      "vatId": "VAT ID",
+      "addressLine": "Street and number",
+      "postalCode": "Postcode",
+      "city": "City",
+      "country": "Country",
+      "countryHint": "Two letters, e.g. DE"
+    },
+    "payment": {
+      "title": "Payment",
+      "PayAtProperty": "Payment on arrival at the property.",
+      "noCardNote": "We never ask for card details on this site — not now and not later.",
+      "due": "Due on arrival: {{amount}}"
+    },
+    "consents": {
+      "title": "Confirmations",
+      "terms": "I accept the",
+      "privacy": "I have read the",
+      "withdrawal": "I have read the notice about the right of withdrawal.",
+      "adult": "I am at least 18 years old.",
+      "marketing": "I would like to receive occasional offers from the house by e-mail. (Optional, can be withdrawn at any time.)"
+    },
+    "summary": {
+      "title": "Your stay"
+    },
+    "cancellation": {
+      "label": "Cancellation",
+      "freeTitle": "Free cancellation",
+      "paidTitle": "Cancellation is chargeable",
+      "until": "Free cancellation until {{deadline}}.",
+      "lateFee": "After that {{percent}} % of the accommodation amount is charged — currently {{amount}}.",
+      "cityTaxNote": "The city tax does not arise on cancellation and is not part of the cancellation fee.",
+      "charged": "Cancellation fee charged: {{amount}}"
+    },
+    "legal": {
+      "title": "Legal record",
+      "terms": "Terms version {{version}}",
+      "privacy": "Privacy notice {{version}}",
+      "orderButton": "Order button: “{{label}}”"
+    },
+    "noHold": {
+      "title": "No room is being held",
+      "body": "This step needs a room and a set of dates. Please start from the search."
     }
   },
   "confirmation": {
     "eyebrow": "Confirmed",
     "title": "We have your booking",
-    "lede": "A confirmation is on its way to your inbox.",
-    "reference": "Booking number",
+    "documentLabel": "Confirmation",
+    "emailTitle": "The confirmation is on its way",
+    "emailBody": "We have sent the booking confirmation with all details to {{recipient}}. It contains the contract terms in durable form.",
+    "documentVersion": "Document version {{version}} · language {{culture}}",
+    "manage": "View or cancel booking",
+    "home": "Back to home",
+    "linkNote": "Keep the link from the e-mail: it opens your booking at any time, without an account and without a password.",
+    "missing": {
+      "title": "We cannot show this booking"
+    },
     "meta": {
       "title": "Booking confirmation — HotelCore",
       "description": "Confirmation of your reservation."
     }
   },
+  "manage": {
+    "eyebrow": "Your booking",
+    "meta": {
+      "title": "Manage booking — HotelCore",
+      "description": "View your booking, request access or cancel."
+    },
+    "lookup": {
+      "title": "Access your booking",
+      "lede": "Enter your booking reference and e-mail address. We will send the access link again.",
+      "reference": "Booking reference",
+      "referenceHint": "Twelve characters, as in the confirmation: XXXX-XXXX-XXXX",
+      "email": "E-mail",
+      "submit": "Send me the link",
+      "sending": "Sending …",
+      "sentTitle": "Request received",
+      "sentBody": "If a booking matches these details, we have sent the access link to that e-mail address.",
+      "again": "Try different details",
+      "privacyNote": "For data protection reasons we do not confirm here whether a booking exists. The answer is always the same.",
+      "cta": "Request access"
+    },
+    "detail": {
+      "title": "Your booking",
+      "missingTitle": "We cannot show this booking",
+      "meta": {
+        "title": "Your booking — HotelCore",
+        "description": "Details of your reservation."
+      }
+    },
+    "cancel": {
+      "title": "Cancellation",
+      "open": "Cancel this booking",
+      "free": "This cancellation is free of charge. Nothing will be charged.",
+      "feeDue": "A fee of {{amount}} applies to this cancellation.",
+      "cityTaxNote": "Only the accommodation amount is used as the basis; the city tax does not arise.",
+      "acknowledge": "I understand that {{amount}} will be charged.",
+      "reason": "Reason",
+      "reasonHint": "Optional — helpful for the house, but not required.",
+      "confirm": "Cancel now",
+      "sending": "Cancelling …",
+      "keep": "Keep the booking",
+      "offlineTitle": "Online cancellation is closed",
+      "offlineBody": "This stay can no longer be cancelled through the site. Please contact the house directly."
+    },
+    "cancelled": {
+      "title": "This booking is cancelled",
+      "body": "A cancellation confirmation has been sent to your e-mail address.",
+      "fee": "Fee charged: {{amount}}"
+    }
+  },
+  "consent": {
+    "label": "Cookies and tracking",
+    "title": "Only with your consent",
+    "body": "We would like to understand how this site is used. That needs your consent — without it nothing is loaded and nothing is stored.",
+    "essential": "Strictly necessary and allowed without consent: your language choice and the room hold in progress. Without them a booking cannot be completed.",
+    "privacyLink": "Privacy policy",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
   "legal": {
     "eyebrow": "Legal",
-    "pending": "The binding text will be supplied by the house.",
+    "pending": "The binding text is maintained by the house.",
+    "version": "Version {{version}}",
+    "adr": {
+      "participating": "The house takes part in dispute resolution proceedings before a consumer arbitration board.",
+      "notParticipating": "The house is neither obliged nor willing to take part in dispute resolution proceedings before a consumer arbitration board."
+    },
+    "orderButton": {
+      "payable": "Book with obligation to pay"
+    },
+    "withdrawal": {
+      "label": "Right of withdrawal",
+      "sectionTitle": "Right of withdrawal",
+      "basis": "Legal basis: {{basis}}",
+      "version": "Version {{version}}",
+      "cancellationHint": "This does not affect the contractual cancellation terms: you may cancel your booking under the conditions stated above.",
+      "excluded": {
+        "title": "No right of withdrawal",
+        "accommodation": "Accommodation contracts for a specific date carry no 14-day right of withdrawal (Widerrufsrecht). The exclusion follows directly from the law."
+      },
+      "included": {
+        "title": "Right of withdrawal",
+        "body": "You have the right to withdraw from this contract within fourteen days without giving any reason."
+      }
+    },
     "imprint": {
       "label": "Imprint",
-      "title": "Imprint",
-      "description": "Provider identification under §5 DDG (German law).",
+      "title": "Imprint (Impressum)",
+      "description": "Provider identification under §5 DDG.",
+      "fields": {
+        "legalEntityName": "Provider",
+        "legalForm": "Legal form",
+        "representedBy": "Represented by",
+        "address": "Address",
+        "phone": "Phone",
+        "email": "E-mail",
+        "registerCourt": "Register court",
+        "registerNumber": "Register number",
+        "vatId": "VAT identification number",
+        "supervisoryAuthority": "Supervisory authority"
+      },
       "sections": {
         "provider": "Provider",
         "contact": "Contact",
-        "register": "Commercial register",
+        "register": "Register entry",
         "vat": "VAT identification number",
         "supervision": "Supervisory authority",
         "disputeResolution": "Dispute resolution"
@@ -126,7 +422,7 @@
     "privacy": {
       "label": "Privacy",
       "title": "Privacy policy",
-      "description": "Information on the processing of personal data.",
+      "description": "Information about the processing of personal data.",
       "sections": {
         "controller": "Controller",
         "officer": "Data protection officer",
@@ -146,7 +442,7 @@
       "sections": {
         "scope": "Scope",
         "booking": "Booking and conclusion of contract",
-        "payment": "Rates and payment",
+        "payment": "Prices and payment",
         "cancellation": "Cancellation and no-show",
         "houseRules": "House rules",
         "liability": "Liability"
@@ -156,20 +452,75 @@
       }
     }
   },
+  "form": {
+    "required": "Required",
+    "errorSummary": "Please check {{count}} entry/entries:",
+    "errors": {
+      "required": "Please fill this in.",
+      "email": "Please enter a valid e-mail address.",
+      "maxLength": "{{max}} characters at most.",
+      "time": "Please use the format HH:MM.",
+      "consentRequired": "Without this confirmation we cannot complete the booking.",
+      "adultRequired": "Bookings are only possible from the age of 18.",
+      "feeAcknowledgeRequired": "Please confirm the amount before cancelling."
+    }
+  },
   "footer": {
-    "about": "A house that rents out its own rooms — and welcomes its own guests.",
+    "about": "A house that lets its own rooms — and welcomes its own guests.",
     "legal": "Legal",
-    "legalNavigation": "Legal information",
+    "legalNavigation": "Legal notices",
+    "service": "Service",
+    "serviceNavigation": "Service and settings",
+    "manageBooking": "Manage booking",
+    "consentSettings": "Cookie settings",
     "language": "Language",
     "copyright": "© {{year}} HotelCore",
-    "priceNote": "All rates include VAT."
+    "priceNote": "All prices include VAT and mandatory charges."
   },
   "errors": {
     "notFound": {
       "code": "Error 404",
       "title": "This page does not exist",
-      "lede": "It may have moved. Everything is reachable again from the home page.",
-      "home": "Go to home page"
+      "lede": "It may have moved. Everything can be reached again from the home page.",
+      "home": "Back to home"
+    },
+    "recovery": {
+      "retry": "Try again",
+      "renewHold": "Request a new offer",
+      "reconfirmSummary": "Show current details",
+      "backToSearch": "Back to search",
+      "changeDates": "Change dates",
+      "fixForm": "Check your entries",
+      "contactHotel": "Contact the house",
+      "wait": "Try again later"
+    },
+    "public": {
+      "label": "Notice",
+      "title": "That did not work",
+      "retryAfter": "Please wait about {{seconds}} seconds.",
+      "validationFailed": "Some entries could not be accepted. Please check the highlighted fields.",
+      "cardDataNotAccepted": "Card details are never processed on this site. Please contact the house.",
+      "channelNotConfigured": "This payment method is not set up for this house. Please contact the house.",
+      "hotelNotFound": "This house is not taking online bookings at the moment.",
+      "roomTypeNotFound": "This room type no longer exists. The current rooms are listed in the overview.",
+      "holdNotFound": "Your hold is no longer there. We can check the same dates again.",
+      "bookingNotFound": "We cannot find a booking for this link. It may have expired.",
+      "holdExpired": "The hold has run out and the room has been released. Request a new offer — price and availability will be worked out afresh.",
+      "holdAlreadyUsed": "This hold has already been turned into a booking. Please check your inbox.",
+      "roomNoLongerAvailable": "The last room of this type has just been taken. Please choose from the current results.",
+      "capacityExceeded": "This room type is too small for that number of guests. Please reduce the party size.",
+      "summaryChanged": "The price or the terms changed while you were filling in your details. We may only book what was actually shown to you — please review the new summary and confirm again.",
+      "legalTextChanged": "The terms or the privacy notice have been updated. Please review the new version and confirm again.",
+      "cancellationNotAllowed": "This booking can no longer be cancelled online. Please contact the house directly.",
+      "feeAcknowledgementRequired": "The cancellation fee has changed. Please check the current amount and confirm it again.",
+      "bookingAlreadyCancelled": "This booking has already been cancelled.",
+      "rateLimitExceeded": "Too many requests came from this connection. Please try again shortly.",
+      "paymentProviderUnavailable": "Payment processing is unavailable right now. Please try again later.",
+      "network": "We could not reach the house. Please check your connection.",
+      "notFound": "This entry no longer exists.",
+      "conflict": "Something changed in the meantime. Please reload the details.",
+      "server": "Something went wrong on our side. Please try again.",
+      "unknown": "That did not work. Please try again."
     }
   }
 }

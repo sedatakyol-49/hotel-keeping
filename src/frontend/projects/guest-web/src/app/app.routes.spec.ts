@@ -45,7 +45,9 @@ describe('Rota iskeleti — dil altindaki sayfalar', () => {
       'search',
       'rooms/:slug',
       'booking',
-      'confirmation/:reference',
+      'confirmation/:token',
+      'manage',
+      'manage/:token',
       'legal/imprint',
       'legal/privacy',
       'legal/terms',
@@ -68,7 +70,14 @@ describe('Rota iskeleti — dil altindaki sayfalar', () => {
     const noindex = LANGUAGE_ROUTES.filter((route) => route.data?.['noindex'] === true).map(
       (route) => route.path,
     );
-    expect(noindex).toEqual(['search', 'booking', 'confirmation/:reference', '**']);
+    expect(noindex).toEqual([
+      'search',
+      'booking',
+      'confirmation/:token',
+      'manage',
+      'manage/:token',
+      '**',
+    ]);
   });
 
   it('tum sayfalar lazy yuklenir (ilk paket sayfa kodu tasimaz)', () => {
@@ -102,7 +111,12 @@ describe('Sunucu rota tablosu — render modlari', () => {
       .filter((route) => route.renderMode === RenderMode.Client)
       .map((route) => route.path);
 
-    expect(clientOnly).toEqual([':lang/booking', ':lang/confirmation/:reference']);
+    expect(clientOnly).toEqual([
+      ':lang/booking',
+      ':lang/confirmation/:token',
+      ':lang/manage',
+      ':lang/manage/:token',
+    ]);
   });
 
   it('prerender edilen rotalar uc dilin tamamini uretir', async () => {

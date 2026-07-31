@@ -130,6 +130,21 @@
     background-color: var(--color-copper);
   }
 
+  /*
+   * HUKUKI ISTISNA: siparis dugmesi (§312j Abs. 3 BGB).
+   * Diger tum eylemler mono + BUYUK HARF cizilir; burada metin sunucudan gelen
+   * yasal ifadedir ("zahlungspflichtig buchen") ve **oldugu gibi** gorunmelidir.
+   * Buyuk harfe cevirmek ya da harf araligini acmak, gosterilen metin ile
+   * `checkout.orderButtonLabel` olarak kaydedilen metni gorsel olarak ayirir;
+   * uyusmazlikta "ekranda bu yaziyordu" demenin degeri azalir.
+   */
+  .hcg-action--verbatim {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
   /* Ikincil eylem: ayni geometri, bos zemin. */
   .hcg-action--quiet {
     border-color: var(--color-rule-strong);

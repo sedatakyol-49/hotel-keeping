@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, signal } from '@angular/core';
 
 /**
  * Medya cercevesi — gorsel alani icin **olcusu dogru** yer tutucu.
@@ -18,16 +18,22 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
  * CIZIM: gradyan/ikon/emoji yok. Bos kutu, 1px cetvel cercevesi ve teknik
  * cizimden odunc alinmis capraz iki cizgi ("burada gorsel var") ile isaretlenir;
  * kose altinda mono etiket olcuyu okunur kilar.
+ *
+ * KIRIK GORSEL YOKTUR: `src` verilmis ama yuklenememisse (404/500 — bu fazda
+ * seed yollari `/assets/demo/...` gercek dosyalara isaret etmiyor) tarayicinin
+ * kirik gorsel simgesi ve alt metni yerine AYNI yer tutucu cizilir. Yer tutucu
+ * kasitli bir tasarim ogesidir; kirik simge bir hatadir ve sayfayi terk
+ * edilmis gosterir.
  */
 @Component({
   selector: 'hcg-media-frame',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <figure class="m-0" [style.aspect-ratio]="ratio()">
-      @if (src(); as source) {
+      @if (source(); as url) {
         <img
           class="block h-full w-full object-cover"
-          [src]="source"
+          [src]="url"
           [attr.width]="width()"
           [attr.height]="height()"
           [alt]="alt()"
@@ -35,6 +41,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
           [attr.fetchpriority]="priority() ? 'high' : 'auto'"
           decoding="async"
           data-testid="media-image"
+          (error)="onError()"
         />
       } @else {
         <div
@@ -87,4 +94,22 @@ export class MediaFrame {
   readonly priority = input(false);
 
   protected readonly ratio = computed(() => `${this.width()} / ${this.height()}`);
+
+  /** Yuklenemeyen kaynak; yer tutucuya duseriz. */
+  private readonly failed = signal(false);
+
+  /** Gosterilecek kaynak: yuklenemediyse `null` -> yer tutucu. */
+  protected readonly source = computed(() => (this.failed() ? null : this.src()));
+
+  constructor() {
+    // Kaynak degisince yeniden denenir (eski hata yeni gorseli engellemesin).
+    effect(() => {
+      this.src();
+      this.failed.set(false);
+    });
+  }
+
+  protected onError(): void {
+    this.failed.set(true);
+  }
 }

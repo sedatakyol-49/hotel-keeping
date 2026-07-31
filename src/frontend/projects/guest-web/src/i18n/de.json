@@ -2,7 +2,6 @@
   "common": {
     "appName": "HotelCore",
     "tagline": "Hotel & Restaurant",
-    "pendingApi": "Die Inhalte dieser Seite werden angebunden, sobald der API-Vertrag steht.",
     "loading": "Wird geladen …"
   },
   "a11y": {
@@ -24,6 +23,21 @@
     "defaultTitle": "HotelCore — direkt buchen",
     "defaultDescription": "Zimmer direkt beim Haus buchen: bester Preis, freie Stornierung, persönlicher Kontakt."
   },
+  "amenities": {
+    "wifi": "WLAN",
+    "parking": "Parkplatz",
+    "breakfast": "Frühstück",
+    "minibar": "Minibar",
+    "balcony": "Balkon",
+    "airConditioning": "Klimaanlage",
+    "safe": "Safe",
+    "tv": "Fernseher",
+    "desk": "Schreibtisch",
+    "bathtub": "Badewanne",
+    "shower": "Dusche",
+    "pets": "Haustiere erlaubt",
+    "nonSmoking": "Nichtraucher"
+  },
   "home": {
     "meta": {
       "title": "HotelCore — Zimmer direkt buchen",
@@ -33,17 +47,13 @@
       "eyebrow": "Direkt beim Haus",
       "title": "Ein Zimmer, das schon auf Sie eingerichtet ist.",
       "lede": "Keine Zwischenhändler, keine versteckten Gebühren. Sie buchen dort, wo auch das Frühstück gemacht wird.",
-      "cta": "Verfügbarkeit prüfen",
       "imageAlt": "Ansicht des Hauses",
       "imageCaption": "Bild folgt"
     },
     "rooms": {
       "title": "Zimmer",
       "all": "Alle Zimmer",
-      "imageAlt": "Zimmeransicht",
-      "pendingTitle": "Zimmertyp",
-      "pendingBody": "Beschreibung, Ausstattung und Belegung folgen aus der Zimmerverwaltung.",
-      "pendingPrice": "Preis auf Anfrage"
+      "imageAlt": "Zimmeransicht"
     },
     "direct": {
       "title": "Warum direkt buchen",
@@ -65,9 +75,52 @@
     "eyebrow": "Verfügbarkeit",
     "title": "Freie Zimmer",
     "lede": "Wählen Sie Zeitraum und Belegung; die Preise gelten tagesaktuell.",
+    "cityTaxNote": "In allen Preisen ist die Kurtaxe von {{amount}} pro Person und Nacht bereits enthalten.",
     "meta": {
       "title": "Freie Zimmer — HotelCore",
       "description": "Verfügbarkeit und tagesaktuelle Preise für Ihren Zeitraum."
+    },
+    "form": {
+      "label": "Zimmer suchen",
+      "checkIn": "Anreise",
+      "checkOut": "Abreise",
+      "adults": "Erwachsene",
+      "children": "Kinder",
+      "submit": "Suchen",
+      "priceNote": "Alle Preise verstehen sich inklusive Mehrwertsteuer und aller Pflichtabgaben.",
+      "errors": {
+        "missingDates": "Bitte geben Sie Anreise- und Abreisedatum an.",
+        "pastDate": "Die Anreise kann nicht in der Vergangenheit liegen.",
+        "order": "Die Abreise muss nach der Anreise liegen — mindestens eine Nacht."
+      }
+    },
+    "prompt": {
+      "title": "Zeitraum wählen",
+      "body": "Preise und Verfügbarkeit hängen vom Datum ab. Bitte tragen Sie Anreise und Abreise ein."
+    },
+    "results": {
+      "title": "Verfügbare Zimmer",
+      "summary": "{{nights}} Nächte · {{adults}} Erwachsene · {{children}} Kinder"
+    },
+    "empty": {
+      "title": "Für diesen Zeitraum ist nichts frei",
+      "body": "Versuchen Sie einen anderen Zeitraum oder eine kleinere Belegung. Unten steht, woran es liegt."
+    },
+    "unavailable": {
+      "title": "Nicht verfügbar",
+      "reason": {
+        "NoRoomAvailable": "In diesem Zeitraum belegt.",
+        "CapacityExceeded": "Für diese Personenzahl zu klein — bitte Belegung verringern.",
+        "MinNightsNotMet": "Mindestaufenthalt nicht erreicht — bitte Zeitraum verlängern."
+      }
+    },
+    "offer": {
+      "remaining": "Nur noch {{count}} Zimmer frei",
+      "select": "Auswählen",
+      "selecting": "Wird reserviert …",
+      "details": "Zimmer ansehen",
+      "freeCancellation": "Kostenfrei stornierbar bis zum angegebenen Zeitpunkt.",
+      "restrictedCancellation": "Eingeschränkt stornierbar — Bedingungen im nächsten Schritt."
     }
   },
   "roomType": {
@@ -75,42 +128,285 @@
     "title": "Zimmer im Detail",
     "lede": "Ausstattung, Belegung und Preise für diesen Zimmertyp.",
     "imageAlt": "Zimmeransicht",
+    "amenities": "Ausstattung",
+    "cancellation": "Stornierung",
+    "fromPriceLabel": "ab",
+    "fromPriceNote": "Startpreis pro Nacht ohne Datum. Der Gesamtpreis steht nach Eingabe des Zeitraums.",
+    "perNight": "pro Nacht",
+    "unavailable": {
+      "title": "In diesem Zeitraum nicht buchbar"
+    },
     "meta": {
       "title": "Zimmer — HotelCore",
       "description": "Ausstattung, Belegung und tagesaktuelle Preise für diesen Zimmertyp."
     }
   },
+  "price": {
+    "total": "Gesamtpreis",
+    "perNight": "{{amount}} pro Nacht · {{nights}} Nächte",
+    "perNightAverage": "Ø {{amount}} pro Nacht · {{nights}} Nächte",
+    "inclusiveVatCityTax": "inkl. MwSt. und Kurtaxe",
+    "inclusiveCityTax": "inkl. Kurtaxe",
+    "inclusiveVat": "inkl. MwSt.",
+    "inclusiveNone": "Gesamtpreis",
+    "accommodation": "Übernachtung · {{nights}} Nächte",
+    "cityTax": "Kurtaxe",
+    "cityTaxBasis": "{{persons}} Personen × {{nights}} Nächte × {{rate}}",
+    "vatNote": "Enthaltene Mehrwertsteuer ({{rate}} %): {{amount}}",
+    "cityTaxNote": "Die Kurtaxe ist im Gesamtpreis enthalten und entfällt, wenn der Aufenthalt nicht stattfindet.",
+    "cityTaxChildExemption": "Kinder unter {{age}} Jahren sind von der Kurtaxe befreit.",
+    "dueAtProperty": "Zahlung bei Anreise im Haus: {{amount}}"
+  },
+  "order": {
+    "summaryTitle": "Ihre Bestellung",
+    "roomType": "Zimmer",
+    "occupancy": "Belegung",
+    "occupancyValue": "{{rooms}} Zimmer · {{adults}} Erwachsene · {{children}} Kinder",
+    "board": "Verpflegung",
+    "boardValue": {
+      "None": "Ohne Verpflegung"
+    },
+    "duration": "Zeitraum",
+    "durationValue": "{{checkIn}} – {{checkOut}} · {{nights}} Nächte",
+    "checkTimes": "Anreise ab {{from}} Uhr · Abreise bis {{until}} Uhr",
+    "mandatory": "Pflicht",
+    "total": "Gesamtpreis",
+    "totalNoteVatAndMandatory": "Inklusive Mehrwertsteuer und aller Pflichtabgaben. Weitere Kosten entstehen nicht.",
+    "totalNoteVat": "Inklusive Mehrwertsteuer.",
+    "totalNoteNone": "Gesamtpreis der Bestellung.",
+    "paymentAtProperty": "Der Betrag von {{amount}} ist bei Anreise im Haus zu zahlen.",
+    "submitting": "Wird gesendet …",
+    "reconfirmLabel": "Bestätigung erforderlich",
+    "reconfirmTitle": "Die Bestellübersicht hat sich geändert",
+    "reconfirmBody": "Preis oder Bedingungen wurden zwischenzeitlich aktualisiert. Aus rechtlichen Gründen dürfen wir nur das buchen, was Ihnen tatsächlich angezeigt wurde. Bitte prüfen Sie die neue Übersicht und bestätigen Sie erneut.",
+    "reconfirmAction": "Neue Übersicht anzeigen",
+    "contract": {
+      "OnConfirmationEmail": "Der Vertrag kommt mit der Bestätigungs-E-Mail zustande.",
+      "OnHotelAcceptance": "Ihre Anfrage wird an das Haus übermittelt; der Vertrag kommt erst mit der Annahme durch das Haus zustande."
+    }
+  },
+  "hold": {
+    "remaining": "Reserviert noch",
+    "hint": "Wir halten dieses Zimmer für Sie frei. Läuft die Zeit ab, wird es wieder freigegeben und der Preis neu berechnet.",
+    "expiredHint": "Die Reservierung ist abgelaufen. Sie können ein neues Angebot anfordern.",
+    "expiredLabel": "Zeit abgelaufen",
+    "expiredTitle": "Die Reservierung ist abgelaufen",
+    "expiredBody": "Das Zimmer wurde wieder freigegeben. Wir können denselben Zeitraum erneut prüfen — Verfügbarkeit und Preis werden dabei neu ermittelt.",
+    "renew": "Neues Angebot anfordern",
+    "backToSearch": "Zurück zur Suche",
+    "abandon": "Buchung abbrechen und Zimmer freigeben",
+    "priceChangedTitle": "Der Preis hat sich geändert",
+    "priceChangedBody": "Bisher {{previous}}, jetzt {{current}}. Bitte prüfen Sie die Übersicht, bevor Sie fortfahren.",
+    "a11y": {
+      "remaining": "Noch {{minutes}} Minuten und {{seconds}} Sekunden reserviert",
+      "expired": "Reservierung abgelaufen",
+      "announceFiveMinutes": "Noch fünf Minuten, bis die Reservierung abläuft.",
+      "announceOneMinute": "Noch eine Minute, bis die Reservierung abläuft.",
+      "announceExpired": "Die Reservierung ist abgelaufen. Sie können ein neues Angebot anfordern."
+    }
+  },
   "booking": {
     "eyebrow": "Buchung",
     "title": "Ihre Buchung",
-    "lede": "Drei Schritte: Zeitraum, Ihre Angaben, Bestätigung.",
-    "steps": {
-      "dates": "Zeitraum und Zimmer",
-      "guest": "Ihre Angaben",
-      "confirm": "Prüfen und bestätigen"
-    },
+    "reference": "Buchungsnummer",
+    "hotel": "Haus",
     "meta": {
       "title": "Buchung — HotelCore",
       "description": "Buchungsstrecke für Ihre Reservierung."
+    },
+    "status": {
+      "Confirmed": "Bestätigt",
+      "InHouse": "Aufenthalt läuft",
+      "Completed": "Abgeschlossen",
+      "Cancelled": "Storniert",
+      "NoShow": "Nicht angereist"
+    },
+    "guest": {
+      "title": "Ihre Angaben",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "email": "E-Mail",
+      "emailHint": "An diese Adresse senden wir die Bestätigung und den Zugang zu Ihrer Buchung.",
+      "phone": "Telefon",
+      "optional": "Optional",
+      "minimizationNote": "Mehr fragen wir nicht ab. Geburtsdatum, Staatsangehörigkeit und Ausweisdaten werden erst bei der Anreise für den Meldeschein erhoben."
+    },
+    "stay": {
+      "title": "Zum Aufenthalt",
+      "arrival": "Voraussichtliche Ankunft",
+      "arrivalHint": "Optional — hilft der Rezeption bei später Anreise.",
+      "note": "Anmerkung",
+      "noteHint": "Optional, höchstens 500 Zeichen. Bitte keine Gesundheitsdaten oder andere sensible Angaben.",
+      "roomType": "Zimmer",
+      "dates": "Zeitraum",
+      "occupancy": "Erwachsene / Kinder"
+    },
+    "invoice": {
+      "title": "Rechnungsanschrift",
+      "toggle": "Ich benötige eine Rechnung auf eine Firma oder eine abweichende Anschrift.",
+      "company": "Firma",
+      "vatId": "USt-IdNr.",
+      "addressLine": "Straße und Hausnummer",
+      "postalCode": "PLZ",
+      "city": "Ort",
+      "country": "Land",
+      "countryHint": "Zwei Buchstaben, z. B. DE"
+    },
+    "payment": {
+      "title": "Zahlung",
+      "PayAtProperty": "Zahlung bei Anreise im Haus.",
+      "noCardNote": "Wir fragen auf dieser Seite keine Kartendaten ab — weder jetzt noch später.",
+      "due": "Fällig bei Anreise: {{amount}}"
+    },
+    "consents": {
+      "title": "Bestätigungen",
+      "terms": "Ich akzeptiere die",
+      "privacy": "Ich habe die",
+      "withdrawal": "Ich habe die Belehrung zum Widerrufsrecht zur Kenntnis genommen.",
+      "adult": "Ich bin mindestens 18 Jahre alt.",
+      "marketing": "Ich möchte gelegentlich Angebote des Hauses per E-Mail erhalten. (Optional, jederzeit widerrufbar.)"
+    },
+    "summary": {
+      "title": "Ihr Aufenthalt"
+    },
+    "cancellation": {
+      "label": "Stornierung",
+      "freeTitle": "Kostenfrei stornierbar",
+      "paidTitle": "Stornierung kostenpflichtig",
+      "until": "Kostenfreie Stornierung bis {{deadline}}.",
+      "lateFee": "Danach werden {{percent}} % des Übernachtungsbetrags berechnet — derzeit {{amount}}.",
+      "cityTaxNote": "Die Kurtaxe fällt bei Stornierung nicht an und geht nicht in die Stornogebühr ein.",
+      "charged": "Berechnete Stornogebühr: {{amount}}"
+    },
+    "legal": {
+      "title": "Rechtliche Angaben",
+      "terms": "AGB-Fassung {{version}}",
+      "privacy": "Datenschutzhinweis {{version}}",
+      "orderButton": "Bestellschaltfläche: „{{label}}“"
+    },
+    "noHold": {
+      "title": "Keine laufende Reservierung",
+      "body": "Für diesen Schritt brauchen wir ein Zimmer und einen Zeitraum. Bitte starten Sie mit der Suche."
     }
   },
   "confirmation": {
     "eyebrow": "Bestätigt",
     "title": "Wir haben Ihre Buchung",
-    "lede": "Eine Bestätigung ist unterwegs zu Ihrer E-Mail-Adresse.",
-    "reference": "Buchungsnummer",
+    "documentLabel": "Bestätigung",
+    "emailTitle": "Die Bestätigung ist unterwegs",
+    "emailBody": "Wir haben die Buchungsbestätigung mit allen Angaben an {{recipient}} gesendet. Sie enthält den Vertragsinhalt in dauerhafter Form.",
+    "documentVersion": "Dokumentfassung {{version}} · Sprache {{culture}}",
+    "manage": "Buchung ansehen oder stornieren",
+    "home": "Zur Startseite",
+    "linkNote": "Bewahren Sie den Link aus der E-Mail auf: damit erreichen Sie Ihre Buchung jederzeit ohne Konto und ohne Passwort.",
+    "missing": {
+      "title": "Diese Buchung können wir nicht anzeigen"
+    },
     "meta": {
       "title": "Buchungsbestätigung — HotelCore",
       "description": "Bestätigung Ihrer Reservierung."
     }
   },
+  "manage": {
+    "eyebrow": "Ihre Buchung",
+    "meta": {
+      "title": "Buchung verwalten — HotelCore",
+      "description": "Buchung ansehen, Zugang anfordern oder stornieren."
+    },
+    "lookup": {
+      "title": "Zugang zu Ihrer Buchung",
+      "lede": "Geben Sie Buchungsnummer und E-Mail-Adresse an. Wir senden den Zugangslink erneut zu.",
+      "reference": "Buchungsnummer",
+      "referenceHint": "Zwölf Zeichen, wie in der Bestätigung: XXXX-XXXX-XXXX",
+      "email": "E-Mail",
+      "submit": "Link zusenden",
+      "sending": "Wird gesendet …",
+      "sentTitle": "Anfrage aufgenommen",
+      "sentBody": "Falls zu diesen Angaben eine Buchung besteht, haben wir den Zugangslink an die angegebene E-Mail-Adresse gesendet.",
+      "again": "Andere Angaben versuchen",
+      "privacyNote": "Aus Datenschutzgründen bestätigen wir hier nicht, ob eine Buchung existiert. Die Antwort ist immer dieselbe.",
+      "cta": "Zugang anfordern"
+    },
+    "detail": {
+      "title": "Ihre Buchung",
+      "missingTitle": "Diese Buchung können wir nicht anzeigen",
+      "meta": {
+        "title": "Ihre Buchung — HotelCore",
+        "description": "Details Ihrer Reservierung."
+      }
+    },
+    "cancel": {
+      "title": "Stornierung",
+      "open": "Buchung stornieren",
+      "free": "Diese Stornierung ist kostenfrei. Es wird kein Betrag berechnet.",
+      "feeDue": "Für diese Stornierung wird eine Gebühr von {{amount}} fällig.",
+      "cityTaxNote": "Grundlage ist ausschließlich der Übernachtungsbetrag; die Kurtaxe fällt nicht an.",
+      "acknowledge": "Ich habe zur Kenntnis genommen, dass {{amount}} berechnet werden.",
+      "reason": "Grund",
+      "reasonHint": "Optional — hilft dem Haus, muss aber nicht angegeben werden.",
+      "confirm": "Jetzt stornieren",
+      "sending": "Wird storniert …",
+      "keep": "Buchung behalten",
+      "offlineTitle": "Online nicht mehr stornierbar",
+      "offlineBody": "Für diesen Aufenthalt ist eine Stornierung über die Seite nicht mehr möglich. Bitte wenden Sie sich direkt an das Haus."
+    },
+    "cancelled": {
+      "title": "Diese Buchung ist storniert",
+      "body": "Eine Bestätigung der Stornierung wurde an Ihre E-Mail-Adresse gesendet.",
+      "fee": "Berechnete Gebühr: {{amount}}"
+    }
+  },
+  "consent": {
+    "label": "Cookies und Tracking",
+    "title": "Nur mit Ihrer Einwilligung",
+    "body": "Wir würden gerne verstehen, wie diese Seite genutzt wird. Dafür brauchen wir Ihre Einwilligung — ohne sie wird nichts geladen und nichts gespeichert.",
+    "essential": "Technisch notwendig und ohne Einwilligung zulässig: Ihre Sprachwahl und die laufende Zimmerreservierung. Ohne diese Angaben lässt sich keine Buchung abschließen.",
+    "privacyLink": "Datenschutzerklärung",
+    "accept": "Einverstanden",
+    "decline": "Ablehnen"
+  },
   "legal": {
     "eyebrow": "Rechtliches",
     "pending": "Der verbindliche Text wird vom Haus eingepflegt.",
+    "version": "Fassung {{version}}",
+    "adr": {
+      "participating": "Das Haus nimmt an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teil.",
+      "notParticipating": "Das Haus ist zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle weder verpflichtet noch bereit."
+    },
+    "orderButton": {
+      "payable": "zahlungspflichtig buchen"
+    },
+    "withdrawal": {
+      "label": "Widerrufsrecht",
+      "sectionTitle": "Widerrufsrecht",
+      "basis": "Rechtsgrundlage: {{basis}}",
+      "version": "Fassung {{version}}",
+      "cancellationHint": "Davon unberührt bleibt die vertragliche Stornierungsregelung: Sie können Ihre Buchung zu den oben genannten Bedingungen stornieren.",
+      "excluded": {
+        "title": "Kein Widerrufsrecht",
+        "accommodation": "Bei Beherbergungsverträgen zu einem bestimmten Termin besteht kein 14-tägiges Widerrufsrecht. Dieser Ausschluss ergibt sich unmittelbar aus dem Gesetz."
+      },
+      "included": {
+        "title": "Widerrufsrecht",
+        "body": "Sie haben das Recht, diesen Vertrag innerhalb von vierzehn Tagen ohne Angabe von Gründen zu widerrufen."
+      }
+    },
     "imprint": {
       "label": "Impressum",
       "title": "Impressum",
       "description": "Anbieterkennzeichnung nach §5 DDG.",
+      "fields": {
+        "legalEntityName": "Anbieter",
+        "legalForm": "Rechtsform",
+        "representedBy": "Vertreten durch",
+        "address": "Anschrift",
+        "phone": "Telefon",
+        "email": "E-Mail",
+        "registerCourt": "Registergericht",
+        "registerNumber": "Registernummer",
+        "vatId": "Umsatzsteuer-Identifikationsnummer",
+        "supervisoryAuthority": "Aufsichtsbehörde"
+      },
       "sections": {
         "provider": "Anbieter",
         "contact": "Kontakt",
@@ -156,13 +452,30 @@
       }
     }
   },
+  "form": {
+    "required": "Pflichtfeld",
+    "errorSummary": "Bitte prüfen Sie {{count}} Angabe(n):",
+    "errors": {
+      "required": "Bitte ausfüllen.",
+      "email": "Bitte geben Sie eine gültige E-Mail-Adresse an.",
+      "maxLength": "Höchstens {{max}} Zeichen.",
+      "time": "Bitte im Format HH:MM angeben.",
+      "consentRequired": "Ohne diese Bestätigung können wir die Buchung nicht abschließen.",
+      "adultRequired": "Buchungen sind erst ab 18 Jahren möglich.",
+      "feeAcknowledgeRequired": "Bitte bestätigen Sie den Betrag, bevor Sie stornieren."
+    }
+  },
   "footer": {
     "about": "Ein Haus, das seine Zimmer selbst vermietet — und seine Gäste selbst empfängt.",
     "legal": "Rechtliches",
     "legalNavigation": "Rechtliche Hinweise",
+    "service": "Service",
+    "serviceNavigation": "Service und Einstellungen",
+    "manageBooking": "Buchung verwalten",
+    "consentSettings": "Cookie-Einstellungen",
     "language": "Sprache",
     "copyright": "© {{year}} HotelCore",
-    "priceNote": "Alle Preise inklusive Mehrwertsteuer."
+    "priceNote": "Alle Preise inklusive Mehrwertsteuer und Pflichtabgaben."
   },
   "errors": {
     "notFound": {
@@ -170,6 +483,44 @@
       "title": "Diese Seite gibt es nicht",
       "lede": "Vielleicht wurde sie verschoben. Von der Startseite aus finden Sie alles wieder.",
       "home": "Zur Startseite"
+    },
+    "recovery": {
+      "retry": "Erneut versuchen",
+      "renewHold": "Neues Angebot anfordern",
+      "reconfirmSummary": "Aktuelle Angaben anzeigen",
+      "backToSearch": "Zurück zur Suche",
+      "changeDates": "Zeitraum ändern",
+      "fixForm": "Angaben prüfen",
+      "contactHotel": "Haus kontaktieren",
+      "wait": "Später erneut versuchen"
+    },
+    "public": {
+      "label": "Hinweis",
+      "title": "Das hat nicht geklappt",
+      "retryAfter": "Bitte warten Sie etwa {{seconds}} Sekunden.",
+      "validationFailed": "Einige Angaben konnten wir nicht übernehmen. Bitte prüfen Sie die markierten Felder.",
+      "cardDataNotAccepted": "Auf dieser Seite werden keine Kartendaten verarbeitet. Bitte wenden Sie sich an das Haus.",
+      "channelNotConfigured": "Diese Zahlungsart ist für dieses Haus nicht eingerichtet. Bitte wenden Sie sich an das Haus.",
+      "hotelNotFound": "Dieses Haus nimmt derzeit keine Online-Buchungen entgegen.",
+      "roomTypeNotFound": "Diesen Zimmertyp gibt es nicht mehr. In der Übersicht finden Sie die aktuellen Zimmer.",
+      "holdNotFound": "Ihre Reservierung ist nicht mehr vorhanden. Wir können denselben Zeitraum erneut prüfen.",
+      "bookingNotFound": "Zu diesem Link finden wir keine Buchung. Möglicherweise ist er abgelaufen.",
+      "holdExpired": "Die Reservierungszeit ist abgelaufen und das Zimmer wurde freigegeben. Fordern Sie ein neues Angebot an — Preis und Verfügbarkeit werden neu ermittelt.",
+      "holdAlreadyUsed": "Diese Reservierung wurde bereits in eine Buchung umgewandelt. Prüfen Sie Ihr E-Mail-Postfach.",
+      "roomNoLongerAvailable": "Das letzte Zimmer dieser Kategorie wurde soeben vergeben. Bitte wählen Sie aus den aktuellen Ergebnissen.",
+      "capacityExceeded": "Für diese Personenzahl ist der Zimmertyp zu klein. Bitte verringern Sie die Belegung.",
+      "summaryChanged": "Preis oder Bedingungen haben sich geändert, während Sie die Angaben ausgefüllt haben. Wir dürfen nur das buchen, was Ihnen tatsächlich angezeigt wurde — bitte sehen Sie sich die neue Übersicht an und bestätigen Sie erneut.",
+      "legalTextChanged": "Die AGB oder der Datenschutzhinweis wurden aktualisiert. Bitte prüfen Sie die neue Fassung und bestätigen Sie erneut.",
+      "cancellationNotAllowed": "Diese Buchung kann online nicht mehr storniert werden. Bitte wenden Sie sich direkt an das Haus.",
+      "feeAcknowledgementRequired": "Die Stornogebühr hat sich geändert. Bitte prüfen Sie den aktuellen Betrag und bestätigen Sie ihn erneut.",
+      "bookingAlreadyCancelled": "Diese Buchung ist bereits storniert.",
+      "rateLimitExceeded": "Es kamen zu viele Anfragen von diesem Anschluss. Bitte versuchen Sie es in Kürze erneut.",
+      "paymentProviderUnavailable": "Die Zahlungsabwicklung ist gerade nicht erreichbar. Bitte versuchen Sie es später erneut.",
+      "network": "Wir konnten das Haus nicht erreichen. Bitte prüfen Sie Ihre Verbindung.",
+      "notFound": "Diesen Eintrag gibt es nicht mehr.",
+      "conflict": "Zwischenzeitlich hat sich etwas geändert. Bitte laden Sie die Angaben neu.",
+      "server": "Bei uns ist etwas schiefgegangen. Bitte versuchen Sie es erneut.",
+      "unknown": "Das hat leider nicht geklappt. Bitte versuchen Sie es erneut."
     }
   }
 }

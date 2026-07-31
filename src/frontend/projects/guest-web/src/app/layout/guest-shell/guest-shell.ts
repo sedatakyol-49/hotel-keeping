@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
+import { CookieConsent } from '../../shared/ui/cookie-consent/cookie-consent';
 import { GuestFooter } from '../guest-footer/guest-footer';
 import { GuestHeader } from '../guest-header/guest-header';
 
@@ -19,7 +20,7 @@ import { GuestHeader } from '../guest-header/guest-header';
 @Component({
   selector: 'hcg-guest-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, TranslatePipe, GuestHeader, GuestFooter],
+  imports: [RouterOutlet, TranslatePipe, GuestHeader, GuestFooter, CookieConsent],
   template: `
     <a class="hc-skip-link" href="#content">{{ 'a11y.skipToContent' | translate }}</a>
 
@@ -32,6 +33,13 @@ import { GuestHeader } from '../guest-header/guest-header';
 
       <hcg-guest-footer />
     </div>
+
+    <!--
+      §25 TDDDG onay bandi. Kabukta durur, sayfalara birakilmaz: bir sayfanin
+      bandi unutmasi, onaysiz izleyici demek olurdu. Yalnizca tarayicida ve
+      karar verilmemisken cizilir (bkz. bileşen).
+    -->
+    <hcg-cookie-consent />
   `,
 })
 export class GuestShell {}

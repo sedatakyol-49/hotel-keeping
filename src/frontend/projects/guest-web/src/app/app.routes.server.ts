@@ -71,7 +71,23 @@ export const serverRoutes: ServerRoute[] = [
     headers: { 'X-Robots-Tag': 'noindex, nofollow' },
   },
   {
-    path: ':lang/confirmation/:reference',
+    path: ':lang/confirmation/:token',
+    renderMode: RenderMode.Client,
+    headers: { 'X-Robots-Tag': 'noindex, nofollow' },
+  },
+  /*
+   * Sorgulama ve iptal: rezervasyon sahibinin adi, e-postasi ve tutarlari
+   * gorunur. Onay ekraniyla ayni gerekce — sunucuya hic ugramaz.
+   * Arama formu (`/manage`) da istemcidir: girilen e-posta sunucu loglarina
+   * dusmemeli.
+   */
+  {
+    path: ':lang/manage',
+    renderMode: RenderMode.Client,
+    headers: { 'X-Robots-Tag': 'noindex, nofollow' },
+  },
+  {
+    path: ':lang/manage/:token',
     renderMode: RenderMode.Client,
     headers: { 'X-Robots-Tag': 'noindex, nofollow' },
   },
