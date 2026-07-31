@@ -12,7 +12,11 @@
     "languageNavigation": "Dil seçin",
     "home": "Ana sayfa",
     "rooms": "Odalar & fiyatlar",
-    "book": "Hemen rezervasyon"
+    "book": "Hemen rezervasyon",
+    "bookShort": "Rezerve et",
+    "language": "Dil",
+    "openMenu": "Menüyü aç",
+    "closeMenu": "Menüyü kapat"
   },
   "language": {
     "de": "Almanca",

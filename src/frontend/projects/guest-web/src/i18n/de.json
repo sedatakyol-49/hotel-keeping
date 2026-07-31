@@ -12,7 +12,11 @@
     "languageNavigation": "Sprache wählen",
     "home": "Startseite",
     "rooms": "Zimmer & Preise",
-    "book": "Jetzt buchen"
+    "book": "Jetzt buchen",
+    "bookShort": "Buchen",
+    "language": "Sprache",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen"
   },
   "language": {
     "de": "Deutsch",

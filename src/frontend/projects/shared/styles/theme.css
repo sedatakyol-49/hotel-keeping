@@ -13,6 +13,13 @@
  * halde @theme blogu Tailwind'in kendi varsayilanlari tarafindan ezilir.
  */
 
+/*
+ * Yazi tipi yuzleri (@font-face) — kendi sunucumuzdan servis edilir.
+ * Google Fonts'a giden hicbir istek YOKTUR; gerekcesi ve alt kume karari
+ * fonts.css'in basindadir. Iki uygulama da bu dosyayi buradan alir, kopya yok.
+ */
+@import './fonts.css';
+
 /* ------------------------------------------------------------------------- */
 /* "Otel Defteri" tasarim sistemi tokenlari                                   */
 /* ------------------------------------------------------------------------- */
@@ -57,10 +64,25 @@
   --color-success: #2f5d3a;
   --color-success-tint: #e2ece4;
 
-  /* --- Tipografi --- */
-  --font-serif: 'Instrument Serif', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
-  --font-sans: 'IBM Plex Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  /*
+   * --- Tipografi ---
+   *
+   * Yuzlerin kendisi `fonts.css` icinde tanimlidir (kendi sunucumuzdan; Google
+   * Fonts YOK — gerekce orada). Buradaki yiginlarda asil aileden hemen SONRA
+   * gelen `… Fallback` girdileri, sistemde kurulu bir aileyi web yazi tipinin
+   * olculerine oturtan metrik esli yuzlerdir: `font-display: swap` gecisi
+   * yasanirsa satir yuksekligi ve satir kirilimi degismez, yani duzen kaymaz
+   * (CLS). Onlardan sonraki klasik yedekler, `local()` adaylarinin hicbiri
+   * bulunmayan platformlar icin durur.
+   */
+  --font-serif:
+    'Instrument Serif', 'Instrument Serif Fallback', 'Iowan Old Style', Georgia, 'Times New Roman',
+    serif;
+  --font-sans:
+    'IBM Plex Sans', 'IBM Plex Sans Fallback', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono:
+    'IBM Plex Mono', 'IBM Plex Mono Fallback', 'SFMono-Regular', Consolas, 'Liberation Mono',
+    monospace;
 
   /* Etiketler icin genis harf araligi */
   --tracking-label: 0.16em;

@@ -84,11 +84,54 @@
   --spacing-measure: 34rem;
   /* Birincil eylem yuksekligi: dokunmatik alt sinirin (44px) uzerinde */
   --spacing-action: 3rem;
+
+  /* ---------------------------------------------------------------------
+   * SABIT UST BILGI OLCULERI — TEK KAYNAK
+   * ---------------------------------------------------------------------
+   * Ust bilgi `position: sticky` oldugu icin yuksekligi artik bir DUZEN
+   * SABITIDIR: capa kaydirmasi (`scroll-padding-top`), yapiskan yan sutunlar
+   * ve menu panelinin azami yuksekligi hep bu iki degerden turer. Deger
+   * sablona yazilirsa uc yerde birbirinden bagimsiz sekilde bozulur.
+   *
+   * Iki kirilim var, esik 64rem (lg):
+   *   < lg : tek satir, yogun cubuk        -> 3.5rem (56px)
+   *   >= lg: gezinme + dil de ayni satirda -> 4rem   (64px)
+   * Panelin ust cubugu da 3.5rem'dir (--spacing-topbar); iki urun ayni
+   * yatay hatta oturur.
+   */
+  --spacing-header: 3.5rem;
+  --spacing-header-wide: 4rem;
+  /* Yapiskan yan sutunlarin oturdugu hat: genis ust bilgi + 1.5rem nefes. */
+  --spacing-below-header: 5.5rem;
 }
 
 @layer base {
   body {
     background-color: var(--color-canvas);
+  }
+
+  /*
+   * CAPA / ODAK DISIPLINI (sabit ust bilginin bedeli).
+   *
+   * Ust bilgi kaydirma kabinin (belge) tepesine yapistigi icin, tarayicinin
+   * "hedefi gorunur yap" davranisi hedefi ust bilginin ALTINA birakirdi:
+   *   - `#fragment` ile gelen sayfa ici capa baglantilari,
+   *   - klavyeyle odaklanan ogenin otomatik kaydirilmasi,
+   *   - `scrollIntoView()` (atlama baglantisi, hata ozeti).
+   * Cozum her hedefe tek tek `scroll-margin-top` yazmak DEGIL, kaydirma
+   * kabinin kendisine dolgu vermektir: `scroll-padding-top` tum bu
+   * durumlarda ayni anda gecerlidir ve ileride eklenecek her hedef icin de
+   * calisir (unutulamaz). 1rem ek pay, hedefin cetvel cizgisine yapismamasi
+   * icindir.
+   */
+  html {
+    scroll-padding-top: calc(var(--spacing-header) + 1rem);
+  }
+
+  @media (width >= 64rem) {
+    html {
+      scroll-padding-top: calc(var(--spacing-header-wide) + 1rem);
+    }
   }
 
   /*
@@ -145,6 +188,18 @@
     text-transform: none;
   }
 
+  /*
+   * Yogun cubuk icin sikistirilmis eylem: ayni murekkep dikdortgeni, ama
+   * 44px yuksek ve dar dolgulu. 375px'te marka + eylem + menu dugmesi TEK
+   * satira ancak boyle sigar; olcu dokunmatik alt sinirin (--spacing-touch)
+   * altina INMEZ.
+   */
+  .hcg-action--compact {
+    min-height: var(--spacing-touch);
+    padding-inline: 0.875rem;
+    font-size: 0.6875rem;
+  }
+
   /* Ikincil eylem: ayni geometri, bos zemin. */
   .hcg-action--quiet {
     border-color: var(--color-rule-strong);
@@ -179,5 +234,84 @@
   .hcg-nav-link:hover,
   .hcg-nav-link[aria-current='page'] {
     border-bottom: 1px solid var(--color-copper);
+  }
+
+  /* ----------------------------------------------------------------------- */
+  /* SABIT UST BILGI                                                          */
+  /* ----------------------------------------------------------------------- */
+
+  /*
+   * `sticky`, `fixed` DEGIL — ve panelin "ic kaydirma kabi" cozumu de degil.
+   * Uc gerekce:
+   *
+   * 1) BELGE KAYDIRMASI KORUNUR. Panel kabugu `h-dvh overflow-hidden` bir
+   *    cerceve kurar ve yalnizca ic kabi kaydirir; bu, mobil tarayicilarda
+   *    adres cubugunun gizlenmesini ENGELLER (kaydirma belgede olmadigi icin
+   *    tarayici jesti hic tetiklenmez) ve misafirden kalici olarak ~%10
+   *    dusey alan calar. Ayrica o cozumun bilinen tuzagi vardir: ic kapta
+   *    konumlandirma baglami yoksa derinlerdeki `sr-only` (position:absolute)
+   *    ogeler `overflow-hidden` kirpmasindan kacar, BELGEYI buyutur ve sabit
+   *    ust cubuk ekrandan cikar. `sticky` bu tuzagin tamamini konu disi
+   *    birakir: yeni bir kaydirma kabi hic yaratilmaz.
+   * 2) SSR/HIDRASYON. Saf CSS: sunucudan gelen HTML ilk boyamada dogru
+   *    yerdedir, JavaScript yuklendiginde hicbir sey yeniden olculmez, dolayisiyla
+   *    hidrasyon sonrasi zıplama (CLS) olamaz. `fixed` olsaydi ust bilgi akistan
+   *    cikardi ve altindaki icerige elle dolgu vermek gerekirdi — o dolgu ile
+   *    gercek yukseklik arasindaki her sapma bir kayma demektir.
+   * 3) YAZDIRMA ve indirgenmis hareket icin ek kural gerekmez.
+   *
+   * `z-index` SUS DEGIL: oda detayi ve rezervasyon sayfalarindaki yapiskan
+   * yan sutunlar da konumlandirilmis ogelerdir ve DOM'da ust bilgiden SONRA
+   * gelir. Ikisi de `z-index: auto` olsaydi, boyama sirasi geç geleni ustte
+   * birakir ve yan sutun ust bilginin uzerine binerdi.
+   *
+   * BU SINIF <hcg-guest-header> ETIKETINE VERILIR, icteki <header>'a DEGIL.
+   * Sebep bilesenin basindaki notta: sticky yalnizca kendi kapsayici blogu
+   * icinde tutar; ic ogeye verildiginde kapsayici blok bilesen etiketi olur
+   * ve yapisma araligi sifira duser (olculdu: 1200px kaydirmada top = -1200).
+   */
+  .hcg-header {
+    position: sticky;
+    top: 0;
+    /*
+     * 60 > onay bandinin 50'si. Olculdu: 375x667'de menu paneli acikken
+     * bandin ust kenari panelin son satirini (TR / Türkisch) ortuyordu —
+     * yani ilk ziyaretinde dilini degistirmek isteyen kullanici tam da o
+     * secenegi goremiyordu. Iki kotu secenekten (a) bir dil seceneginin
+     * sessizce kaybolmasi ile (b) kullanicinin kendi actigi bir menunun
+     * bandin ust kenarini gecici olarak ortmesi arasinda ikincisi tercih
+     * edildi: menu kullanici tarafindan acilir, kapaninca bant geri gelir
+     * ve bant zaten kipli degildir (sayfayi bloke etmez).
+     */
+    z-index: 60;
+    background-color: var(--color-canvas);
+  }
+
+  /*
+   * Mobil menu paneli. `max-height` + kendi kaydirmasi: kucuk ekranda ve
+   * yatay modda panel ekrandan tasip erisilemez kalmasin.
+   *
+   * `position: relative` BILINCLIDIR (panelde yasanan hatanin ayni sinifi):
+   * bu kap `overflow-y: auto` ile bir kaydirma kabidir; icine ileride bir
+   * `sr-only` (position: absolute) eklenirse konumlandirma baglami olmadan
+   * kaptan kacar ve belgeyi buyutur.
+   */
+  .hcg-header-menu {
+    position: relative;
+    max-height: calc(100dvh - var(--spacing-header));
+    overflow-y: auto;
+    background-color: var(--color-canvas);
+  }
+
+  /*
+   * Atlama baglantisi ust bilgi sabitlendigi icin `absolute`tan `fixed`e
+   * alinir. `absolute` iken baglanti BELGENIN tepesine (top: 0.5rem)
+   * cizilirdi; sayfa kaydirilmisken Shift+Tab ile ona ulasan kullanici
+   * odaklanmis ama GORUNMEYEN bir baglanti elde ederdi. `fixed` ile
+   * gorusme alanina cizilir ve z-index'i (100) ust bilginin (30) ustundedir.
+   * Yalnizca misafir sitesi icin gecerlidir; paylasilan tanim degismez.
+   */
+  .hc-skip-link {
+    position: fixed;
   }
 }

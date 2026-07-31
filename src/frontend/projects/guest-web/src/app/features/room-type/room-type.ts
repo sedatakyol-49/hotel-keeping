@@ -138,7 +138,8 @@ import { SearchForm } from '../../shared/ui/search-form/search-form';
           </div>
 
           <!-- Fiyat / rezervasyon sutunu -->
-          <aside class="lg:sticky lg:top-6 lg:self-start">
+          <!-- Yapiskan fiyat sutunu sabit ust bilginin ALTINA oturur (bkz. booking.ts). -->
+          <aside class="lg:sticky lg:top-below-header lg:self-start">
             @if (offer(); as available) {
               <div class="border border-rule bg-paper-raised px-5 py-5" data-testid="room-offer">
                 <hcg-price-block

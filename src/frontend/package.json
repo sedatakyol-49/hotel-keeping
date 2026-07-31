@@ -21,6 +21,9 @@
     "legal:snapshot": "node scripts/legal-snapshot.mjs",
     "legal:snapshot:check": "node scripts/legal-snapshot.mjs --check",
     "verify:build": "node scripts/verify-build-output.mjs",
+    "verify:fonts": "node scripts/verify-fonts.mjs",
+    "fonts:vendor": "node scripts/vendor-fonts.mjs",
+    "fonts:vendor:check": "node scripts/vendor-fonts.mjs --check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "api:generate": "ng-openapi-gen --input http://localhost:5080/swagger/v1/swagger.json --output src/app/core/api/generated"

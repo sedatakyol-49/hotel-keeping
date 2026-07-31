@@ -14,7 +14,7 @@
       "installMode": "lazy",
       "updateMode": "prefetch",
       "resources": {
-        "files": ["/icons/**", "/i18n/**", "/media/**"]
+        "files": ["/icons/**", "/i18n/**", "/media/**", "/fonts/**"]
       }
     }
   ]

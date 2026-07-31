@@ -1,0 +1,196 @@
+{
+  "//": "Bu dosya ELLE duzenlenebilir ama SHA-256/boyut alanlari scripts/vendor-fonts.mjs tarafindan uretilir. Kapi: scripts/verify-fonts.mjs.",
+  "vendoredAt": "2026-07-31",
+  "vendoredFrom": "npm registry (npm pack) — @fontsource/* paketleri; dosyalar Google Fonts alt kume ciktilarinin birebir kopyasidir",
+  "formats": ["woff2"],
+  "formatRationale": "Hedef tarayicilarin tamami woff2 destekler (Chrome 36+, Firefox 39+, Safari 12+, Edge 14+). woff/ttf/eot tasinmaz.",
+  "subsets": ["latin", "latin-ext"],
+  "subsetRationale": "Arayuz dilleri de/en/tr. Turkce g-breve/s-cedilla/I-dot (U+011E/011F/015E/015F/0130) latin-ext icindedir; latin tek basina yetmez. cyrillic/greek/vietnamese tasinmaz.",
+  "families": [
+    {
+      "family": "IBM Plex Sans",
+      "package": "@fontsource/ibm-plex-sans@5.3.0",
+      "fontVersion": "v23",
+      "designer": "IBM (Mike Abbink, Bold Monday)",
+      "upstream": "https://github.com/IBM/plex — Google Fonts araciligiyla (https://github.com/google/fonts)",
+      "license": {
+        "id": "OFL-1.1",
+        "name": "SIL Open Font License 1.1",
+        "file": "OFL-IBM-Plex-Sans.txt",
+        "copyright": "Copyright 2019 IBM Corp.",
+        "url": "https://openfontlicense.org",
+        "permits": "Kullanim, calisma, degistirme, yeniden dagitim ve YAZILIMLA BIRLIKTE GOMME serbesttir (bedelli ya da bedelsiz). Tek kosul: yazi tipi tek basina satilamaz, turev calismalar ayni lisansla dagitilir ve lisans metni birlikte tasinir — bu yuzden OFL-*.txt dosyalari depodadir ve /fonts/ altindan servis edilir."
+      },
+      "usage": "Govde metni (body), form metinleri; 600 -> tarayici varsayilani bold (misafir sitesindeki hukuki belgelerdeki <strong>).",
+      "faces": [
+        {
+          "file": "ibm-plex-sans-latin-400-normal.woff2",
+          "weight": 400,
+          "style": "normal",
+          "subset": "latin",
+          "bytes": 22588,
+          "sha256": "3b646991d30055a93a4ecc499713d4347953a74a947ecab435ab72070cbdab0e"
+        },
+        {
+          "file": "ibm-plex-sans-latin-ext-400-normal.woff2",
+          "weight": 400,
+          "style": "normal",
+          "subset": "latin-ext",
+          "bytes": 15980,
+          "sha256": "c93d2a12aaa280f68b9ab7b726ff8dfedda67c99ef9abed047c1847a1cc6d583"
+        },
+        {
+          "file": "ibm-plex-sans-latin-600-normal.woff2",
+          "weight": 600,
+          "style": "normal",
+          "subset": "latin",
+          "bytes": 24252,
+          "sha256": "8960851d691c054ed38e259bdcf1a6190d157b4203ed5bb32c632a863fb8ec2f"
+        },
+        {
+          "file": "ibm-plex-sans-latin-ext-600-normal.woff2",
+          "weight": 600,
+          "style": "normal",
+          "subset": "latin-ext",
+          "bytes": 16448,
+          "sha256": "b25dfd4f979e442ae1e25cd0894463434cf01ba21ac1a35d39f4a82bd4cc060e"
+        }
+      ]
+    },
+    {
+      "family": "IBM Plex Mono",
+      "package": "@fontsource/ibm-plex-mono@5.3.0",
+      "fontVersion": "v20",
+      "designer": "IBM (Mike Abbink, Bold Monday)",
+      "upstream": "https://github.com/IBM/plex — Google Fonts araciligiyla (https://github.com/google/fonts)",
+      "license": {
+        "id": "OFL-1.1",
+        "name": "SIL Open Font License 1.1",
+        "file": "OFL-IBM-Plex-Mono.txt",
+        "copyright": "Copyright 2017 IBM Corp.",
+        "url": "https://openfontlicense.org",
+        "permits": "Kullanim, calisma, degistirme, yeniden dagitim ve gomme serbest; yazi tipi tek basina satilamaz, lisans metni birlikte tasinir."
+      },
+      "usage": "Etiketler ve SAYILAR (label-mono / numeric / tabular-nums); 600 -> tablo sutun basliklari (th, UA varsayilani bold).",
+      "faces": [
+        {
+          "file": "ibm-plex-mono-latin-400-normal.woff2",
+          "weight": 400,
+          "style": "normal",
+          "subset": "latin",
+          "bytes": 14708,
+          "sha256": "08949f728dc52d528e69b1667d15c89a5686a4ee9a296ff90983985f99c380f7"
+        },
+        {
+          "file": "ibm-plex-mono-latin-ext-400-normal.woff2",
+          "weight": 400,
+          "style": "normal",
+          "subset": "latin-ext",
+          "bytes": 13348,
+          "sha256": "6bc0f226a5b7884a8170e3f62c63d7675609d4631bdc5931b5cdab81821f00eb"
+        },
+        {
+          "file": "ibm-plex-mono-latin-600-normal.woff2",
+          "weight": 600,
+          "style": "normal",
+          "subset": "latin",
+          "bytes": 15620,
+          "sha256": "0d1f0b8d0722224e32e9f28261bdc86c79115be73444ae5eceb73976a1bcdf83"
+        },
+        {
+          "file": "ibm-plex-mono-latin-ext-600-normal.woff2",
+          "weight": 600,
+          "style": "normal",
+          "subset": "latin-ext",
+          "bytes": 14328,
+          "sha256": "32057cf50dd14bdb21a2c93766c4a2c43e4abe688ea3922df3203cac7751a98b"
+        }
+      ]
+    },
+    {
+      "family": "Instrument Serif",
+      "package": "@fontsource/instrument-serif@5.3.0",
+      "fontVersion": "v5",
+      "designer": "Instrument (Rodrigo Fuenzalida, Jordan Egstad)",
+      "upstream": "https://github.com/Instrument/instrument-serif — Google Fonts araciligiyla (https://github.com/google/fonts)",
+      "license": {
+        "id": "OFL-1.1",
+        "name": "SIL Open Font License 1.1",
+        "file": "OFL-Instrument-Serif.txt",
+        "copyright": "Copyright 2022 The Instrument Serif Project Authors",
+        "url": "https://openfontlicense.org",
+        "permits": "Kullanim, calisma, degistirme, yeniden dagitim ve gomme serbest; yazi tipi tek basina satilamaz, lisans metni birlikte tasinir."
+      },
+      "usage": "Basliklar (h1..h5). Ailede tek agirlik vardir (400); italik yuz sablonlarda hic kullanilmadigi icin tasinmaz.",
+      "faces": [
+        {
+          "file": "instrument-serif-latin-400-normal.woff2",
+          "weight": 400,
+          "style": "normal",
+          "subset": "latin",
+          "bytes": 21032,
+          "sha256": "5eb09b5ac0e28b67c2f041c8ba6d244604ca0c0980d65912ab2d47fed84ddc31"
+        },
+        {
+          "file": "instrument-serif-latin-ext-400-normal.woff2",
+          "weight": 400,
+          "style": "normal",
+          "subset": "latin-ext",
+          "bytes": 11604,
+          "sha256": "290e6267dd833bf5f899eba4c29ad0a9b09dbe53f6075b18af38057159e1ff20"
+        }
+      ]
+    }
+  ],
+  "knownUncovered": {
+    "IBM Plex Sans": [
+      {
+        "codePoint": "U+2192",
+        "character": "→",
+        "reason": "Google alt kume araliklarinda yok (latin U+2191 ve U+2193 icerir, U+2192 icermez). Google baglantili onceki durumda da yedek yazi tipiyle ciziliyordu; davranis degismedi. Gorunur tek kullanim dekoratif ve aria-hidden (dashboard/hub.html), digerleri yalnizca kaynak kod yorumlarinda."
+      }
+    ],
+    "IBM Plex Mono": [
+      {
+        "codePoint": "U+2192",
+        "character": "→",
+        "reason": "Ayni gerekce (bkz. IBM Plex Sans)."
+      }
+    ],
+    "Instrument Serif": [
+      {
+        "codePoint": "U+00B2",
+        "character": "²",
+        "reason": "Instrument Serif bir baslik (display) yazi tipidir, ust simge rakamlari cizmez. \"m²\" yalnizca form etiketi ve tablo basliginda gecer — ikisi de mono ailededir, baslikta hic kullanilmaz."
+      },
+      {
+        "codePoint": "U+2192",
+        "character": "→",
+        "reason": "Ayni gerekce (bkz. IBM Plex Sans)."
+      }
+    ]
+  },
+  "fallbackCalibration": {
+    "method": "Gercek tarayicida (headless Chrome) canvas measureText ile ortalama ilerleme genisligi orani; ascent/descent dosyalarin hhea/OS2 tablolarindan.",
+    "IBM Plex Sans Fallback": {
+      "base": "Arial / Liberation Sans / Helvetica",
+      "size-adjust": "100.13%",
+      "ascent-override": "102.36%",
+      "descent-override": "27.46%"
+    },
+    "IBM Plex Mono Fallback": {
+      "base": "Courier New / Liberation Mono / Nimbus Mono PS",
+      "size-adjust": "100%",
+      "note": "Her iki aile de 0.600 em sabit adimlidir.",
+      "ascent-override": "102.5%",
+      "descent-override": "27.5%"
+    },
+    "Instrument Serif Fallback": {
+      "base": "Times New Roman / Liberation Serif / Times",
+      "size-adjust": "82.77%",
+      "ascent-override": "119.61%",
+      "descent-override": "37.45%",
+      "note": "Ayarsiz yedek %21 daha genis cizerdi; basliklarda gozle gorulur kayma."
+    }
+  }
+}

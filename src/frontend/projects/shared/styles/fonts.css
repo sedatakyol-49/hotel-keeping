@@ -1,0 +1,272 @@
+/*
+ * ===========================================================================
+ * HotelCore — YAZI TIPI KATMANI (kendi sunucumuzdan, ucuncu taraf YOK)
+ * ===========================================================================
+ *
+ * NEDEN BU DOSYA VAR
+ * ------------------
+ * Yazi tipleri daha once `fonts.googleapis.com` + `fonts.gstatic.com`
+ * uzerinden iniyordu. Bu, sayfayi acan herkesin **IP adresini** — onay
+ * alinmadan, ilk boyamada — bir ucuncu tarafa gondermek demektir. Almanya'da
+ * bu bilinen bir ihlaldir (LG Munchen I, 20.01.2022 — 3 O 17493/20: tazminat).
+ * Ayrica misafir sitesinin kendi cerez metniyle celisiyordu ("onay vermeden
+ * hicbir ucuncu taraf kaynagi yuklenmez"). Hukuki metin ile davranisin
+ * ayrismasi, teknik bir eksikten daha agir bir hatadir.
+ *
+ * Bu dosya o bagimliligi tamamen kaldirir: butun yuzler depoda, butun istekler
+ * kendi origin'imize. `<link>`, `@import`, `preconnect` — hicbiri kalmadi.
+ *
+ * DIKKAT: Angular'in uretim derlemesi Google Fonts CSS'ini "inline" ederek
+ * `googleapis.com` istegini yok ediyordu; ama `@font-face` icindeki
+ * `gstatic.com` adresleri HTML'de kaliyor ve dosyalar yine oradan iniyordu.
+ * "css2 istegi gorunmuyor" bu yuzden bir kanit degildir — kanit, uretilen
+ * HTML/CSS icinde tek bir gstatic adresi kalmamasidir (scripts/verify-fonts.mjs).
+ *
+ * ---------------------------------------------------------------------------
+ * HANGI YUZLER TASINIYOR (ve neden digerleri ELENDI)
+ * ---------------------------------------------------------------------------
+ * Sablonlar tarandi; `font-medium` / `font-semibold` / `font-bold` yardimcilari
+ * iki uygulamada da HIC kullanilmiyor. Gercekte istenen yuzler sunlar:
+ *
+ *   IBM Plex Sans 400   -> govde metni (`body`), form metinleri
+ *   IBM Plex Sans 600   -> tarayici varsayilani `bold`: misafir sitesindeki
+ *                          hukuki belgelerde 42 adet `<strong>` var
+ *                          (legal-snapshot.json). Bold yuz TASINMAZSA tarayici
+ *                          400'u alip **sentetik kalin** cizer — bulaniklasir.
+ *   IBM Plex Mono 400   -> etiketler, sayilar (`label-mono`, `numeric`)
+ *   IBM Plex Mono 600   -> tablo sutun basliklari. `th` icin UA varsayilani
+ *                          `font-weight: bold`'dur ve Tailwind preflight bunu
+ *                          sifirlamaz; panelde 121 sutun basligi bu yuzden
+ *                          kalin cizilir (onceki durumda da 600'e dusuyordu —
+ *                          gorunum degismedi).
+ *   Instrument Serif 400 -> h1..h5
+ *
+ * ELENENLER: 100/200/300/500/700 agirliklar (hicbir kural istemiyor), TUM
+ * italikler (`italic` sinifi ya da `font-style` kurali sablonlarda yok; onceki
+ * `<link>` italik yuzu bosuna bildiriyordu), `.woff` (hedef tarayicilarin
+ * tamami woff2 destekler), `cyrillic` / `cyrillic-ext` / `greek` / `vietnamese`
+ * alt kumeleri (arayuz dilleri de/en/tr).
+ *
+ * ---------------------------------------------------------------------------
+ * ALT KUME (SUBSET) KARARI — buradaki tuzak
+ * ---------------------------------------------------------------------------
+ * Yalnizca `latin` almak yeterli DEGILDIR. Turkce'nin `ğ Ğ ş Ş İ` harfleri
+ * `latin` araliginda YOKTUR; `latin-ext`'tedir. (`ı` U+0131 istisnadir, o
+ * `latin` icindedir — "latin yeterli" yanilgisi genelde buradan dogar.)
+ * Almanca `ä ö ü ß` ise `latin` icindedir. Yani:
+ *
+ *   latin yok        -> her sey bozulur
+ *   latin var, ext yok -> Almanca dogru, Turkce KELIME ORTASINDA yedek yazi
+ *                       tipine duser: "Değişiklik" -> 'de' + 'ğ'(yedek) + 'i'…
+ *
+ * Bu yuzden her aile icin `latin` **ve** `latin-ext` tasiniyor, `unicode-range`
+ * ile ayri dosyalarda. Bolme bilincli: de/en ziyaretcisi Turkce glifleri
+ * indirmez (aile basina ~12-16 kB tasarruf), tr ziyaretcisi ikisini de alir.
+ * Kapsam bildirime degil, dosyanin cmap tablosuna bakilarak dogrulanir
+ * (scripts/verify-fonts.mjs -> scripts/font-tools.mjs).
+ *
+ * ---------------------------------------------------------------------------
+ * font-display: swap + preload + metrik esli yedek  (CLS = 0 hedefi)
+ * ---------------------------------------------------------------------------
+ * - `swap`: metin asla gorunmez kalmaz (FOIT yok). `block` FCP'yi 3 sn'ye kadar
+ *   geciktirebilirdi; `optional` ise ilk ziyarette Turkce sayfayi tamamen yedek
+ *   yazi tipiyle birakabilirdi — tipografi kaybi kabul edilemez.
+ * - `preload`: yalnizca kritik uc yuz (Sans 400 / Mono 400 / Serif 400, latin),
+ *   iki uygulamanin index.html'inde. 600'ler ve `latin-ext` preload EDILMEZ:
+ *   giris ekraninda kalin yuz yoktur, de/en ziyaretcisi latin-ext'i hic
+ *   kullanmaz. Gereksiz preload, kritik yolu tikayan olu yuktur.
+ * - `swap` yine de bir yedek->asil gecisi demektir. Gecisin **duzeni
+ *   kaydirmamasi** icin her aile icin metrikleri hizalanmis bir yedek yuz
+ *   tanimlandi (`… Fallback`): `size-adjust` orani gercek tarayicida
+ *   olculdu, `ascent/descent-override` ise dosyalarin hhea/OS2 tablolarindan
+ *   alindi (asc 1.025 / desc 0.275 em — IBM Plex; 0.99 / 0.31 — Instrument
+ *   Serif). Olcum:
+ *
+ *     IBM Plex Sans   / Arial        -> 100.13 %   (neredeyse birebir)
+ *     IBM Plex Mono   / Courier New  -> 100 %      (ikisi de 0.600 em sabit adim)
+ *     Instrument Serif/ Times New R. ->  82.77 %   (asil kazanc burada:
+ *                                        ayarsiz yedek %21 daha genis cizer,
+ *                                        baslik satiri gozle gorulur kayar)
+ *
+ *   Yedek olarak Arial / Courier New / Times New Roman ailelerinin secilmesi
+ *   bilinclidir: uc platformda da metrik esdegerleri vardir (Liberation Sans /
+ *   Liberation Mono / Liberation Serif, Helvetica, Nimbus). Segoe UI ya da
+ *   Consolas'a gore kalibrasyon Windows disinda bozulurdu.
+ *
+ * ---------------------------------------------------------------------------
+ * KAPSAM DISI KALAN TEK KARAKTER
+ * ---------------------------------------------------------------------------
+ * `→` (U+2192) hicbir Google alt kumesinde yok (`latin` araligi U+2191 ve
+ * U+2193'u icerir, U+2192'yi icermez). Onceki Google baglantili durumda da
+ * yedek yazi tipiyle ciziliyordu — davranis DEGISMEDI. Kullanildigi tek gorunur
+ * yer dekoratif ve `aria-hidden`'dir (dashboard/hub.html).
+ *
+ * ---------------------------------------------------------------------------
+ * LISANSLAR (hepsi SIL Open Font License 1.1 — gomme/yeniden dagitim serbest)
+ * ---------------------------------------------------------------------------
+ *   IBM Plex Sans   v23  © 2019 IBM Corp.        -> assets/fonts/OFL-IBM-Plex-Sans.txt
+ *   IBM Plex Mono   v20  © 2017 IBM Corp.        -> assets/fonts/OFL-IBM-Plex-Mono.txt
+ *   Instrument Serif v5  © 2022 Instrument       -> assets/fonts/OFL-Instrument-Serif.txt
+ * Kaynak ve dosya ozetleri: scripts/fonts/manifest.json
+ */
+
+/* ------------------------------------------------------------------------- */
+/* IBM Plex Sans — govde                                                      */
+/* ------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-latin-600-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-latin-ext-600-normal.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* ------------------------------------------------------------------------- */
+/* IBM Plex Mono — etiketler ve sayilar                                       */
+/* ------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-600-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-ext-600-normal.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Instrument Serif — basliklar                                               */
+/* ------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/instrument-serif-latin-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/instrument-serif-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Metrik esli yedek yuzler — `swap` aninda satirlar kaymasin diye             */
+/* ------------------------------------------------------------------------- */
+/*
+ * Bunlar indirilen dosya DEGILDIR: `local()` ile sistemde zaten kurulu olan
+ * bir aileyi alir, sonra `size-adjust` / `*-override` ile web yazi tipinin
+ * olculerine oturtur. Bir istek daha uretmezler.
+ */
+@font-face {
+  font-family: 'IBM Plex Sans Fallback';
+  src:
+    local('Arial'), local('Liberation Sans'), local('Helvetica Neue'), local('Helvetica'),
+    local('Nimbus Sans');
+  size-adjust: 100.13%;
+  ascent-override: 102.36%;
+  descent-override: 27.46%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono Fallback';
+  src: local('Courier New'), local('Liberation Mono'), local('Nimbus Mono PS'), local('Courier');
+  size-adjust: 100%;
+  ascent-override: 102.5%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Instrument Serif Fallback';
+  src: local('Times New Roman'), local('Liberation Serif'), local('Times'), local('Nimbus Roman');
+  size-adjust: 82.77%;
+  ascent-override: 119.61%;
+  descent-override: 37.45%;
+  line-gap-override: 0%;
+}

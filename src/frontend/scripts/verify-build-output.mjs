@@ -10,7 +10,15 @@
  * dusuyordu ve dagitilan HTML'de tek bir oda adi ya da fiyat yoktu. Derleme
  * "yesil"di. Bu betik o sinifin sessiz kalmasini engeller.
  *
- * UC KAPI:
+ * DORT KAPI:
+ *
+ *  0) YAZI TIPI KAPISI (scripts/verify-fonts.mjs): uretilen HTML/CSS icinde
+ *     `fonts.googleapis.com` / `fonts.gstatic.com` gecmemeli. Ayni sinif hata:
+ *     derleme "yesil" olur, sayfa acilir, ama sayfayi acan herkesin IP adresi
+ *     onay alinmadan bir ucuncu tarafa gider (LG Munchen I, 3 O 17493/20) ve
+ *     misafir sitesinin kendi cerez metniyle celisir. Ayrica Turkce alt kume
+ *     (latin-ext) kapsami olculur — eksikse arayuz kelime ortasinda yedek
+ *     yazi tipine duser.
  *
  *  1) IKI UYGULAMA + SSR PAKETI: iki `dist` cikti agaci ve SSR sunucusu var mi.
  *
@@ -32,7 +40,7 @@
  *
  * Calistirma:  npm run verify:build        (npm run build'den SONRA)
  */
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createServer, request as httpRequest } from 'node:http';
 import { connect } from 'node:net';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -71,9 +79,25 @@ function textOf(html) {
 }
 
 // ---------------------------------------------------------------------------
+// 0) Yazi tipi kapisi — ayri betik, ayni kapi
+// ---------------------------------------------------------------------------
+console.log('\n[0/4] Yazi tipi kapisi (verify-fonts.mjs)');
+
+{
+  const fontGate = spawnSync(process.execPath, [join(HERE, 'verify-fonts.mjs')], {
+    stdio: 'inherit',
+  });
+  if (fontGate.status === 0) {
+    pass('ucuncu taraf yazi tipi istegi yok, dil kapsami tam');
+  } else {
+    fail('yazi tipi kapisi basarisiz (yukaridaki bulgular) — npm run verify:fonts');
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 1) Cikti agaclari
 // ---------------------------------------------------------------------------
-console.log('\n[1/3] Cikti agaclari');
+console.log('\n[1/4] Cikti agaclari');
 
 for (const file of ['dist/hotelcore-web/browser/index.html', 'dist/guest-web/server/server.mjs']) {
   existsSync(join(ROOT, file)) ? pass(file) : fail(`${file} yok — iki uygulama da derlenmeli`);
@@ -82,7 +106,7 @@ for (const file of ['dist/hotelcore-web/browser/index.html', 'dist/guest-web/ser
 // ---------------------------------------------------------------------------
 // 2) Prerender kumesi ve icerigi
 // ---------------------------------------------------------------------------
-console.log('\n[2/3] Prerender kumesi ve icerigi');
+console.log('\n[2/4] Prerender kumesi ve icerigi');
 
 /** `dist/guest-web/browser` altindaki tum `index.html` sayfalarinin yollari. */
 function prerenderedPages(directory = GUEST_BROWSER, prefix = '') {
@@ -167,7 +191,7 @@ if (snapshot !== null) {
 // ---------------------------------------------------------------------------
 // 3) SSR smoke — ana sayfa katalogu HTML'e giriyor mu
 // ---------------------------------------------------------------------------
-console.log('\n[3/3] SSR smoke (sahte origin, backend gerekmez)');
+console.log('\n[3/4] SSR smoke (sahte origin, backend gerekmez)');
 
 /**
  * SAHTE VERI. Gercek otel/fiyat DEGILDIR ve uretim HTML'ine hicbir kosulda

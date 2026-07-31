@@ -12,7 +12,11 @@
     "languageNavigation": "Choose language",
     "home": "Home",
     "rooms": "Rooms & rates",
-    "book": "Book now"
+    "book": "Book now",
+    "bookShort": "Book",
+    "language": "Language",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "language": {
     "de": "German",

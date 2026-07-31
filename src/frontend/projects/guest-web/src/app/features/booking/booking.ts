@@ -481,7 +481,14 @@ import {
           </div>
 
           <!-- ================= SAG: sayac + ozet ================= -->
-          <aside class="order-first lg:order-none lg:sticky lg:top-6 lg:self-start">
+          <!--
+            Yapiskan ozet sutunu. Ust kenari "top-below-header" (= ust bilgi
+            yuksekligi + 1.5rem): sabit ust bilgi ile CAKISMAZ. Duz "top-6"
+            olsaydi sutun cubugun altina girer, sayacin ilk satiri ortulurdu.
+            Deger tokendan gelir; ust bilgi yuksekligi degisirse burasi da
+            dogru kalir.
+          -->
+          <aside class="order-first lg:order-none lg:sticky lg:top-below-header lg:self-start">
             <hcg-hold-timer [seconds]="hold.remainingSeconds()" [expired]="expired()" />
 
             <div class="mt-6 border border-rule bg-paper-raised px-5 py-5">
