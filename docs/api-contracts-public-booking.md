@@ -754,7 +754,11 @@ Bağlantısını kaybeden misafir için. **Hiçbir koşulda veri döndürmez.**
 // 202 Accepted — GOVDE YOK
 ```
 
-- Eşleşme **varsa**: erişim bağlantısını içeren e-posta gönderilir.
+- Eşleşme **varsa**: erişim bağlantısını içeren e-posta gönderilir. **Bağlantı YENİDİR ve
+  öncekini geçersiz kılar.** Sunucu ham token'ı saklamaz (yalnızca SHA-256 özeti), dolayısıyla
+  eskisini yeniden gönderemez; yeni bir token üretip özetini yazar. Misafirin elindeki eski
+  bağlantı bundan sonra **404** verir — bu bir hata değil, hash-only saklamanın kaçınılmaz
+  sonucudur ve istemci "yeni bağlantı gönderildi" derken bunu **söylemelidir**.
 - Eşleşme **yoksa**: hiçbir şey yapılmaz.
 - **Her iki durumda da 202** ve **aynı gecikme profili** (sabit minimum işlem süresi) — böylece
   ne yanıt gövdesi ne yanıt süresi bir rezervasyonun varlığını sızdırır.
@@ -867,3 +871,69 @@ npx ng-openapi-gen \
 - Misafir hesabı / giriş / rezervasyon geçmişi (token ile erişim yeterli, kimlik yönetimi
   gerektirmez — veri minimizasyonu açısından da tercih edilir).
 - DSGVO Art. 17 self-servis silme ucu (mimari §10.8).
+
+---
+
+## 13. Sözleşme ile **gerçekleşen kod** arasındaki farklar
+
+Bu bölüm uçtan uca entegrasyondan sonra yazıldı: iki taraf birbirini görmeden geliştirildi, uçlar
+canlı API'ye bağlandı ve gerçek tarayıcıyla tam bir rezervasyon yapıldı. **Belge gerçeği anlatır;**
+aşağıdakiler ya sözleşmeye eklendi ya da düzeltildi. Kalanlar bilinçli kabullerdir.
+
+### 13.1 Backend tarafının bildirdiği belge–şema çelişkileri
+
+| # | Konu | Sözleşme ne diyor | Kod ne yapıyor | Karar |
+|---|---|---|---|---|
+| B1 | `hotel.description` | §2.2 alanı **zorunlu** gösterir | `Hotel` tablosunda açıklama kolonu **yok**; metin yalnızca `Translation` (`Hotel.Description`) tablosundan okunur, kayıt yoksa `null` | Alan **nullable**'dır. Demo veride kayıt olmadığı için `null` döner |
+| B2 | `shortDescription` | §3.1 ayrı alan ister | Ayrı "kısa açıklama" kolonu yok; uzun metinden **cümle sınırında** türetilir | Türetme kuralı korunur; kolon eklemek ayrı bir şema kararıdır |
+| B3 | `image.alt/width/height` | §2.2 örneği hepsini dolu gösterir | Kolonlar **nullable**; yanıt da nullable taşır | Bugün hiçbir yol dimensionsuz görsel üretmiyor (yükleme boru hattı yok). İstemci `null` görseli **yer tutucuya** düşürür |
+| B4 | `imprint.disputeResolution` | §2.3 `participatesInAdr`, `noticeKey`, `odrPlatformUrl` | Ek olarak **`notice`** (otelin kendi VSBG metni) döner | Ek alan sözleşmeye **eklendi**: §36 VSBG metni otel bazında değişir, sabit bir i18n anahtarı yetmez |
+| B5 | `legal.documents[]` | §2.3 örneği `terms` + `privacy` | Üçüncü belge **`withdrawal`** de döner (§312g bildirimi, versiyonu rızada kullanılır) | Sözleşmeye **eklendi**; `documents[]` açık uçlu bir listedir |
+| B6 | `confirmation.documentVersion` | §6.1 örneği `"2026-07-01"` | `PublicChannel:ConfirmationDocumentVersion` ayarından gelir (varsayılan `"1"`) | Bu **onay e-postası şablonunun** versiyonudur, hukuki metnin değil. Örnek yanıltıcıydı |
+| B7 | Ödeme garantisi | §6.2 `guarantee: "CardGuarantee"` → 400 | Sağlayıcı yapılandırılmadığı için istek **reddedilir**, sessizce yok sayılmaz | Sözleşmeyle aynı; davranış açıkça test edilir |
+| B8 | Hız sınırı eşikleri | §1.2 tablosu | Tümü `appsettings > PublicChannel:RateLimits` içinde; **kodda sabit yok**. Tanımsız bir uca sınır **uygulanmaz** | Tablo "varsayılan"dır; belge bunu zaten söylüyor |
+| B9 | Kimlik bastırma | §1 "`Authorization` yok sayılır" | Public yolda kimlik **tamamen bastırılır**; çözülemeyen slug'da kapsam **boş** kalır (admin token'lı istek kendi oteline düşemez) | Sözleşmeden daha katı; belge §1'e not olarak eklendi |
+
+### 13.2 Frontend tarafının bildirdiği sapmalar
+
+| # | Konu | Mimari/sözleşme ne diyor | Uygulama ne yapıyor | Karar |
+|---|---|---|---|---|
+| F1 | **Rota şeması** | Mimari §2.2: `/{lang}/{hotelSlug}/zimmer/{code}`, `/suche`, `/buchen`, `/buchung/{token}`, `/impressum` | `/{lang}/rooms/{code}`, `/search`, `/booking`, `/confirmation/{token}`, `/manage/{token}`, `/legal/{imprint\|privacy\|terms}` — **`hotelSlug` yolda yok** | **Uygulama esas alındı.** Bu tur otel-başına-alan-adı dağıtımını hedefler; slug yapılandırmadan gelir ve **API çağrısında** yolda durur. Mimari §2.2 tablosu gerçek rotalarla güncellendi |
+| F2 | Oda tipi detay sayfası | Mimari §2.2: **prerender** | **SSR** (istek anında) | Fiyat ve müsaitlik canlı veridir; bir hafta önceki fiyatı gösteren prerender sayfa PAngV açısından yanlış olurdu |
+| F3 | Sipariş düğmesi metni | §312j Abs. 3: sunucu metni **doğrulamaz**, dondurur | İstemci sunucunun verdiği metni **aynen** render eder ve **aynen** geri gönderir; CSS `text-transform` bu düğmede kapalıdır | Sözleşmeyle aynı; büyük harfe çeviren bir CSS kuralı kanıtı bozardı |
+| F4 | Özet kalem etiketleri | §5.1 örneği yerelleştirilmiş etiket gösterir | İstemcide `labelKey` çevirisi varsa onu, yoksa sunucunun `label`'ını basar | **Sunucu düzeltildi** (§13.3-D1); istemci kataloğunda bu anahtarlar yoktur, dolayısıyla ekranda ve kanıtta **aynı** metin durur |
+| F5 | Fiyat değiştiğinde | §5.2 donmuş teklif | Yenilenen teklifte tutar değiştiyse akış **durur**, eski/yeni tutar yan yana gösterilir ve yeniden onay istenir | Sözleşmeden daha katı; §312j Abs. 2'nin amacı budur |
+| F6 | Onay/sorgulama sayfaları | Mimari §2.2 CSR | CSR + `X-Robots-Tag: noindex, nofollow` **HTTP başlığı** olarak da gönderilir | Ek güvence; belgeye eklendi |
+
+### 13.3 Entegrasyonda bulunan gerçek uyuşmazlıklar (bu turda düzeltildi)
+
+| # | Bulgu | Hangi taraf hatalıydı ve neden | Düzeltme |
+|---|---|---|---|
+| D1 | §312j Abs. 2 zorunlu özetinin kalem etiketleri Almanca akışta **İngilizce** yazıyordu (`City tax · 2 × 3 night(s)`) ve aynı metin kanıt olarak donuyordu | **Backend.** §5.1 örneği yerelleştirilmiş etiket gösterir; ayrıca zorunlu özet sözleşmenin kurulduğu dilde olmak zorundadır ve **gösterilen** ile **saklanan** metin ayrışamaz | Etiketler `Messages` üzerinden isteğin dilinde üretilir (tekil/çoğul dahil) ve hold'a o dilde donar. Hash donmuş özetten okunduğu için dil değişimi `SUMMARY_CHANGED` üretmez |
+| D2 | Onay e-postasındaki erişim bağlantısı `http://localhost:4200/{culture}/{hotelSlug}/buchung/{token}` idi: **yanlış port** (4200 yönetim panelidir) ve **var olmayan rota** | **Backend yapılandırması.** Rota tablosunun sahibi istemcidir; şablon ona uymak zorundadır | `AccessLinkTemplate` → `http://localhost:4300/{culture}/manage/{accessToken}`; ayarın yanına "misafir uygulamasının rota tablosuyla birebir aynı olmalı" notu yazıldı |
+| D3 | Yönetim panelinde `publicReference` **hiçbir ekranda görünmüyordu** | **Frontend (admin).** §10 alanı yanıta ekliyor; misafirin elinde yalnızca bu referans var, `reservationNumber` ona hiç verilmiyor | Rezervasyon detayına eklendi (`ReservationResponse.publicReference` modele de eklendi) |
+| D4 | Rezervasyon **araması** public referansı kapsamıyordu: resepsiyon, misafirin telefonda okuduğu numarayla kaydı bulamıyordu | **Backend.** Katkısız bir eksik: alan yanıtta vardı, aranabilir değildi | `search` artık `PublicBooking.BookingReference`'ı da kapsar; terim `lookup` ucundakiyle **aynı** normalizasyondan geçer (tire/boşluk atılır, Crockford `I→1, L→1, O→0`) |
+| D5 | `ReservationChannel.Website` yönetim panelinin kanal listesinde **yoktu**: web rezervasyonlarında kanal etiketi boş kalıyordu ve **fiyat planı formunda `Website` seçilemiyordu** | **Frontend (admin).** Fiyat seçimi kanalı birebir karşılaştırdığı için (mimari §7.1) bu, "web planı hiç oluşturulamaz" demekti | Kanal listesine + etiket sözlüğüne + üç dilin kataloğuna eklendi |
+| D6 | Prerender edilen hukuki sayfalar **boştu** (JavaScript'siz ziyaretçide Impressum yok) | **Frontend.** §5 DDG "unmittelbar erreichbar" ister; içerik istemcide dolduruluyordu | Derleme öncesi alınan bir anlık görüntü (`npm run legal:snapshot`) prerender sırasında `GET /legal` yanıtını karşılar; CI üretilen HTML'de künyeyi arar (bkz. §13.4) |
+| D7 | Yönetim paneli geliştirme ortamı `apiBaseUrl` olarak **mutlak** adres kullanıyordu; kendi yorumunda "vekil sayesinde CORS gerekmez" yazmasına rağmen vekil hiç devreye girmiyordu | **Frontend (admin).** Sonuç: 4200 dışındaki bir portta panel "sunucuya ulaşılamıyor" veriyordu (CORS listesi tek origin) | `apiBaseUrl` göreli (`/api/v1`) yapıldı; hedef backend artık `--proxy-config` ile değiştirilebilir |
+| D8 | Türkçe kaynak metinlerinde diakritik kaybı (`Cok fazla istek`, `Saat dilimi taninmiyor...`) | **Backend.** Üç dilin de aynı özenle yazılması sözleşmenin i18n kuralıdır | Düzeltildi; 429 başlığı üç dilde de nokta ile biter (diğer başlıklarla tutarlı) |
+| D9 | `POST /bookings/lookup` **erişim token'ını döndürüyor** (rotate) — belge bunu söylemiyordu | Kusur değil, **belge eksiği**: ham token saklanmaz, yalnızca SHA-256 özeti; dolayısıyla sunucu eski bağlantıyı yeniden gönderemez, **yeni** bir bağlantı üretmek zorundadır | §7.4'e yazıldı: lookup **önceki bağlantıyı geçersiz kılar** |
+
+### 13.4 Doğrulanmış davranışlar (uçtan uca, gerçek tarayıcı + gerçek API)
+
+- **Fiyat zinciri kuruşu kuruşuna:** arama sonucu `438,00 €` = oda detayı = `orderSummary.totalPrice`
+  = `POST /bookings` yanıtı `price.totalGross` = üretilen faturanın `grossAmount` (`438.00`;
+  `netAmount 389.72` + `vatAmount 27.28` + `cityTaxAmount 21.00`). Kurtaxe ekranda `21,00 €`,
+  faturada `CityTax` satırı `21.00`.
+- **Hold gerçekten tavsiye niteliğinde:** hold alınmış oda yönetim panelinin müsaitlik ekranında
+  **müsait görünür** ve aynı tarihe **satılabilir**; misafir hold'unu rezervasyona çevirmek
+  istediğinde `EX_Reservations_NoOverlappingStays` devreye girer ve
+  **409 `ROOM_NO_LONGER_AVAILABLE`** döner. Misafir tarafı `availableUnits` sayısını hold kadar
+  düşürür (5 → 4), admin tarafı düşürmez.
+- **Üç dil:** `Content-Language` isteğe göre döner; `detail` metinleri ve `extensions.code`
+  ayrışmaz; hukuki belgeler istenen dilde yoksa otelin varsayılan diline düşer (TR'de AGB Almanca
+  gelir, sürüm etiketi Türkçedir).
+- **429:** `Retry-After: 60` + `code: RATE_LIMIT_EXCEEDED`; `detail` hangi eşiğin aşıldığını
+  söylemez.
+- **Kart tuzak teli:** gövdede `cardNumber` → 400 `CARD_DATA_NOT_ACCEPTED`, gövde loglanmaz.
+- **`lookup`:** eşleşme olsa da olmasa da **202** ve aynı gecikme profili (ölçüldü: 0,44 s / 0,41 s).

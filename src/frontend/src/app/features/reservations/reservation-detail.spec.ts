@@ -120,19 +120,44 @@ describe('ReservationDetailPage — aksiyon gorunurlugu', () => {
       PERMISSIONS.ReservationsCheckInOut,
       PERMISSIONS.ReservationsCreate,
     ],
+    overrides: Partial<ReservationResponse> = {},
   ): Promise<{ harness: RouterTestingHarness; element: HTMLElement }> {
     TestBed.inject(AuthStore).setSession(user(permissions));
 
     const harness = await RouterTestingHarness.create('/reservations/res-1');
-    http.expectOne((request) => request.url === `${baseUrl}/reservations/res-1`).flush(
-      reservation(status),
-    );
+    http.expectOne((request) => request.url === `${baseUrl}/reservations/res-1`).flush({
+      ...reservation(status),
+      ...overrides,
+    });
     http.expectOne((request) => request.url === `${baseUrl}/reservations/res-1/folio`).flush(FOLIO);
     await tick();
     harness.detectChanges();
 
     return { harness, element: harness.routeNativeElement as HTMLElement };
   }
+
+  /*
+   * Misafirin elinde YALNIZCA bu referans vardir (`K7QM-3XPD-9RTV`);
+   * `reservationNumber` ona hic verilmez. Ekranda gorunmezse resepsiyon,
+   * telefonda okunan numarayla kaydi eslestiremez.
+   */
+  it('web kanalindan gelen rezervasyonda misafir referansini gosterir', async () => {
+    const { element } = await render('Confirmed', undefined, {
+      channel: 'Website',
+      publicReference: 'K7QM-3XPD-9RTV',
+    });
+
+    const reference = element.querySelector('[data-testid="reservation-public-reference"]');
+    expect(reference?.textContent).toContain('K7QM-3XPD-9RTV');
+    // Kanal etiketi de cozulmeli: 'Website' anahtari eksikse burada bos kalirdi.
+    expect(element.textContent).toContain('reservations.channel.website');
+  });
+
+  it('resepsiyondan girilen rezervasyonda referans satiri HIC render edilmez', async () => {
+    const { element } = await render('Confirmed');
+
+    expect(element.querySelector('[data-testid="reservation-public-reference"]')).toBeNull();
+  });
 
   it('CheckedIn durumunda GECERSIZ gecislerin dugmesini HIC render etmez', async () => {
     // Sozlesme: `CheckedIn` -> yalnizca `CheckedOut`. Iptal ve no-show 409 verirdi.

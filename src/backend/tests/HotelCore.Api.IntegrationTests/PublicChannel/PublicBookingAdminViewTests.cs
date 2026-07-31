@@ -37,6 +37,48 @@ public sealed class PublicBookingAdminViewTests(PostgresFixture fixture)
         body.RootElement.GetProperty("reservationNumber").GetString().Should().StartWith("RES-");
     }
 
+    /// <summary>
+    /// Rezervasyon listesinde <b>public referansla</b> arama.
+    ///
+    /// <para><b>Neden zorunlu:</b> misafirin elinde yalnızca <c>K7QM-3XPD-9RTV</c> vardır —
+    /// <c>ReservationNumber</c> ona hiç verilmez (sözleşme §7.1). Arama bu referansı kapsamazsa
+    /// resepsiyon, misafirin telefonda okuduğu numarayla kaydı <b>bulamaz</b> ve kanal
+    /// operasyonel olarak kullanılamaz hâle gelir. Biçim normalize edilir: tireli/tiresiz,
+    /// küçük/büyük harf ve Crockford karışıklıkları (<c>O</c>↔<c>0</c>) aynı kaydı bulur.</para>
+    /// </summary>
+    [RequiresPostgresFact]
+    public async Task Reception_finds_the_booking_by_the_reference_the_guest_reads_out()
+    {
+        await using var scenario = await PublicChannelScenario.StartAsync(fixture);
+        var (reference, reservationId) = await CreateBookingAsync(scenario);
+
+        using var client = scenario.CreateAdminClient(Permissions.ReservationsView);
+
+        // Ekrandaki biçim (4-4-4), tiresiz biçim ve küçük harf — üçü de aynı kaydı bulmalı.
+        var spellings = new[]
+        {
+            reference,
+            reference.Replace("-", string.Empty, StringComparison.Ordinal),
+            reference.ToLowerInvariant()
+        };
+
+        foreach (var spelling in spellings)
+        {
+            var response = await client.GetAsync(new Uri(
+                $"/api/v1/reservations?page=1&pageSize=20&search={Uri.EscapeDataString(spelling)}",
+                UriKind.Relative));
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            var items = body.RootElement.GetProperty("items").EnumerateArray().ToList();
+
+            items.Should().ContainSingle(because: $"\"{spelling}\" tek bir rezervasyonu bulmalı");
+            items[0].GetProperty("id").GetGuid().Should().Be(reservationId);
+            items[0].GetProperty("publicReference").GetString().Should().Be(reference);
+        }
+    }
+
     [RequiresPostgresFact]
     public async Task The_consent_snapshot_is_the_hotels_evidence_in_a_dispute()
     {

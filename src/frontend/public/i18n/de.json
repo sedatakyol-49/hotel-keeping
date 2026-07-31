@@ -453,7 +453,8 @@
       "bookingCom": "Booking.com",
       "hrs": "HRS",
       "expedia": "Expedia",
-      "corporate": "Firmenkunde"
+      "corporate": "Firmenkunde",
+      "website": "Website (Direktbuchung online)"
     },
     "pagination": {
       "range": "{{from}}–{{to}} von {{total}}",
@@ -473,7 +474,9 @@
       "depositPercent": "Anzahlung (%)",
       "deposit": "Anzahlung",
       "ratePlan": "Preisplan",
-      "timestamps": "Zeitstempel"
+      "timestamps": "Zeitstempel",
+      "publicReference": "Buchungsreferenz (Website)",
+      "publicReferenceHint": "Diese Nummer nennt der Gast am Telefon; RES-Nummer ist intern."
     },
     "detail": {
       "title": "Reservierung",

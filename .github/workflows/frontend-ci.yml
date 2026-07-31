@@ -1,7 +1,23 @@
 # Frontend CI — Angular 22 / Vitest
 #
-# Akis: npm ci -> lint -> test (headless, watch kapali) -> production build.
+# Akis: npm ci -> lint -> hukuki anlik goruntu denetimi -> test (headless, watch kapali)
+#       -> production build (IKI uygulama; misafir sitesi SSR + prerender)
+#       -> prerender ciktisinin dogrulanmasi.
 # Node surumu src/frontend/.nvmrc'den okunur (package.json > engines ile uyumlu).
+#
+# WORKSPACE'TE IKI UYGULAMA VAR: yonetim paneli (hotelcore-web, CSR) ve misafir
+# sitesi (guest-web, SSR + prerender). `npm run build` / `npm run test` sarmalayici
+# betiklerdir ve ikisini de kapsar (Angular 22'de `defaultProject` yoktur).
+#
+# BU IS AKISI BIR API'YE BAGLI DEGILDIR: hukuki metinler derleme oncesi alinmis bir
+# anlik goruntuden gelir (src/frontend/projects/guest-web/src/generated/legal-snapshot.json,
+# `npm run legal:snapshot` ile uretilir). Boylece frontend derlemesi calisan bir
+# backend + veritabani istemez ve CI'a hicbir sir eklenmez.
+#
+# SSR DAGITIMI: `node dist/guest-web/server/server.mjs` calistirilirken
+# SSR_ALLOWED_HOSTS ortam degiskeni gercek alan adlarini (virgulle) tasimalidir;
+# aksi halde sunucu yalnizca "localhost" Host basligina yanit verir. Bu bir sir
+# degildir ama dagitim ortaminda verilir, is akisinda degil.
 
 name: Frontend CI
 
@@ -57,12 +73,43 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # §5 DDG: prerender edilen Impressum icerigini bu dosyadan alir. Eksik veya bozuk
+      # olursa hukuki sayfalar JavaScript'siz ziyaretcide BOS kalir — build yine yesil
+      # olurdu, bu yuzden ayri bir kapi.
+      - name: Verify legal snapshot (§5 DDG)
+        run: npm run legal:snapshot:check
+
       # scripts/run-tests.mjs sarmalayicisi `--run` bayragini `ng test --watch=false`a cevirir.
-      - name: Unit tests (Vitest)
+      # Iki uygulamayi da kapsar (yonetim paneli + misafir sitesi).
+      - name: Unit tests (Vitest — admin + guest)
         run: npm run test -- --run
 
-      - name: Build (production)
+      # Iki uygulama derlenir; misafir sitesinde ayrica prerender + SSR sunucusu uretilir.
+      - name: Build (production — admin + guest SSR/prerender)
         run: npm run build
+
+      # Derleme "basarili" olup prerender'in bos sayfa uretmesi mumkundur (gercekten oldu).
+      # Bu adim uretilen HTML'e bakar: iki uygulamanin ciktisi var mi, SSR sunucusu uretildi
+      # mi ve hukuki sayfalarda GERCEK metin var mi.
+      - name: Verify build output (two apps, SSR bundle, prerendered legal pages)
+        run: |
+          set -e
+          test -f dist/hotelcore-web/browser/index.html
+          test -f dist/guest-web/server/server.mjs
+
+          entity=$(node -p "require('./projects/guest-web/src/generated/legal-snapshot.json').documents.de.imprint.legalEntityName")
+          echo "Beklenen tuzel kisi: $entity"
+
+          for lang in de en tr; do
+            page="dist/guest-web/browser/$lang/legal/imprint/index.html"
+            test -f "$page" || { echo "::error::$page prerender edilmemis"; exit 1; }
+            # Metin satir sonlariyla bolunebilir; etiketler ve bosluklar sadelestirilir.
+            if ! sed -e 's/<[^>]*>/ /g' "$page" | tr -s ' \n' '  ' | grep -qF "$entity"; then
+              echo "::error::$page icinde kunye (Impressum) YOK — JS'siz ziyaretci bos sayfa gorur."
+              exit 1
+            fi
+            echo "ok: $page"
+          done
 
       - name: Upload build output
         if: always()

@@ -1,7 +1,10 @@
-import type { HttpInterceptorFn } from '@angular/common/http';
+import { HttpResponse, type HttpInterceptorFn } from '@angular/common/http';
 import { REQUEST, inject } from '@angular/core';
+import { of } from 'rxjs';
 
 import { LanguageStore } from '@hotelcore/shared';
+
+import { LEGAL_SNAPSHOT, legalFor } from '../legal/legal-snapshot';
 
 /**
  * SSR'da GORELI ADRES SORUNU.
@@ -45,6 +48,41 @@ function originOf(url: string | undefined): string | null {
     return null;
   }
 }
+
+/**
+ * PRERENDER'DA HUKUKI ICERIK (§5 DDG).
+ *
+ * Prerender derleme aninda calisir: gelen istek yoktur, dolayisiyla yukaridaki
+ * interceptor goreli adresi mutlaklastiramaz ve `GET /legal` "Failed to parse
+ * URL" ile duser. Sonucu uretilen HTML'de gorunurdu: JavaScript'siz bir
+ * ziyaretcide Impressum BOS kalirdi.
+ *
+ * Bu interceptor yalnizca **o durumda** (gelen istek yok + anlik goruntu var)
+ * devreye girer ve derleme oncesi alinmis yaniti dondurur. SSR'da ve tarayicida
+ * hicbir sey yapmaz — canli metin her zaman kazanir. Anlik goruntunun nasil
+ * uretildigi ve neden depoda durdugu: core/legal/legal-snapshot.ts.
+ */
+export const legalPrerenderInterceptor: HttpInterceptorFn = (request, next) => {
+  if (request.method !== 'GET' || !request.url.endsWith('/legal')) {
+    return next(request);
+  }
+
+  // Gercek bir istek baglami varsa (SSR) canli API kullanilir. `?? null`: opsiyonel
+  // enjeksiyonun bos degeri Angular surumune gore `null` ya da `undefined` olabilir.
+  const incoming = inject(REQUEST, { optional: true }) ?? null;
+  if (incoming !== null) {
+    return next(request);
+  }
+
+  const body = legalFor(
+    inject(LEGAL_SNAPSHOT),
+    request.headers.get('Accept-Language') ?? inject(LanguageStore).current(),
+  );
+
+  return body === null
+    ? next(request)
+    : of(new HttpResponse({ body, status: 200, url: request.url }));
+};
 
 /**
  * `Accept-Language` — sozlesme §1: cok dilli icerik (oda tipi adi, hukuki

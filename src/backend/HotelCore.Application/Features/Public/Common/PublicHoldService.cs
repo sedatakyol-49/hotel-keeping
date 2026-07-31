@@ -1,4 +1,3 @@
-using System.Globalization;
 using HotelCore.Application.Common.Exceptions;
 using HotelCore.Application.Common.Interfaces;
 using HotelCore.Application.Common.Localization;
@@ -242,9 +241,12 @@ internal sealed class PublicHoldService(
             {
                 Kind = "Accommodation",
                 LabelKey = "summary.accommodation",
-                Label = string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"{roomType.Name} · {nights} × night"),
+                // İSTEĞİN DİLİNDE. Etiket hold satırına dondurulur ve §312j Abs. 2 kanıtı olarak
+                // okunur; sabit İngilizce bir metin, Almanca satın alan misafirin gördüğü özetle
+                // saklanan kanıtı ayrıştırırdı (ve zorunlu özet misafirin dilinde olmak zorundadır).
+                // Hash bu etiketi de kapsar, ama özet DONDUĞU için sonraki okumalarda yeniden
+                // hesaplanmaz — dil değiştirmek hash'i bozmaz.
+                Label = Messages.PublicSummaryAccommodation(roomType.Name, nights),
                 Amount = price.AccommodationGross,
                 Mandatory = true
             }
@@ -256,9 +258,7 @@ internal sealed class PublicHoldService(
             {
                 Kind = "CityTax",
                 LabelKey = "summary.cityTax",
-                Label = string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"City tax · {price.CityTax.TaxablePersons} × {price.CityTax.Nights} night(s)"),
+                Label = Messages.PublicSummaryCityTax(price.CityTax.TaxablePersons, price.CityTax.Nights),
                 Amount = price.CityTax.Amount,
                 Mandatory = true
             });

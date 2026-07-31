@@ -543,6 +543,29 @@ public static class Messages
 
     public static string PublicPaymentMethodNotOffered => Text("Validation_PublicPaymentMethod");
 
+    /// <summary>
+    /// §312j Abs. 2 BGB zorunlu özetindeki <b>konaklama</b> kaleminin etiketi.
+    /// <para>
+    /// <b>Neden sunucuda çevriliyor:</b> özetin metni misafire gösterildiği dilde
+    /// <b>dondurulur</b> ve uyuşmazlıkta kanıt olarak okunur; istemcinin kendi kataloğundan
+    /// ürettiği bir metin, kaydedilen kanıtla ekranda görüleni ayrıştırırdı.
+    /// </para>
+    /// </summary>
+    public static string PublicSummaryAccommodation(string roomTypeName, int nights) =>
+        Format("Public_Summary_Accommodation", roomTypeName, Nights(nights));
+
+    /// <summary>§312j Abs. 2 BGB zorunlu özetindeki <b>Kurtaxe</b> kaleminin etiketi.</summary>
+    public static string PublicSummaryCityTax(int taxablePersons, int nights) =>
+        Format("Public_Summary_CityTax", Persons(taxablePersons), Nights(nights));
+
+    /// <summary>Gece sayısı, dilin tekil/çoğul biçimiyle.</summary>
+    private static string Nights(int nights) =>
+        Format(nights == 1 ? "Public_Summary_NightsOne" : "Public_Summary_NightsMany", nights);
+
+    /// <summary>Kişi sayısı, dilin tekil/çoğul biçimiyle.</summary>
+    private static string Persons(int persons) =>
+        Format(persons == 1 ? "Public_Summary_PersonsOne" : "Public_Summary_PersonsMany", persons);
+
     // ---------------------------------------------------------------------------------------
     // Kalıcılık katmanı (AppDbContext): veritabanı kısıtları ve GoBD guard'ı
     // ---------------------------------------------------------------------------------------

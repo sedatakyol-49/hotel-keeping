@@ -116,21 +116,58 @@ zaten tanımlı olduğu için karışık düzen (root app + projects/*) destekle
 Misafir uygulaması `@angular/ssr` kullanır; **her route tek bir moda atanır** ve mod route
 tanımında açıkça yazılır:
 
+**Aşağıdaki tablo uygulanan hâlidir** (ilk taslaktaki Almanca segmentli ve `hotelSlug`'lı yollar
+uygulanmadı; gerekçesi tablonun altında ve api-contracts-public-booking.md §13.2/F1'de).
+
 | Route | Mod | Neden |
 |---|---|---|
-| `/{lang}/{hotelSlug}` (ana sayfa) | **Prerender (SSG)** | İçerik dateless; CDN'den saniyeler içinde |
-| `/{lang}/{hotelSlug}/zimmer` (katalog) | **Prerender** | Aynı |
-| `/{lang}/{hotelSlug}/zimmer/{code}` (oda tipi detay) | **Prerender** | SEO'nun asıl hedef sayfası |
-| `/{lang}/{hotelSlug}/impressum` · `/datenschutz` · `/agb` | **Prerender** | §5 DDG / Art. 13 sayfaları her zaman erişilebilir olmalı |
-| `/{lang}/{hotelSlug}/suche?checkIn=…` (sonuçlar) | **SSR (istek anında)** | Tarihe bağlı; **asla cache'lenmez** (`Cache-Control: no-store`) |
-| `/{lang}/{hotelSlug}/buchen/…` (form, özet, buton) | **CSR** (SSR devre dışı) | Kişisel veri taşır; sunucuda render edilmesi log/cache riskidir |
-| `/{lang}/{hotelSlug}/buchung/{accessToken}` (sorgulama) | **CSR** | Aynı; ayrıca `noindex` |
+| `/{lang}` (ana sayfa) | **Prerender (SSG)** | İçerik dateless; CDN'den saniyeler içinde |
+| `/{lang}/legal/imprint` · `/legal/privacy` · `/legal/terms` | **Prerender** | §5 DDG / Art. 13 sayfaları her zaman erişilebilir olmalı — **içerik derleme anında HTML'e gömülür** (§7.2) |
+| `/{lang}/rooms/{code}` (oda tipi detay) | **SSR (istek anında)** | SEO'nun asıl hedefi, **ama fiyat ve müsaitlik canlıdır**: bir hafta önce üretilmiş sayfa yanlış fiyat gösterir (PAngV). Taslakta prerender yazıyordu; değiştirildi |
+| `/{lang}/search?checkIn=…` (sonuçlar) | **SSR** | Tarihe bağlı; **asla cache'lenmez**, `noindex` |
+| `/{lang}/booking` (form, özet, buton) | **CSR** (SSR devre dışı) | Kişisel veri taşır; sunucuda render edilmesi log/cache riskidir |
+| `/{lang}/confirmation/{accessToken}` (onay) | **CSR** | Aynı; ayrıca `noindex, nofollow` (HTTP başlığı olarak da) |
+| `/{lang}/manage` · `/{lang}/manage/{accessToken}` (sorgulama + iptal) | **CSR** | Aynı gerekçe; girilen e-posta sunucu log'una düşmemeli |
 
-- Prerender kombinasyonu **otel × dil × oda tipi**'dir; liste build anında public API'den
-  (`GET /public/brands/{brandSlug}/hotels` + katalog uçları) çekilir.
-- İçerik değişince yeniden prerender gerekir → CI'da "content rebuild" job'u (§7).
+- **`hotelSlug` yolda değildir.** Bu tur **otel başına alan adı** dağıtımını hedefler: host → slug
+  çevirisi dağıtım yapılandırmasındadır, uygulama slug'ı yapılandırmadan okur
+  (`environment.hotelSlug` → `GUEST_HOTEL_SLUG` token'ı) ve **her API çağrısında yola koyar**.
+  Çok otelli marka sitesi eklendiğinde tek değişiklik bu token'ın bir rota `resolve`'undan
+  beslenmesidir; **API sözleşmesi değişmez.**
+- Prerender kombinasyonu **dil × sayfa**'dır (12 sayfa): `/de|/en|/tr` + üç hukuki sayfa.
 - Booking/confirmation sayfalarında `<meta name="robots" content="noindex,nofollow">` **zorunlu**.
 - SSR sunucusu **hiçbir sır tutmaz**: public API anonimdir, sunucu tarafında token yoktur.
+  Dağıtımda `SSR_ALLOWED_HOSTS` gerçek alan adlarını taşır (SSRF / mutlak adres zehirlenmesi).
+
+### 2.3 Prerender'a içerik nasıl giriyor — §5 DDG'nin çalışma koşulu
+
+Prerender **derleme anında** çalışır: gelen bir HTTP isteği yoktur, dolayısıyla göreli adresi
+mutlaklaştıran interceptor devre dışı kalır ve `GET /legal` düşer. İlk hâlde sonuç şuydu: uretilen
+`/{lang}/legal/imprint/index.html` **künye yerine hata paneli** içeriyordu — JavaScript
+çalıştırmayan bir ziyaretçi Impressum'u hiç göremiyordu. §5 DDG "unmittelbar erreichbar" istediği
+için bu bir eksik değil, bir **uygunsuzluktur**.
+
+**Karar: derleme öncesi anlık görüntü (snapshot), derleme anında canlı API değil.**
+
+```bash
+cd src/frontend
+GUEST_API_TARGET=http://localhost:5080 npm run legal:snapshot   # uc dili birden ceker
+npm run legal:snapshot:check                                     # ag gerektirmez; CI bunu kosar
+```
+
+- Çıktı `projects/guest-web/src/generated/legal-snapshot.json` dosyasıdır ve **depoda durur**.
+  Prerender sırasında `legalPrerenderInterceptor` `GET /legal` yanıtını bu dosyadan verir; SSR'da
+  ve tarayıcıda **hiçbir şey yapmaz**, yani canlı metin her zaman kazanır.
+- **Neden canlı API değil:** frontend derlemesi ayakta bir backend + veritabanı istemez; CI'a
+  servis, secret ve sıra bağımlılığı eklenmez; aynı commit her yerde aynı HTML'i üretir. Ayrıca
+  bir Impressum değişikliği **gözden geçirilebilir bir diff** olarak görünür — derleme anında
+  çekilen içerikte böyle bir iz kalmaz.
+- **Bedeli ve nasıl karşılandığı:** metin değişip anlık görüntü tazelenmezse prerender edilmiş
+  sayfa eskir. (a) Tarayıcı hidrasyondan sonra canlı veriyi çeker ve içerik güncellenir,
+  (b) anlık görüntü belgelerin `version` alanını taşır, (c) CI üretilen HTML'de künyeyi **arar**:
+  boş bir hukuki sayfa iş akışını kırar.
+- Anlık görüntü **otel başınadır** (`GUEST_HOTEL_SLUG`); misafir uygulaması zaten tek otele
+  dağıtıldığı için bu, dağıtım birimiyle aynı sınırdır.
 
 ---
 
@@ -327,6 +364,27 @@ ve `ConsumedAt < now() - 24h` olanları süpürür.
   yenilendi" ve akış otomatik olarak yeni teklife döner (yeni fiyat açıkça gösterilir).
 - Hold geçerliyken oda gerçekten kaybolduysa (kısıt ihlali): **409 `ROOM_NO_LONGER_AVAILABLE`**,
   aynı tipte başka oda varsa şeffaf biçimde yeniden atanır, yoksa arama sonuçlarına dönülür.
+
+### 5.5 Hold **yönetim paneline karşı görünmezdir** — ölçülmüş davranış
+
+Uçtan uca doğrulamada bilerek denendi ve sonuç şudur:
+
+| Adım | Sonuç |
+|---|---|
+| Misafir `POST /holds` alır (oda 202 pinlenir) | Misafir tarafında `availableUnits` **5 → 4** |
+| Yönetim panelinde `GET /availability` (aynı tarihler) | **5 oda müsait**, 202 dâhil — hold **görünmez** |
+| Resepsiyon 202'yi aynı tarihe satar (`POST /reservations`) | **201 Created.** Veritabanı engellemez: iki `EXCLUDE` kısıtı **farklı tablolardadır** |
+| Misafir hold'unu rezervasyona çevirir | **409 `ROOM_NO_LONGER_AVAILABLE`** (`EX_Reservations_NoOverlappingStays`) |
+
+Yani **hold yalnızca misafir kanalı içinde bağlayıcıdır**; admin yazmalarına karşı tavsiye
+niteliğindedir ve çakışmayı nihai olarak `Reservations` kısıtı çözer. Kaybeden taraf misafirdir.
+
+Bu bilinçli bir denge: resepsiyonun ekranını bir web sepeti yüzünden bloke etmek (ve "kimin
+tuttuğu belli olmayan" odalar göstermek) operasyonel olarak daha kötüdür. Kabul edilebilir olmasının
+koşulu, pencerenin **15 dakika** olması ve misafire gösterilen hatanın "oda kalmadı" (bir mekanizma
+açıklaması değil) olmasıdır. Değişmesi istenirse tek yol, hold'u yönetim panelinin müsaitlik
+sorgusuna da dâhil etmek ve orada "geçici olarak tutuluyor" göstermektir — o zaman resepsiyon
+bilinçli olarak üzerine yazmayı seçebilir.
 
 ---
 
@@ -629,8 +687,12 @@ motorunun sessizce doğmasını kalıcı olarak engeller.
 - Rate limit testi: uç başına eşik aşımında 429 + `Retry-After`.
 - Hukuki alan testi: hold yanıtı `orderSummary`, `legal.withdrawalRight`, `legal.orderButton`,
   `price.cityTax` alanlarını **her zaman** taşır (eksikse test kırılır).
-- CI: `frontend-ci.yml`'e kütüphane build'i + guest app build + **prerender** adımı; `paths`
-  filtresi güncellenir. Lighthouse/a11y kontrolü guest app için eklenir.
+- CI: `frontend-ci.yml` iki uygulamayı da derler (`npm run build` sarmalayıcısı) ve **prerender
+  çıktısını denetler**: `dist/guest-web/browser/{de,en,tr}/legal/imprint/index.html` içinde künye
+  metni yoksa iş akışı kırılır (§2.3). `npm run legal:snapshot:check` derlemeden önce koşar.
+  `backend-ci.yml` migration'ların **uygulandığını** ve model ile migration'ların ayrışmadığını
+  ayrıca doğrular (`migrations list` → "(Pending)" yok, `has-pending-model-changes`).
+  Lighthouse/a11y kontrolü guest app için hâlâ eklenmedi.
 
 ---
 

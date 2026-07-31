@@ -1,0 +1,163 @@
+{
+  "//": "URETILMIS DOSYA — elle duzenlemeyin. Kaynak: GET /public/hotels/{slug}/legal. Yenilemek icin: npm run legal:snapshot",
+  "hotelSlug": "berlin-mitte",
+  "generatedAt": "2026-07-31T02:07:01.981Z",
+  "documents": {
+    "de": {
+      "imprint": {
+        "legalEntityName": "HotelCore Berlin Betriebs GmbH",
+        "legalForm": "GmbH",
+        "representedBy": "Anna Becker (Geschäftsführerin)",
+        "addressLine": "Chausseestraße 5",
+        "postalCode": "10115",
+        "city": "Berlin",
+        "country": "DE",
+        "phone": "+49 30 1234567",
+        "email": "info@hotelcore.local",
+        "registerCourt": "Amtsgericht Berlin-Charlottenburg",
+        "registerNumber": "HRB 284913 B",
+        "vatId": "DE289176543",
+        "supervisoryAuthority": null,
+        "disputeResolution": {
+          "participatesInAdr": false,
+          "noticeKey": "legal.adr.notParticipating",
+          "notice": "Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen (§ 36 VSBG).",
+          "odrPlatformUrl": "https://ec.europa.eu/consumers/odr/"
+        }
+      },
+      "documents": [
+        {
+          "key": "privacy",
+          "title": "Datenschutzerklärung",
+          "version": "2026-07-01",
+          "culture": "de",
+          "bodyHtml": "<h2>1. Verantwortlicher</h2>\n<p>HotelCore Berlin Betriebs GmbH, Chausseestraße 5, 10115 Berlin, vertreten durch Anna\nBecker.</p>\n<h2>2. Zwecke und Rechtsgrundlagen</h2>\n<p>Wir verarbeiten Ihre Buchungsdaten (Vor- und Nachname, E-Mail-Adresse, optional\nTelefonnummer) zur Begründung und Durchführung des Beherbergungsvertrags gemäß\n<strong>Art. 6 Abs. 1 lit. b DSGVO</strong>.</p>\n<h2>3. Datenminimierung</h2>\n<p>Bei der Buchung erheben wir <strong>keine</strong> Geburtsdaten, Staatsangehörigkeit,\nAusweisnummern oder vollständigen Wohnanschriften. Diese Angaben sind Bestandteil des\nMeldescheins nach §§ 29, 30 BMG und werden erst bei der Anreise erhoben.</p>\n<h2>4. Zahlungsdaten</h2>\n<p>Wir erheben und speichern <strong>keine Kartendaten</strong>. Die Zahlung erfolgt vor\nOrt im Hotel.</p>\n<h2>5. Speicherdauer</h2>\n<p>Buchungs- und Rechnungsdaten werden gemäß den handels- und steuerrechtlichen\nAufbewahrungsfristen (§ 147 AO) zehn Jahre aufbewahrt.</p>\n<h2>6. Ihre Rechte</h2>\n<ul>\n  <li>Auskunft (Art. 15 DSGVO)</li>\n  <li>Berichtigung (Art. 16 DSGVO)</li>\n  <li>Löschung (Art. 17 DSGVO), soweit keine Aufbewahrungspflicht entgegensteht</li>\n  <li>Beschwerde bei der Berliner Beauftragten für Datenschutz und Informationsfreiheit</li>\n</ul>\n<h2>7. Speicherung auf Ihrem Endgerät</h2>\n<p>Wir verwenden ausschließlich unbedingt erforderliche Speicherung (§ 25 Abs. 2 Nr. 2\nTDDDG): die Kennung Ihrer aktuellen Reservierungsvormerkung und Ihre Sprachauswahl.\nAnalyse- oder Marketingdienste setzen wir nicht ein.</p>"
+        },
+        {
+          "key": "terms",
+          "title": "Allgemeine Geschäftsbedingungen",
+          "version": "2026-07-01",
+          "culture": "de",
+          "bodyHtml": "<h2>1. Geltungsbereich</h2>\n<p>Diese Allgemeinen Geschäftsbedingungen gelten für Beherbergungsverträge zwischen der\nHotelCore Berlin Betriebs GmbH und ihren Gästen sowie für alle damit verbundenen\nLeistungen.</p>\n<h2>2. Vertragsschluss</h2>\n<p>Der Vertrag kommt mit der Bestätigung der Buchung durch das Hotel zustande. Die\nBestätigung wird unmittelbar nach Abschluss der Online-Buchung per E-Mail versendet.</p>\n<h2>3. Preise und Zahlung</h2>\n<p>Alle Preise verstehen sich einschließlich der gesetzlichen Mehrwertsteuer. Die\nBerliner Übernachtungsteuer wird gesondert ausgewiesen und ist nur zu entrichten, wenn\nder Aufenthalt tatsächlich stattfindet. Die Zahlung erfolgt bei Anreise im Hotel.</p>\n<h2>4. An- und Abreise</h2>\n<ul>\n  <li>Die Zimmer stehen ab 15:00 Uhr zur Verfügung.</li>\n  <li>Am Abreisetag sind die Zimmer bis 11:00 Uhr zu räumen.</li>\n</ul>\n<h2>5. Rücktritt des Gastes</h2>\n<p>Eine kostenfreie Stornierung ist bis 18:00 Uhr Ortszeit drei Tage vor dem Anreisetag\nmöglich. Danach berechnet das Hotel <strong>90 % des Übernachtungspreises</strong>. Die\nÜbernachtungsteuer entfällt in diesem Fall vollständig.</p>\n<h2>6. Haustiere</h2>\n<p>Haustiere sind nach vorheriger Absprache gegen ein Entgelt von 20,00 € pro Nacht\ngestattet.</p>"
+        },
+        {
+          "key": "withdrawal",
+          "title": "Hinweis zum Widerrufsrecht",
+          "version": "2026-07-01",
+          "culture": "de",
+          "bodyHtml": "<h2>Kein Widerrufsrecht bei Beherbergung zu einem bestimmten Termin</h2>\n<p>Bei Verträgen über die Beherbergung zu einem bestimmten Termin besteht\n<strong>kein gesetzliches Widerrufsrecht</strong>. Rechtsgrundlage ist\n<strong>§ 312g Abs. 2 Nr. 9 BGB</strong>.</p>\n<p>Davon unberührt bleibt Ihr <strong>vertragliches Stornorecht</strong> nach Ziffer 5\nunserer Allgemeinen Geschäftsbedingungen: Sie können Ihre Buchung bis 18:00 Uhr Ortszeit\ndrei Tage vor Anreise kostenfrei stornieren.</p>"
+        }
+      ],
+      "withdrawalRight": {
+        "applies": false,
+        "legalBasis": "BGB §312g Abs. 2 Nr. 9",
+        "noticeKey": "legal.withdrawal.excluded.accommodation",
+        "noticeVersion": "2026-07-01"
+      }
+    },
+    "en": {
+      "imprint": {
+        "legalEntityName": "HotelCore Berlin Betriebs GmbH",
+        "legalForm": "GmbH",
+        "representedBy": "Anna Becker (Geschäftsführerin)",
+        "addressLine": "Chausseestraße 5",
+        "postalCode": "10115",
+        "city": "Berlin",
+        "country": "DE",
+        "phone": "+49 30 1234567",
+        "email": "info@hotelcore.local",
+        "registerCourt": "Amtsgericht Berlin-Charlottenburg",
+        "registerNumber": "HRB 284913 B",
+        "vatId": "DE289176543",
+        "supervisoryAuthority": null,
+        "disputeResolution": {
+          "participatesInAdr": false,
+          "noticeKey": "legal.adr.notParticipating",
+          "notice": "Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen (§ 36 VSBG).",
+          "odrPlatformUrl": "https://ec.europa.eu/consumers/odr/"
+        }
+      },
+      "documents": [
+        {
+          "key": "privacy",
+          "title": "Privacy Policy",
+          "version": "2026-07-01",
+          "culture": "en",
+          "bodyHtml": "<h2>1. Controller</h2>\n<p>HotelCore Berlin Betriebs GmbH, Chausseestrasse 5, 10115 Berlin, represented by Anna\nBecker.</p>\n<h2>2. Purposes and legal bases</h2>\n<p>We process your booking data (first and last name, e-mail address, optionally phone\nnumber) in order to conclude and perform the accommodation contract pursuant to\n<strong>Art. 6(1)(b) GDPR</strong>.</p>\n<h2>3. Data minimisation</h2>\n<p>We do <strong>not</strong> collect date of birth, nationality, identity document\nnumbers or full home addresses at booking time. Those are part of the registration form\nunder §§ 29, 30 BMG and are collected on arrival.</p>\n<h2>4. Payment data</h2>\n<p>We do <strong>not</strong> collect or store card data. Payment is made at the\nproperty.</p>\n<h2>5. Retention</h2>\n<p>Booking and invoice data are retained for ten years under German commercial and tax\nlaw (§ 147 AO).</p>"
+        },
+        {
+          "key": "terms",
+          "title": "Terms and Conditions",
+          "version": "2026-07-01",
+          "culture": "en",
+          "bodyHtml": "<h2>1. Scope</h2>\n<p>These terms and conditions apply to accommodation contracts between HotelCore Berlin\nBetriebs GmbH and its guests, and to all related services.</p>\n<h2>2. Conclusion of contract</h2>\n<p>The contract is concluded when the hotel confirms the booking. The confirmation is\nsent by e-mail immediately after the online booking is completed.</p>\n<h2>3. Prices and payment</h2>\n<p>All prices include statutory VAT. The Berlin city tax is shown separately and is only\npayable if the stay actually takes place. Payment is due on arrival at the hotel.</p>\n<h2>4. Arrival and departure</h2>\n<ul>\n  <li>Rooms are available from 15:00.</li>\n  <li>Rooms must be vacated by 11:00 on the day of departure.</li>\n</ul>\n<h2>5. Cancellation by the guest</h2>\n<p>Free cancellation is possible until 18:00 local time three days before arrival. After\nthat the hotel charges <strong>90 % of the accommodation price</strong>. The city tax is\nnot charged in that case.</p>"
+        },
+        {
+          "key": "withdrawal",
+          "title": "Notice on the right of withdrawal",
+          "version": "2026-07-01",
+          "culture": "en",
+          "bodyHtml": "<h2>No right of withdrawal for accommodation on a specific date</h2>\n<p>For contracts covering accommodation on a specific date there is\n<strong>no statutory right of withdrawal</strong>. The legal basis is\n<strong>section 312g(2) no. 9 of the German Civil Code (BGB)</strong>.</p>\n<p>This does not affect your <strong>contractual cancellation right</strong> under\nclause 5 of our terms and conditions: you may cancel free of charge until 18:00 local\ntime three days before arrival.</p>"
+        }
+      ],
+      "withdrawalRight": {
+        "applies": false,
+        "legalBasis": "BGB §312g Abs. 2 Nr. 9",
+        "noticeKey": "legal.withdrawal.excluded.accommodation",
+        "noticeVersion": "2026-07-01"
+      }
+    },
+    "tr": {
+      "imprint": {
+        "legalEntityName": "HotelCore Berlin Betriebs GmbH",
+        "legalForm": "GmbH",
+        "representedBy": "Anna Becker (Geschäftsführerin)",
+        "addressLine": "Chausseestraße 5",
+        "postalCode": "10115",
+        "city": "Berlin",
+        "country": "DE",
+        "phone": "+49 30 1234567",
+        "email": "info@hotelcore.local",
+        "registerCourt": "Amtsgericht Berlin-Charlottenburg",
+        "registerNumber": "HRB 284913 B",
+        "vatId": "DE289176543",
+        "supervisoryAuthority": null,
+        "disputeResolution": {
+          "participatesInAdr": false,
+          "noticeKey": "legal.adr.notParticipating",
+          "notice": "Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen (§ 36 VSBG).",
+          "odrPlatformUrl": "https://ec.europa.eu/consumers/odr/"
+        }
+      },
+      "documents": [
+        {
+          "key": "privacy",
+          "title": "Datenschutzerklärung",
+          "version": "2026-07-01",
+          "culture": "de",
+          "bodyHtml": "<h2>1. Verantwortlicher</h2>\n<p>HotelCore Berlin Betriebs GmbH, Chausseestraße 5, 10115 Berlin, vertreten durch Anna\nBecker.</p>\n<h2>2. Zwecke und Rechtsgrundlagen</h2>\n<p>Wir verarbeiten Ihre Buchungsdaten (Vor- und Nachname, E-Mail-Adresse, optional\nTelefonnummer) zur Begründung und Durchführung des Beherbergungsvertrags gemäß\n<strong>Art. 6 Abs. 1 lit. b DSGVO</strong>.</p>\n<h2>3. Datenminimierung</h2>\n<p>Bei der Buchung erheben wir <strong>keine</strong> Geburtsdaten, Staatsangehörigkeit,\nAusweisnummern oder vollständigen Wohnanschriften. Diese Angaben sind Bestandteil des\nMeldescheins nach §§ 29, 30 BMG und werden erst bei der Anreise erhoben.</p>\n<h2>4. Zahlungsdaten</h2>\n<p>Wir erheben und speichern <strong>keine Kartendaten</strong>. Die Zahlung erfolgt vor\nOrt im Hotel.</p>\n<h2>5. Speicherdauer</h2>\n<p>Buchungs- und Rechnungsdaten werden gemäß den handels- und steuerrechtlichen\nAufbewahrungsfristen (§ 147 AO) zehn Jahre aufbewahrt.</p>\n<h2>6. Ihre Rechte</h2>\n<ul>\n  <li>Auskunft (Art. 15 DSGVO)</li>\n  <li>Berichtigung (Art. 16 DSGVO)</li>\n  <li>Löschung (Art. 17 DSGVO), soweit keine Aufbewahrungspflicht entgegensteht</li>\n  <li>Beschwerde bei der Berliner Beauftragten für Datenschutz und Informationsfreiheit</li>\n</ul>\n<h2>7. Speicherung auf Ihrem Endgerät</h2>\n<p>Wir verwenden ausschließlich unbedingt erforderliche Speicherung (§ 25 Abs. 2 Nr. 2\nTDDDG): die Kennung Ihrer aktuellen Reservierungsvormerkung und Ihre Sprachauswahl.\nAnalyse- oder Marketingdienste setzen wir nicht ein.</p>"
+        },
+        {
+          "key": "terms",
+          "title": "Allgemeine Geschäftsbedingungen",
+          "version": "2026-07-01",
+          "culture": "de",
+          "bodyHtml": "<h2>1. Geltungsbereich</h2>\n<p>Diese Allgemeinen Geschäftsbedingungen gelten für Beherbergungsverträge zwischen der\nHotelCore Berlin Betriebs GmbH und ihren Gästen sowie für alle damit verbundenen\nLeistungen.</p>\n<h2>2. Vertragsschluss</h2>\n<p>Der Vertrag kommt mit der Bestätigung der Buchung durch das Hotel zustande. Die\nBestätigung wird unmittelbar nach Abschluss der Online-Buchung per E-Mail versendet.</p>\n<h2>3. Preise und Zahlung</h2>\n<p>Alle Preise verstehen sich einschließlich der gesetzlichen Mehrwertsteuer. Die\nBerliner Übernachtungsteuer wird gesondert ausgewiesen und ist nur zu entrichten, wenn\nder Aufenthalt tatsächlich stattfindet. Die Zahlung erfolgt bei Anreise im Hotel.</p>\n<h2>4. An- und Abreise</h2>\n<ul>\n  <li>Die Zimmer stehen ab 15:00 Uhr zur Verfügung.</li>\n  <li>Am Abreisetag sind die Zimmer bis 11:00 Uhr zu räumen.</li>\n</ul>\n<h2>5. Rücktritt des Gastes</h2>\n<p>Eine kostenfreie Stornierung ist bis 18:00 Uhr Ortszeit drei Tage vor dem Anreisetag\nmöglich. Danach berechnet das Hotel <strong>90 % des Übernachtungspreises</strong>. Die\nÜbernachtungsteuer entfällt in diesem Fall vollständig.</p>\n<h2>6. Haustiere</h2>\n<p>Haustiere sind nach vorheriger Absprache gegen ein Entgelt von 20,00 € pro Nacht\ngestattet.</p>"
+        },
+        {
+          "key": "withdrawal",
+          "title": "Hinweis zum Widerrufsrecht",
+          "version": "2026-07-01",
+          "culture": "de",
+          "bodyHtml": "<h2>Kein Widerrufsrecht bei Beherbergung zu einem bestimmten Termin</h2>\n<p>Bei Verträgen über die Beherbergung zu einem bestimmten Termin besteht\n<strong>kein gesetzliches Widerrufsrecht</strong>. Rechtsgrundlage ist\n<strong>§ 312g Abs. 2 Nr. 9 BGB</strong>.</p>\n<p>Davon unberührt bleibt Ihr <strong>vertragliches Stornorecht</strong> nach Ziffer 5\nunserer Allgemeinen Geschäftsbedingungen: Sie können Ihre Buchung bis 18:00 Uhr Ortszeit\ndrei Tage vor Anreise kostenfrei stornieren.</p>"
+        }
+      ],
+      "withdrawalRight": {
+        "applies": false,
+        "legalBasis": "BGB §312g Abs. 2 Nr. 9",
+        "noticeKey": "legal.withdrawal.excluded.accommodation",
+        "noticeVersion": "2026-07-01"
+      }
+    }
+  }
+}

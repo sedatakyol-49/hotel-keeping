@@ -129,6 +129,36 @@ jobs:
             --configuration $BUILD_CONFIGURATION \
             --no-build
 
+      # Migration'lar GERCEKTEN uygulandi mi: "(Pending)" kalan tek bir migration bile
+      # calisan bir uygulamada eksik tablo/kolon demektir. `database update` sessizce
+      # basarili gorunebilecegi icin liste ayrica denetlenir.
+      - name: Assert no migration is left pending
+        env:
+          ConnectionStrings__Default: ${{ env.CI_CONNECTION_STRING }}
+        run: |
+          dotnet ef migrations list \
+            --project HotelCore.Infrastructure \
+            --startup-project HotelCore.Api \
+            --configuration $BUILD_CONFIGURATION \
+            --no-build > migrations.txt
+          cat migrations.txt
+          if grep -q "(Pending)" migrations.txt; then
+            echo "::error::Uygulanmamis migration var (yukaridaki listede '(Pending)')."
+            exit 1
+          fi
+
+      # Model ile migration'lar ayrisirsa (entity degisti, migration eklenmedi) sema sessizce
+      # eskir ve hata ancak calisma aninda gorunur. Bu adim o durumu PR'da yakalar.
+      - name: Assert the model has no pending changes
+        env:
+          ConnectionStrings__Default: ${{ env.CI_CONNECTION_STRING }}
+        run: |
+          dotnet ef migrations has-pending-model-changes \
+            --project HotelCore.Infrastructure \
+            --startup-project HotelCore.Api \
+            --configuration $BUILD_CONFIGURATION \
+            --no-build
+
       # Ek kanit/artifact: idempotent SQL script uretilebiliyor mu (model <-> migration tutarli mi).
       - name: Generate idempotent migration script
         env:

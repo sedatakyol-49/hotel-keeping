@@ -453,7 +453,8 @@
       "bookingCom": "Booking.com",
       "hrs": "HRS",
       "expedia": "Expedia",
-      "corporate": "Corporate"
+      "corporate": "Corporate",
+      "website": "Website (direct online)"
     },
     "pagination": {
       "range": "{{from}}–{{to}} of {{total}}",
@@ -473,7 +474,9 @@
       "depositPercent": "Deposit (%)",
       "deposit": "Deposit",
       "ratePlan": "Rate plan",
-      "timestamps": "Timestamps"
+      "timestamps": "Timestamps",
+      "publicReference": "Booking reference (website)",
+      "publicReferenceHint": "The guest quotes this number; the RES number stays internal."
     },
     "detail": {
       "title": "Reservation",

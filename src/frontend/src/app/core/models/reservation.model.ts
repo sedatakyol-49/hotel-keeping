@@ -43,6 +43,15 @@ export const RESERVATION_CHANNELS = [
   'Hrs',
   'Expedia',
   'Corporate',
+  /*
+   * Misafire acik web kanali. Backend enum'una eklendi ama bu listeye
+   * girmemisti; sonucu iki yerde gorunuyordu: website rezervasyonlarinin kanal
+   * etiketi BOS kaliyordu ve fiyat plani formunda "Website" secilemiyordu —
+   * oysa fiyat secimi kanali birebir karsilastirir, yani bir Website plani
+   * olmadan web fiyati sessizce oda tipinin liste fiyatina duser (ayarlar
+   * yaniti bunu `NoRatePlanForWebsiteChannel` uyarisiyla bildirir).
+   */
+  'Website',
 ] as const;
 
 export type ReservationChannel = (typeof RESERVATION_CHANNELS)[number];
@@ -60,6 +69,7 @@ export const RESERVATION_CHANNEL_LABEL_KEYS: Readonly<Record<ReservationChannel,
   Hrs: 'reservations.channel.hrs',
   Expedia: 'reservations.channel.expedia',
   Corporate: 'reservations.channel.corporate',
+  Website: 'reservations.channel.website',
 };
 
 /**
@@ -147,6 +157,16 @@ export interface ReservationResponse {
   readonly checkedInAt?: string | null;
   readonly checkedOutAt?: string | null;
   readonly folioId?: string | null;
+  /**
+   * Misafir kanalindan gelen rezervasyonun **misafire gosterilen** referansi
+   * (`K7QM-3XPD-9RTV`); resepsiyondan girilen rezervasyonlarda `null`.
+   *
+   * NEDEN GOSTERILIYOR: telefonda ve e-postada misafir bu numarayi soyler;
+   * `reservationNumber` (RES-2026-00042) ic/ticari referanstir ve misafire hic
+   * verilmez (sozlesme §7.1). Alan yanitta vardi ama hicbir ekranda
+   * gorunmuyordu — resepsiyon, misafirin okudugu numarayla kaydi bulamazdi.
+   */
+  readonly publicReference?: string | null;
 }
 
 /**

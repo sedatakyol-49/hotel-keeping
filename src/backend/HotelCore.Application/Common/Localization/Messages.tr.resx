@@ -529,6 +529,24 @@
   <data name="Public_BotChallengeFailed" xml:space="preserve">
     <value>Güvenlik doğrulaması tamamlanamadı. Lütfen tekrar deneyin.</value>
   </data>
+  <data name="Public_Summary_NightsOne" xml:space="preserve">
+    <value>{0} gece</value>
+  </data>
+  <data name="Public_Summary_NightsMany" xml:space="preserve">
+    <value>{0} gece</value>
+  </data>
+  <data name="Public_Summary_PersonsOne" xml:space="preserve">
+    <value>{0} kişi</value>
+  </data>
+  <data name="Public_Summary_PersonsMany" xml:space="preserve">
+    <value>{0} kişi</value>
+  </data>
+  <data name="Public_Summary_Accommodation" xml:space="preserve">
+    <value>Konaklama · {0} · {1}</value>
+  </data>
+  <data name="Public_Summary_CityTax" xml:space="preserve">
+    <value>Şehir vergisi (Kurtaxe) · {0} × {1}</value>
+  </data>
   <data name="Validation_PublicCheckInInPast" xml:space="preserve">
     <value>Giriş tarihi otelin bugününden ({0}) önce olamaz.</value>
   </data>
@@ -569,10 +587,10 @@
     <value>Seçilen ödeme yöntemi sunulmuyor.</value>
   </data>
   <data name="Problem_TooManyRequests_Title" xml:space="preserve">
-    <value>Cok fazla istek</value>
+    <value>Çok fazla istek.</value>
   </data>
   <data name="Validation_InvalidTimeZone" xml:space="preserve">
-    <value>Saat dilimi taninmiyor. Lutfen bir IANA kimligi girin (orn. Europe/Berlin).</value>
+    <value>Saat dilimi tanınmıyor. Lütfen bir IANA kimliği girin (örn. Europe/Berlin).</value>
   </data>
   <data name="Validation_InvalidConfirmationMode" xml:space="preserve">
     <value>Onay modu Instant veya OnHotelAcceptance olmalidir.</value>

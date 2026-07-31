@@ -34,7 +34,7 @@ Detaylar: [docs/architecture.md](docs/architecture.md).
 | **Rezervasyon** | 🔄 | ⏳ | Misafir, fiyat planı, müsaitlik, check-in/out, doluluk planı |
 | **Rechnung (Faturalama)** | 🔄 | ⏳ | GoBD: kesintisiz numara, değiştirilemezlik, Stornorechnung, denetim izi |
 | **Raporlama** | ⏳ | ⏳ | Doluluk, ciro, kanal dağılımı, ADR/RevPAR |
-| **Public Rezervasyon** | ⏳ | ⏳ | Misafire açık online kanal: arama, fiyat teklifi, hold, rezervasyon, iptal (ayrı Angular uygulaması, SSR) |
+| **Public Rezervasyon** | ✅ | ✅ | Misafire açık online kanal: arama → fiyat teklifi → 15 dk hold → §312j özeti → rezervasyon → onay; sorgulama ve iptal. **Ayrı Angular uygulaması** (`guest-web`, SSR + prerender), 13 uç, üç dil. Kanal **üretimde kapalı gelir** (aşağı bkz.) |
 
 ✅ bitti · 🔄 geliştiriliyor · ⏳ planlı
 
@@ -45,11 +45,49 @@ gerekçeleri [docs/architecture.md](docs/architecture.md) §10 karar günlüğü
 [docs/architecture-public-booking.md](docs/architecture-public-booking.md) (mimari, workspace,
 SSR, güvenlik ve mevzuat eşlemesi) ve
 [docs/api-contracts-public-booking.md](docs/api-contracts-public-booking.md) (uç uç sözleşme).
+Sözleşme ile **gerçekleşen kod** arasındaki farkların tam listesi: aynı dosyanın
+[§13](docs/api-contracts-public-booking.md) bölümü.
+
+> ### Public kanal **kapalı gelir** — açmak bilinçli bir eylemdir
+> `PublicBookingSettings.IsEnabled` varsayılanı `false`'tur ve bir migration bunu **açmaz**.
+> Kanalı açmak Impressum, AGB ve aydınlatma metninin var olduğunu varsayan **hukuki** bir
+> eylemdir; bir şema güncellemesinin yan etkisi olamaz.
+> - **Geliştirmede** demo otel (`berlin-mitte`) için kanalı **seed açar**
+>   (`PublicChannelSeeder`): slug, saat dilimi, künye, iptal politikası, üç hukuki belge, görsel
+>   yer tutucuları ve web'e uygulanabilir bir fiyat planı birlikte yazılır. Seed yalnızca
+>   `includeDevelopmentData: true` ile çalışır, o da yalnızca `app.Environment.IsDevelopment()`
+>   içinde çağrılır — **üretimde bu blok hiç çalışmaz.**
+> - Yapılandırma yalnızca `PublicSlug` boşken uygulanır; sonraki çalıştırmalar elle yapılan
+>   ayarları ezmez.
+> - **Üretimde** kanal, yönetim panelindeki **Ayarlar** ekranından açılır
+>   (`PUT /api/v1/hotels/{id}/settings`, `Settings.Manage`). Slug, saat dilimi ve künye zorunludur;
+>   otelin `Website` veya "tüm kanallar" fiyat planı yoksa yanıt `NoRatePlanForWebsiteChannel`
+>   uyarısı döndürür (aksi hâlde web fiyatı sessizce oda tipinin liste fiyatına düşer).
 
 ### Bilinen sınırlar
 - İzin günü hesabı **takvim günüdür**; hafta sonu ve resmî tatil mantığı bu fazda yoktur.
 - Fatura **PDF çıktısı** henüz üretilmez (`GET /invoices/{id}/pdf` → 501); ZUGFeRD/XRechnung için
   `IInvoiceExporter` zemini hazırdır.
+
+#### Misafir kanalı — uçtan uca doğrulamadan sonra kalan eksikler
+- **Yazı tipleri Google Fonts'tan (gstatic) yükleniyor.** Misafir sitesinin `index.html`'i
+  `fonts.googleapis.com`/`fonts.gstatic.com` bağlantısı taşır; Angular derlemede CSS'i satır içine
+  alır ama **font dosyaları hâlâ Google'dan** iner, yani ziyaretçinin IP'si onay alınmadan üçüncü
+  tarafa gider. Almanya'da bu bilinen bir DSGVO riskidir (LG München I, 20.01.2022 – 3 O 17493/20)
+  ve sitenin kendi çerez metniyle de çelişir. **Çözüm:** fontları kendi origin'imizden servis etmek
+  (dosyaları depoya almak + lisans notu). Bu tur yapılmadı: ikili varlık eklemek ve font lisansı
+  seçmek ayrı bir karardır.
+- **Demo görselleri yok.** Seed `/assets/demo/berlin-mitte/*.jpg` yazar, dosyalar yoktur (bu fazda
+  yükleme/CDN boru hattı yok). Arayüz kırık görsel **göstermez**, ölçüsü doğru bir yer tutucuya
+  düşer; ama her sayfa yüklemesinde birkaç 404 üretilir.
+- **§312j kanıt ekranı yok.** `GET /reservations/{id}/public-booking` (rıza, gösterilen düğme
+  metni, donmuş özet ve fiyat) yalnızca API'de vardır; yönetim panelinde bir ekranı yoktur.
+  Uyuşmazlıkta otelin kanıtı bugün ancak API'den okunabilir.
+- **Hold, yönetim paneline karşı bağlayıcı değildir.** Ölçülmüş davranış ve gerekçesi:
+  [architecture-public-booking.md §5.5](docs/architecture-public-booking.md).
+- **Onay e-postası gönderilmiyor:** geliştirme taşıyıcısı belgeyi üretir, özetini kaydeder ve
+  gönderimi loglar (`LoggingBookingConfirmationSender`). Bağlantı loglanmaz; dolayısıyla
+  geliştirmede `lookup` ile istenen **yeni** erişim bağlantısı hiçbir yerde görünmez.
 
 ### Canlıya çıkmadan mali onay isteyen kararlar
 Aşağıdaki dört karar kodda uygulanmış ve tek noktada toplanmış durumda, ancak **mali müşavir
@@ -152,10 +190,12 @@ hotel-core/
     │   ├── HotelCore.{Domain,Application,Infrastructure,Api}/
     │   └── tests/HotelCore.{Domain,Application,Api.Integration}Tests/
     └── frontend/                      # Angular 22 workspace
-        ├── src/                       # hotelcore-web — ADMIN uygulaması (CSR)
+        ├── src/                       # hotelcore-web — ADMIN uygulaması (CSR, :4200)
+        ├── scripts/                   # build/test sarmalayıcıları + legal-snapshot.mjs
         └── projects/
             ├── shared/                # paylaşılan kütüphane (@hotelcore/shared)
-            └── guest-web/             # MİSAFİR uygulaması (SSR + prerender)
+            └── guest-web/             # MİSAFİR uygulaması (SSR + prerender, :4300)
+                └── src/generated/     # legal-snapshot.json (ÜRETİLMİŞ — §5 DDG prerender'ı)
 ```
 
 ## Kurulum
@@ -184,15 +224,56 @@ dotnet run --project HotelCore.Api        # Swagger: http://localhost:5080/swagg
 > Api projesinin user-secrets'ı → design-time yer tutucu. Yani yukarıdaki user-secrets
 > ayarından sonra ek ortam değişkeni gerekmez.
 
-Development'ta uygulama açılışta bekleyen migration'ları uygular ve demo veriyi seed eder
-(`admin@hotelcore.local` / `Admin!23` — **yalnızca Development**).
+Development'ta uygulama açılışta bekleyen migration'ları uygular ve demo veriyi seed eder:
+demo otel, odalar, personel, **misafire açık kanal** (bkz. yukarıdaki kutu) ve demo yönetici
+kullanıcı `admin@hotelcore.local`. Parolası `DbSeeder.DemoAdminPassword` sabitindedir ve buraya
+**yazılmaz**; demo kullanıcı yalnızca Development'ta oluşturulur.
 
-### Frontend
+### Frontend — **iki uygulama**
+Workspace'te iki Angular uygulaması vardır ve ikisi de aynı API'ye bakar:
+
+| Uygulama | Komut | Adres | Not |
+|---|---|---|---|
+| **Yönetim paneli** (`hotelcore-web`) | `npm start` | http://localhost:4200 | CSR; `/api` istekleri `proxy.conf.json` ile `:5080`'e taşınır |
+| **Misafir sitesi** (`guest-web`) | `npm run start:guest` | http://localhost:4300 | SSR + prerender; `/api` istekleri `projects/guest-web/proxy.conf.mjs` ile taşınır |
+
 ```bash
 cd src/frontend
 npm ci
-npm start                                  # http://localhost:4200 (dev proxy → :5080)
+npm start                                  # panel  → http://localhost:4200
+npm run start:guest                        # misafir → http://localhost:4300
+
+# Baska bir backend'e bakmak (ornegin ikinci bir ornek):
+GUEST_API_TARGET=http://localhost:5081 npm run start:guest
+npx ng serve hotelcore-web --port 4201 --proxy-config <kendi-proxy.json>
 ```
+
+**Aktif otel** misafir sitesinde yapılandırmadan gelir (`environment.hotelSlug` → `GUEST_HOTEL_SLUG`
+enjeksiyon belirteci) ve her API çağrısında yola konur; bu tur **otel başına alan adı** dağıtımını
+hedefler. Demo slug: `berlin-mitte`.
+
+**Hukuki metinlerin prerender'ı (§5 DDG).** Impressum/AGB/Datenschutz sayfaları derleme anında
+üretilir ve içerik HTML'e **gömülür** — JavaScript'siz ziyaretçide de doludur. İçerik, derleme
+öncesi alınmış bir anlık görüntüden gelir:
+
+```bash
+cd src/frontend
+GUEST_API_TARGET=http://localhost:5080 npm run legal:snapshot   # API ayaktayken
+npm run legal:snapshot:check                                     # ag gerekmez; CI bunu kosar
+```
+Hukuki metin değiştiğinde bu betik yeniden çalıştırılmalıdır; gerekçe ve alternatifler:
+[architecture-public-booking.md §2.3](docs/architecture-public-booking.md).
+
+**SSR dağıtımı:** `npm run build` sonrası `node dist/guest-web/server/server.mjs`. Gerçek alan
+adları `SSR_ALLOWED_HOSTS` (virgüllü) ile verilir; verilmezse sunucu yalnızca `localhost` `Host`
+başlığına yanıt verir (mutlak adres zehirlenmesine karşı).
+
+### Demo giriş bilgileri (yalnızca Development)
+- **Yönetim paneli:** `admin@hotelcore.local` — parola seed kodundadır
+  (`DbSeeder`, `DemoAdminPassword`); **README'ye yazılmaz**, üretimde bu kullanıcı hiç oluşmaz.
+- **Misafir sitesi:** giriş **yoktur** ve olmayacaktır. Rezervasyona erişim, onay e-postasındaki
+  bağlantıdaki `accessToken` ile olur; bağlantı kaybolursa `/{dil}/manage` ekranından
+  rezervasyon referansı + e-posta ile **yeni bir bağlantı** istenir (eskisi geçersiz olur).
 
 ### Docker (PostgreSQL — hızlı başlangıç)
 ```bash
@@ -220,8 +301,12 @@ ConnectionStrings__Default="Host=localhost;Database=HotelDb_IntegrationTests;Use
 
 ## CI/CD & Branch Protection (öneri)
 - PR açıldığında `backend-ci.yml` (restore → build `-warnaserror` → unit test → PostgreSQL 16
-  service container'a karşı `ef database update` + integration test) ve `frontend-ci.yml`
-  (`npm ci` → lint → test → production build) çalışır.
+  service container'a karşı `ef database update` → **"(Pending)" migration yok** +
+  **model ile migration ayrışmamış** → integration test) ve `frontend-ci.yml`
+  (`npm ci` → lint → **hukuki anlık görüntü denetimi** → test (iki uygulama) → production build
+  (iki uygulama + SSR/prerender) → **prerender çıktısında künye var mı**) çalışır.
+- Frontend işi **hiçbir servise bağlı değildir**: hukuki metinler derleme öncesi alınmış
+  anlık görüntüden gelir, dolayısıyla CI'da API/veritabanı ve secret gerekmez.
 - Her iki workflow'da `paths` filtresi var: sadece frontend değişen bir PR'da backend-ci **hiç
   koşmaz**. Bu yüzden ikisini birden "required status check" yaparsanız o PR merge edilemez —
   check'leri ayrı ayrı yönetin veya tek bir gate workflow'u kullanın.

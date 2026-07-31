@@ -453,7 +453,8 @@
       "bookingCom": "Booking.com",
       "hrs": "HRS",
       "expedia": "Expedia",
-      "corporate": "Kurumsal"
+      "corporate": "Kurumsal",
+      "website": "Web sitesi (online direkt)"
     },
     "pagination": {
       "range": "{{total}} kayıttan {{from}}–{{to}}",
@@ -473,7 +474,9 @@
       "depositPercent": "Kapora (%)",
       "deposit": "Kapora",
       "ratePlan": "Fiyat planı",
-      "timestamps": "Zaman damgaları"
+      "timestamps": "Zaman damgaları",
+      "publicReference": "Rezervasyon referansı (web)",
+      "publicReferenceHint": "Misafir bu numarayı söyler; RES numarası içerdedir."
     },
     "detail": {
       "title": "Rezervasyon",

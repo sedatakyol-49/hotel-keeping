@@ -59,6 +59,19 @@
           <p class="mt-1 eyebrow">
             {{ channelLabelKeys[reservation.channel] | translate }}
           </p>
+          <!--
+            Misafir kanalindan gelen rezervasyonun misafire gosterilen referansi.
+            Telefonda okunan numara budur; RES-numarasi ic referanstir ve misafire
+            hic verilmez. Alan yalnizca Website kanalinda dolar.
+          -->
+          @if (reservation.publicReference) {
+            <p class="numeric mt-2 text-sm text-ink" data-testid="reservation-public-reference">
+              <span class="eyebrow mr-2">
+                {{ 'reservations.fields.publicReference' | translate }}
+              </span>
+              {{ reservation.publicReference }}
+            </p>
+          }
         </div>
         <hc-reservation-status [status]="reservation.status" />
       </header>

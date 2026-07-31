@@ -318,13 +318,24 @@ internal sealed class ReservationReader(IAppDbContext database)
         {
             var term = filter.Search.Trim().ToLowerInvariant();
 
+            // Misafirin telefonda söylediği tek numara BUDUR (K7QM-3XPD-9RTV). ReservationNumber
+            // misafire hiç verilmez (sözleşme §7.1), dolayısıyla public referans aranamazsa
+            // resepsiyon kaydı bulamaz. Aynı normalizasyon `lookup` ucunda da kullanılır: tireler
+            // atılır, büyük harfe çevrilir, Crockford eşlemesi (I→1, L→1, O→0) uygulanır — misafir
+            // "0" yerine "O" dikte ettiğinde arama yine tutar. Geçersiz biçim `null` döner ve
+            // koşul devre dışı kalır.
+            var reference = PublicBookingReference.Normalize(filter.Search);
+
             // CA1304/CA1311/CA1862 bastırılır: kültür parametreli aşırı yüklemeleri EF Core
             // SQL'e çeviremez (oda/personel modülleriyle aynı gerekçe).
 #pragma warning disable CA1304, CA1311, CA1862
             query = query.Where(reservation =>
                 reservation.ReservationNumber.ToLower().Contains(term)
                 || reservation.Guest.FirstName.ToLower().Contains(term)
-                || reservation.Guest.LastName.ToLower().Contains(term));
+                || reservation.Guest.LastName.ToLower().Contains(term)
+                || (reference != null
+                    && reservation.PublicBooking != null
+                    && reservation.PublicBooking.BookingReference == reference));
 #pragma warning restore CA1304, CA1311, CA1862
         }
 

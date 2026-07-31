@@ -10,6 +10,7 @@ import { routes } from './app.routes';
 import {
   acceptLanguageInterceptor,
   apiUrlInterceptor,
+  legalPrerenderInterceptor,
 } from './core/api/public-http.interceptors';
 import { BundledTranslateLoader } from './core/i18n/bundled-translate.loader';
 
@@ -33,14 +34,17 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
 
     /*
-     * HTTP: `withFetch` SSR'da da calisir. Iki interceptor:
+     * HTTP: `withFetch` SSR'da da calisir. Uc interceptor:
+     *   - legalPrerenderInterceptor: DERLEME aninda (prerender) `GET /legal`
+     *     yanitini anlik goruntuden verir — §5 DDG kunyesi JS'siz de dolu olsun
+     *     diye; SSR'da ve tarayicida devre disidir,
      *   - apiUrlInterceptor      : sunucuda goreli adresi mutlaklastirir,
      *   - acceptLanguageInterceptor: cok dilli icerik icin `Accept-Language`.
      * Auth interceptor **yoktur ve olmayacaktir**: public yuzey anonimdir.
      */
     provideHttpClient(
       withFetch(),
-      withInterceptors([apiUrlInterceptor, acceptLanguageInterceptor]),
+      withInterceptors([legalPrerenderInterceptor, apiUrlInterceptor, acceptLanguageInterceptor]),
     ),
 
     /*

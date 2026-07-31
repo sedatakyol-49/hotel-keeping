@@ -135,7 +135,14 @@ const handler = async (
   next();
 };
 
-export default createNodeRequestHandler(handler);
+/**
+ * `ng serve` bu **adi** arar (`reqHandler`); bulamazsa kendi ic SSR ara katmanina
+ * duser ve gelistirme ile uretim iki farkli yoldan servis edilir. Ayni deger iki
+ * adla disa aktarilir: varsayilan disa aktarim uretim girisi icin korunur.
+ */
+export const reqHandler = createNodeRequestHandler(handler);
+
+export default reqHandler;
 
 /** Dogrudan calistirildiginda (production): kendi HTTP sunucusunu acar. */
 if (isMainModule(import.meta.url)) {
