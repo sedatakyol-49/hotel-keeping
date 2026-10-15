@@ -71,7 +71,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           # SDK surumu src/backend/global.json ile sabitlenmistir.
           global-json-file: src/backend/global.json
